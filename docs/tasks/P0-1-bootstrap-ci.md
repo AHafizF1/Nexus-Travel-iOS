@@ -52,4 +52,5 @@ Docs, Git/GitHub config, `project.yml`, minimal app shell, `AppConfiguration`, c
 - [x] RED CI failure observed: [run 32708381635](https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/32708381635).
 - [x] GREEN build/test observed: [run 32708474046](https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/32708474046).
 - [x] App config contract tests cover origin, mobile base, health path.
+- [x] `main` requires current-branch `build-test`, one approval, resolved conversations, and blocks force-push/deletion.
 - [x] PARITY row complete and PROGRESS appended.

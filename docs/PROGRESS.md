@@ -19,3 +19,10 @@
 - CI bootstrap found one workflow defect first: XcodeGen release ZIP nesting. Fixed path without weakening test.
 - Adversarial review: Android cannot be sole API contract; task routing keeps backend controllers/DTO/e2e tests first. No feature parity claim or visual evidence yet.
 - Next: merge P0-1 after required review, then create DS-1 task packet and RED token tests.
+
+## 2026-08-24 — Phase-0 branch gate enabled
+
+- Repository visibility changed to public by owner.
+- Enabled `main` protection: strict `build-test`, one approving review, stale-review dismissal, resolved conversations, admin enforcement, no force-push, no branch deletion.
+- Phase 0 exit gate satisfied; current phase advanced to Phase 1 design system.
+- Next: review/merge PR #1, then start DS-1 as one isolated task/PR.

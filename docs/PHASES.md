@@ -1,6 +1,6 @@
 # Port phases
 
-Current phase: **Phase 0 — judge and delivery loop**.
+Current phase: **Phase 1 — design system**.
 
 | Phase | Goal | Exit gate |
 |---|---|---|
