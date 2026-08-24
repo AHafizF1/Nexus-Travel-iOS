@@ -1,0 +1,47 @@
+name: iOS CI
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ios-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Select Xcode 26.6
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app
+      - name: Install pinned XcodeGen
+        run: |
+          curl --fail --location --silent --show-error \
+            --output xcodegen.zip \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.44.1/xcodegen.zip
+          unzip -q xcodegen.zip -d "$RUNNER_TEMP/xcodegen"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/xcodegen/bin/xcodegen" --version | grep -F "Version: 2.44.1"
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build and test
+        run: >-
+          xcodebuild test
+          -project NexusTravel.xcodeproj
+          -scheme NexusTravel
+          -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
+          -resultBundlePath TestResults.xcresult
+          CODE_SIGNING_ALLOWED=NO
+      - name: Upload test result on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: TestResults.xcresult
