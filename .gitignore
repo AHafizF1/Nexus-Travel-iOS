@@ -1,0 +1,5 @@
+NexusTravel.xcodeproj/
+DerivedData/
+*.xcresult
+xcuserdata/
+.DS_Store
