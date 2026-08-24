@@ -6,7 +6,7 @@ Every active row must have `docs/tasks/<ID>-*.md` created from TASK-TEMPLATE bef
 
 | ID | Phase | Slice | Android/backend truth | Status |
 |---|---:|---|---|---|
-| P0-1 | 0 | Docs, task contract, XcodeGen shell, PR CI | AGENTS, backend contract, GitHub/Apple CI docs | ◐ active |
+| P0-1 | 0 | Docs, task contract, XcodeGen shell, PR CI | AGENTS, backend contract, GitHub/Apple CI docs | ☑ complete |
 | DS-1 | 1 | Color, spacing, radius, elevation, motion tokens | `core/designsystem/NexusTokens.kt`, foundation boards | ☐ queued |
 | DS-2 | 1 | Typography tokens + Dynamic Type | `NexusTextStyles.kt`, typography board | ☐ queued |
 | DS-3 | 1 | Button/text field/top bar/feedback primitives | `core/designsystem/component/*`, anatomy boards | ☐ queued |
