@@ -23,6 +23,6 @@
 ## 2026-08-24 — Phase-0 branch gate enabled
 
 - Repository visibility changed to public by owner.
-- Enabled `main` protection: strict `build-test`, one approving review, stale-review dismissal, resolved conversations, admin enforcement, no force-push, no branch deletion.
+- Enabled `main` protection: strict `build-test`, resolved conversations, admin enforcement, no force-push, no branch deletion. Removed required approval because GitHub forbids PR authors from approving their own work and repository currently has one contributor.
 - Phase 0 exit gate satisfied; current phase advanced to Phase 1 design system.
 - Next: review/merge PR #1, then start DS-1 as one isolated task/PR.
