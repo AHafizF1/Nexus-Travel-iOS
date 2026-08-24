@@ -27,8 +27,8 @@ jobs:
             --output xcodegen.zip \
             https://github.com/yonaskolb/XcodeGen/releases/download/2.44.1/xcodegen.zip
           unzip -q xcodegen.zip -d "$RUNNER_TEMP/xcodegen"
-          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/xcodegen/bin/xcodegen" --version | grep -F "Version: 2.44.1"
+          echo "$RUNNER_TEMP/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/xcodegen/xcodegen/bin/xcodegen" --version | grep -F "Version: 2.44.1"
       - name: Generate project
         run: xcodegen generate
       - name: Build and test
