@@ -11,7 +11,8 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 1 — design system**  
+Current phase: **Phase 1 — design system**
+
 Active setup task: **P0-2 — stateless agent workflow**
 
 ## Phase 0 — Delivery foundation
@@ -107,4 +108,3 @@ Exit gate: current Apple-policy audit, exact Release archive validation, privacy
 - Parallel tasks must have merged dependencies and non-overlapping owned paths.
 - Coordinator marks `🔄` before dispatch, creates complete packet, then assigns agent.
 - Coordinator marks `[x]` and appends `ARCHIVE.md` only after merge and latest-SHA CI success.
-
