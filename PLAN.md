@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 1 — design system**
 
-Active wave: **none — prepare DS-1 and DS-2 task packets before dispatch**
+Active wave: **DS-1 and DS-2 — parallel, non-overlapping token foundations**
 
 ## Phase 0 — Delivery foundation
 
@@ -26,12 +26,12 @@ Exit gate: reproducible macOS build/test, protected `main`, stateless task workf
 
 Milestone: tokens, primitives, and gallery match Android design truth while respecting Dynamic Type and Apple accessibility.
 
-- [ ] DS-1 — Color, spacing, radius, elevation, and motion tokens — requires P0-2
-- [ ] DS-2 — Typography tokens and Dynamic Type — requires P0-2
+- [ ] 🔄 [DS-1 — Color, spacing, radius, layout, status, and motion tokens](docs/tasks/DS-1-design-tokens.md) — requires P0-2
+- [ ] 🔄 [DS-2 — Typography tokens and Dynamic Type](docs/tasks/DS-2-typography-dynamic-type.md) — requires P0-2
 - [ ] DS-3 — Button, text field, top bar, and feedback primitives — requires DS-1, DS-2
 - [ ] DS-4 — DesignSystemGalleryScreen — requires DS-3
 
-Exit gate: token tests green; gallery screenshots logged from Mac.
+Exit gate: token tests green; gallery screenshots prove Android code-defined states on Mac.
 
 ## Phase 2 — Domain models and fakes
 

@@ -7,6 +7,7 @@ The translation contract for every agent. If a rule proves wrong or incomplete, 
 - **Port behavior, not syntax.** Where Swift has a more idiomatic equivalent that preserves observable behavior, take it — and record it below.
 - **Names stay identical.** Types/functions/state keep Kotlin names.
 - **Sealed result types stay.** Kotlin returns sealed result/error types instead of throwing; Swift ports return the same enums. Do **not** convert repository seams to `throws`.
+- **Design truth is Kotlin code only.** Legacy design images, mockups, boards, documents, and handbooks are not inputs to implementation or review.
 
 ## 1. Translation table
 
@@ -35,14 +36,14 @@ The translation contract for every agent. If a rule proves wrong or incomplete, 
 | `popUpTo<X> { inclusive }` / `popBackStack(X, inclusive)` | Rebuild `path` array to desired suffix | Arrays make this trivial |
 | Single NavHost + bottom bar tabs (`saveState`/`restoreState`) | `TabView` + one NavigationStack+Router per tab | Per-tab state preservation is native; replaces that plumbing |
 | `BuildConfig.DEBUG` | `#if DEBUG` | |
-| `rememberNexusAdaptiveSpacing()` Compact/Regular/Spacious | `horizontalSizeClass` compact/regular | Deliberate simplification: Spacious collapses into Regular. Revisit only if Pro Max mockup diffs appear |
+| `rememberNexusAdaptiveSpacing()` Compact/Regular/Spacious | Pure screen-geometry resolver using identical width/height thresholds | Preserve all three Kotlin modes; inject geometry so boundary behavior is unit-testable |
 | hardcoded strings / `stringResource` | Inline literals, text verbatim | Gap G8 |
 | `24.dp` / `sp` sizes | Same numbers as pt; type styles via DesignSystem | Dynamic Type scaled |
 | `OkHttp` / `NexusHttpClientFactory` / `NexusAuthenticatedRequest` | `URLSession` + thin request builder mirroring both | |
 | `NetworkFailure` sealed type | `enum NetworkFailure: Equatable, Sendable` | Port cases verbatim |
 | Room `NexusDatabase` / DAOs | SwiftData `@Model` + `ModelContainer` | Only in Phase 6 if fakes prove insufficient |
 | Coil ImageLoader config | `AsyncImage`; URLCache defaults | Custom cache only on measured need |
-| `MainBottomBar` | `TabView` + custom tab bar styling per mockup | Match Nexus visual spec |
+| `MainBottomBar` | `TabView` + styling derived from Android component code | Preserve product behavior with native tab semantics |
 
 ## 2. Canonical ViewModel pattern
 
