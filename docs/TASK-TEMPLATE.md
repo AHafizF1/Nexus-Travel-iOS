@@ -3,7 +3,7 @@
 ## Ownership
 
 - PLAN task: `<ID>`
-- Branch: `parity/<id>-<slug>`
+- Branch: `codex/<id>-<slug>`
 - GitHub issue:
 - Expected base SHA:
 - Wave:
@@ -28,8 +28,9 @@ One user-visible or contract-visible behavior. State exact before/after observat
 
 - Android files: exact absolute paths.
 - Backend files/tests: exact absolute paths, when networked.
-- Mockup/anatomy boards: exact paths, when UI.
+- Android component/screen Kotlin: exact absolute paths, when UI.
 - ADR/PORTING sections controlling decisions.
+- Excluded: all legacy PNGs, mockups, boards, PDFs, DOCX files, and handbooks.
 
 ## Required skills
 
@@ -39,7 +40,7 @@ List only task-relevant skills from AGENTS routing. Include supporting reference
 
 - State owner:
 - Inputs/outputs:
-- Dependencies/Adapters:
+- Dependencies/Adapters: exact role-based initializer/property names, concrete-vs-protocol reason, composition-root owner.
 - Valid transitions/order:
 - Cancellation/error modes:
 - Accessibility/privacy/security invariants:

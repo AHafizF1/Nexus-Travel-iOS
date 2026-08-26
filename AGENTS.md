@@ -13,13 +13,12 @@ Same product, same UX, Apple-platform idioms. **Feature parity, not code parity.
 | Need | Path |
 |---|---|
 | Logic/behavior reference | `Nexus-Travel-Android\...\com\nexustravel\app\{domain,data,feature,core}` |
-| Spacing/layout board | `Nexus-Travel-Android\Desgin System\07-foundations\34-spacing-and-layout.png` |
-| Typography board | `...\07-foundations\35-typography.png` |
-| Color palette | `...\07-foundations\36-color-palette.png` |
-| Component specs & states | `...\06-component-anatomy\26..33-*.png` |
-| Screen composition | `Nexus-Travel-Android\Desgin-mockups\` |
+| Design tokens | `...\core\designsystem\{NexusColors,NexusTextStyles,NexusTokens,NexusTheme,NexusStatus}.kt` |
+| Component specs and states | `...\core\designsystem\component\*.kt` |
+| Design-system gallery | `...\core\designsystem\gallery\DesignSystemGalleryScreen.kt` |
+| Screen composition | `...\feature\**\*.kt` |
 
-Conflict order: usability/accessibility > component anatomy > mockup > foundations (tokens).
+Android Kotlin code is sole product/design truth. Legacy PNGs, mockups, boards, PDFs, DOCX files, and handbooks are excluded from token values, parity decisions, acceptance criteria, and review evidence. Apple accessibility/platform requirements may change interaction mechanics, but any visible design deviation from Android code must be explicit and tested.
 
 ## Doc map (read in this order)
 
@@ -34,7 +33,7 @@ Conflict order: usability/accessibility > component anatomy > mockup > foundatio
 
 1. Read this file → `PLAN.md` header/current phase → assigned task packet.
 2. If coordinating, pick one dependency-ready unchecked PLAN task, mark it `🔄`, then create/complete its packet before dispatch. Feature agents never edit PLAN or ARCHIVE.
-3. Read every Android/backend/mockup truth source listed by the packet completely before writing Swift.
+3. Read every Android/backend code truth source listed by the packet completely before writing Swift. Never consult legacy design artifacts.
 4. Implement following `CONVENTIONS.md` + `PORTING.md`.
 5. **Adversarial self-review** (fresh pass, assume the port is wrong): compare behavior against every packet truth source. List every mismatch; fix it or record it in PR evidence.
 6. Push, open PR, watch latest-SHA CI, read full failing logs, fix root cause on same branch, repeat until green or genuinely blocked.
@@ -72,6 +71,7 @@ Load only skills relevant to touched work, then follow their supporting referenc
 - Preserve Android names and feature-level MVVM where ViewModels contain real presentation/orchestration behavior. Delete forwarding-only layers; do not introduce TCA/VIPER/Clean Architecture without measured pressure plus ADR.
 - Views express state. Business rules, networking, persistence, formatting, and navigation orchestration stay outside `body`.
 - Dependencies enter through initializers. `@Environment` is for true app-wide dependencies/config only; no service locator or global mutable state.
+- Name injected properties/parameters by product role, not concrete type (`repository`, `sessionStore`, `clock`). Add feature qualifiers only to disambiguate multiple roles. Protocols use role nouns; concrete Adapters add mechanism prefixes (`Remote`, `Fake`, `Keychain`). Never use `I` prefixes or `Protocol`/`Impl` suffixes unless Swift API naming requires collision resolution.
 - Concrete type first. Add protocol seam only when two adapters exist or repository fake/remote pairing already proves variation.
 - DRY Rule of Three for operational logic. Configuration has one source immediately. Never merge coincidentally similar domain behavior.
 - Actions/flows own product meaning, state transitions, auth/ownership policy, retry classification, and user-facing errors. Shared modules own reusable mechanics with explicit inputs and structured outputs; they never mutate domain persistence implicitly.
@@ -158,5 +158,5 @@ Tasks flagged **CRITICAL** in PLAN.md are Apple-review rejection risks — treat
 |---|---|---|
 | Compiles | GitHub Actions `macos-26` | push → `.github/workflows/ios.yml` → xcodegen + xcodebuild |
 | Unit logic | CI (from Phase 2) | `xcodebuild test` — validators, codecs, mappers, fakes |
-| Visual parity | MacinCloud or local Mac | Simulator screenshots vs mockup PNGs, linked in PR and ARCHIVE after merge |
+| Visual parity | MacinCloud or local Mac | Simulator screenshots proving Android code-defined states and token use, linked in PR and ARCHIVE after merge |
 | Reliability/perf | Real device via TestFlight | SE-class/low-RAM device, large Dynamic Type, offline flows |
