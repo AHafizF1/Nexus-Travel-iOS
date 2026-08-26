@@ -20,10 +20,14 @@ struct NexusStatusTests {
 
         for contract in contracts {
             let colors = contract.status.colors
-            #expect(try rgbMatches(colors.container, contract.container), "\(contract.status) container differs from Android")
-            #expect(try rgbMatches(colors.content, contract.content), "\(contract.status) content differs from Android")
-            #expect(try rgbMatches(colors.border, contract.border), "\(contract.status) border differs from Android")
-            #expect(abs(try rgbaComponents(of: colors.border).alpha - contract.borderAlpha) < 0.000_001)
+            let containerMatches = try rgbMatches(colors.container, contract.container)
+            let contentMatches = try rgbMatches(colors.content, contract.content)
+            let borderMatches = try rgbMatches(colors.border, contract.border)
+            let borderComponents = try rgbaComponents(of: colors.border)
+            #expect(containerMatches, "\(contract.status) container differs from Android")
+            #expect(contentMatches, "\(contract.status) content differs from Android")
+            #expect(borderMatches, "\(contract.status) border differs from Android")
+            #expect(abs(borderComponents.alpha - contract.borderAlpha) < 0.000_001)
         }
     }
 }

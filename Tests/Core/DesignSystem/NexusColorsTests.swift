@@ -76,10 +76,9 @@ struct NexusColorsTests {
         ]
 
         for contract in contracts {
-            #expect(
-                try rgbaComponents(of: contract.alias).isApproximatelyEqual(to: rgbaComponents(of: contract.canonical)),
-                "\(contract.name) differs from its Android canonical color"
-            )
+            let alias = try rgbaComponents(of: contract.alias)
+            let canonical = try rgbaComponents(of: contract.canonical)
+            #expect(alias.isApproximatelyEqual(to: canonical), "\(contract.name) differs from its Android canonical color")
         }
     }
 
@@ -127,10 +126,9 @@ struct NexusColorsTests {
         ]
 
         for contract in contracts {
-            #expect(
-                try rgbaComponents(of: contract.semantic).isApproximatelyEqual(to: rgbaComponents(of: contract.canonical)),
-                "\(contract.name) differs from its Android canonical color"
-            )
+            let semantic = try rgbaComponents(of: contract.semantic)
+            let canonical = try rgbaComponents(of: contract.canonical)
+            #expect(semantic.isApproximatelyEqual(to: canonical), "\(contract.name) differs from its Android canonical color")
         }
     }
 }
