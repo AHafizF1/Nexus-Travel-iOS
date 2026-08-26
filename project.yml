@@ -17,6 +17,12 @@ targets:
       path: Sources/App/Info.plist
       properties:
         CFBundleDisplayName: Nexus Travel
+        UIAppFonts:
+          - plus_jakarta_sans_regular.ttf
+          - plus_jakarta_sans_medium.ttf
+          - plus_jakarta_sans_semibold.ttf
+          - plus_jakarta_sans_bold.ttf
+          - plus_jakarta_sans_extrabold.ttf
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

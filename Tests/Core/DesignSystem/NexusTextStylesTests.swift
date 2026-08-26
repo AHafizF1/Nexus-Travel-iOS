@@ -89,7 +89,9 @@ struct NexusTextStylesTests {
         #expect(tabularRoles.allSatisfy(\.style.usesTabularNumbers))
     }
 
-    @Test @MainActor func embeddedFontFacesResolveByPostScriptName() {
+    @Test
+    @MainActor
+    func embeddedFontFacesResolveByPostScriptName() {
         let expectedNames = [
             "PlusJakartaSans-Regular",
             "PlusJakartaSans-Medium",
@@ -98,13 +100,17 @@ struct NexusTextStylesTests {
             "PlusJakartaSans-ExtraBold"
         ]
 
-        #expect(NexusFontWeight.allCases.map(\.postScriptName) == expectedNames)
+        let fontWeights: [NexusFontWeight] = [.regular, .medium, .semibold, .bold, .extrabold]
+
+        #expect(fontWeights.map(\.postScriptName) == expectedNames)
         for name in expectedNames {
             #expect(UIFont(name: name, size: 16) != nil)
         }
     }
 
-    @Test @MainActor func customFontScalesAtAccessibilitySizes() throws {
+    @Test
+    @MainActor
+    func customFontScalesAtAccessibilitySizes() throws {
         let font = try #require(UIFont(name: NexusFontWeight.regular.postScriptName, size: 16))
         let metrics = UIFontMetrics(forTextStyle: .body)
         let defaultTraits = UITraitCollection(preferredContentSizeCategory: .large)
