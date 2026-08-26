@@ -25,20 +25,21 @@ Conflict order: usability/accessibility > component anatomy > mockup > foundatio
 
 1. `docs/PORTING.md` — Kotlin→Swift rulebook + gap inventory. **Before writing any Swift.**
 2. `docs/CONVENTIONS.md` — architecture + style rules for all Swift code.
-3. `docs/PHASES.md` — phase order, scope, definition-of-done, gates. Work top-down.
-4. `docs/PARITY.md` — the work queue. One row = one task. Update status as you go.
+3. `PLAN.md` — complete roadmap, current phase, active wave, dependencies, milestones, and live checklist. Coordinator-owned.
+4. Assigned `docs/tasks/<ID>-*.md` — self-contained execution contract. **Read completely before task work.**
 5. `docs/adr/` — recorded decisions. Never re-litigate; propose a new ADR instead. **ADR-0005 accepts email/password-only launch.**
-6. `docs/PROGRESS.md` — cross-session memory. Append an entry at every session end.
+6. `ARCHIVE.md` — merged, latest-SHA CI-verified completion evidence. Read only entries relevant to current dependencies.
 
 ## Session loop (every agent run)
 
-1. Read this file → last 2 entries of `docs/PROGRESS.md` → current phase in `docs/PHASES.md`.
-2. Pick **one** unchecked `PARITY.md` row belonging to the current phase.
-3. Read the Android source behind that row completely before writing Swift.
+1. Read this file → `PLAN.md` header/current phase → assigned task packet.
+2. If coordinating, pick one dependency-ready unchecked PLAN task, mark it `🔄`, then create/complete its packet before dispatch. Feature agents never edit PLAN or ARCHIVE.
+3. Read every Android/backend/mockup truth source listed by the packet completely before writing Swift.
 4. Implement following `CONVENTIONS.md` + `PORTING.md`.
-5. **Adversarial self-review** (fresh pass, assume the port is wrong): compare behavior against Android source and mockup PNG. List every mismatch; fix it or log it as known-deviation in PROGRESS.
-6. Update the PARITY row status; append a PROGRESS entry (what changed, how verified, what's next).
-7. If review found a defect caused by a missing/ambiguous rule: update `PORTING.md`/`CONVENTIONS.md` too. Fix upstream, not just the instance.
+5. **Adversarial self-review** (fresh pass, assume the port is wrong): compare behavior against every packet truth source. List every mismatch; fix it or record it in PR evidence.
+6. Push, open PR, watch latest-SHA CI, read full failing logs, fix root cause on same branch, repeat until green or genuinely blocked.
+7. After merge, coordinator marks PLAN `[x]` and appends ARCHIVE evidence. `[x]` before merge plus latest-SHA green is forbidden.
+8. If review found a defect caused by a missing/ambiguous rule: update `PORTING.md`/`CONVENTIONS.md` too. Fix upstream, not just the instance.
 
 ## Hard rules
 
@@ -46,9 +47,10 @@ Conflict order: usability/accessibility > component anatomy > mockup > foundatio
 - **No third-party dependencies** without an ADR. URLSession/Codable/SwiftData/AsyncImage cover current needs.
 - **No magic values**: raw hex colors, font sizes, spacing numbers live only in `Sources/Core/DesignSystem/`.
 - **Never edit `NexusTravel.xcodeproj`** (generated). Edit `project.yml`, regenerate.
-- **Git discipline**: never `git stash`, `git reset --hard`, force-push. One commit per completed PARITY row, message references row ID (`PARITY SR1: search results screen`).
-- **Never claim "verified" without gate evidence.** Windows cannot compile UI Swift. Verification = CI link (green build/test) and/or Mac screenshots logged in PROGRESS.
-- One feature chunk per run. Two agents must never edit overlapping files; coordinate through the PARITY queue.
+- **Git discipline**: never `git stash`, `git reset --hard`, force-push. Commits and PR title reference task ID (`PARITY SR-1: search results screen`).
+- **Never claim "verified" without gate evidence.** Windows cannot compile UI Swift. Verification = latest-SHA green CI and/or required Mac/device evidence linked from PR then ARCHIVE after merge.
+- One feature chunk per agent run. Parallel tasks require merged dependencies and non-overlapping owned paths declared in their packets.
+- PLAN and ARCHIVE are coordinator-only during task execution. Feature PRs never edit either ledger.
 
 ## Required skill routing
 
@@ -139,7 +141,7 @@ Load only skills relevant to touched work, then follow their supporting referenc
 - Profile Release builds with Instruments. Time Profiler for CPU/hangs, SwiftUI/Hitches for rendering, Allocations + Leaks + Memory Graph for lifetime, Network for request timing, Power Profiler for energy.
 - No performance claim without trace/device evidence. Run accessibility and motion checks on real hardware before release.
 
-## Every screen row must satisfy ALL of these before ☑
+## Every screen task must satisfy ALL of these before `[x]`
 
 1. All four UI states implemented (loading / content / empty / error) — nothing stubbed.
 2. Accessibility labels on icon-only controls; Dynamic Type does not clip text.
@@ -148,13 +150,13 @@ Load only skills relevant to touched work, then follow their supporting referenc
 5. Flow works under the demo account from cold launch.
 6. Copy reviewed for Apple tone (load `ux-copy` + `ui-typography` skills while writing strings).
 
-Rows flagged **CRITICAL** in PARITY.md are Apple-review rejection risks — treat gate evidence as mandatory, not optional.
+Tasks flagged **CRITICAL** in PLAN.md are Apple-review rejection risks — treat gate evidence as mandatory, not optional.
 
 ## Verification gates
 
 | Level | Runs where | How |
 |---|---|---|
-| Compiles | GitHub Actions `macos-15` | push → `.github/workflows/ios.yml` → xcodegen + xcodebuild |
+| Compiles | GitHub Actions `macos-26` | push → `.github/workflows/ios.yml` → xcodegen + xcodebuild |
 | Unit logic | CI (from Phase 2) | `xcodebuild test` — validators, codecs, mappers, fakes |
-| Visual parity | MacinCloud or local Mac | Simulator screenshots vs mockup PNGs, linked in PROGRESS |
+| Visual parity | MacinCloud or local Mac | Simulator screenshots vs mockup PNGs, linked in PR and ARCHIVE after merge |
 | Reliability/perf | Real device via TestFlight | SE-class/low-RAM device, large Dynamic Type, offline flows |

@@ -2,7 +2,7 @@
 
 ## Ownership
 
-- PARITY row: `P0-1`
+- PLAN task: `P0-1`
 - Branch: `parity/p0-1-bootstrap-ci`
 - One agent owns branch through green CI.
 
@@ -53,4 +53,4 @@ Docs, Git/GitHub config, `project.yml`, minimal app shell, `AppConfiguration`, c
 - [x] GREEN build/test observed: [run 32708474046](https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/32708474046).
 - [x] App config contract tests cover origin, mobile base, health path.
 - [x] `main` requires current-branch `build-test`, resolved conversations, and blocks force-push/deletion; no self-impossible approval gate for solo ownership.
-- [x] PARITY row complete and PROGRESS appended.
+- [x] PLAN marks task complete and ARCHIVE contains merged CI evidence.

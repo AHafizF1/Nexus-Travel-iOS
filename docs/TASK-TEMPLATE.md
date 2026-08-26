@@ -2,10 +2,23 @@
 
 ## Ownership
 
-- PARITY row: `<ID>`
+- PLAN task: `<ID>`
 - Branch: `parity/<id>-<slug>`
+- GitHub issue:
+- Expected base SHA:
+- Wave:
+- Merged dependencies:
 - One agent owns branch through green CI.
-- No overlap with other active rows.
+- No overlap with other active tasks.
+
+## Exclusive ownership
+
+- Allowed production paths:
+- Allowed test paths:
+- Coordinator-owned files — do not edit:
+  - `PLAN.md`
+  - `ARCHIVE.md`
+- Shared Interfaces treated as read-only:
 
 ## Outcome
 
@@ -41,6 +54,17 @@ Adjacent behavior forbidden in this PR. No opportunistic cleanup.
 
 ## TDD proof
 
+## Acceptance matrix
+
+| Scenario | Input | Expected state/output | Evidence |
+|---|---|---|---|
+| Happy | | | |
+| Loading | | | |
+| Empty | | | |
+| Failure | | | |
+| Cancellation | | | |
+| Offline | | | |
+
 ### RED
 
 - Add smallest behavior/contract/state test first.
@@ -61,8 +85,8 @@ Adjacent behavior forbidden in this PR. No opportunistic cleanup.
 - Generate project: `xcodegen generate`.
 - Build: exact `xcodebuild build` command.
 - Unit/contract: exact `xcodebuild test` command.
-- UI row: simulator screenshot/interaction evidence.
-- CRITICAL row: archive/review evidence named in PARITY/AGENTS.
+- UI task: simulator screenshot/interaction evidence.
+- CRITICAL task: archive/review evidence named in PLAN/AGENTS.
 
 ## Adversarial review
 
@@ -74,8 +98,9 @@ Fresh context compares implementation against every truth source. Record mismatc
 - Body links task file, RED evidence, GREEN evidence, parity review, risks.
 - Agent pushes, watches latest-SHA checks, reads full failing log, fixes root cause, pushes same branch, repeats.
 - Max three same-root CI failures. Third recurrence -> mark blocked with logs/root-cause evidence; never weaken/delete test.
-- Merge only green latest SHA, required review complete, PARITY/PROGRESS updated.
+- Merge only when latest-SHA CI is green and every required review/conversation gate passes.
+- Feature agent never marks PLAN complete or appends ARCHIVE; coordinator does both after merge.
 
 ## Done
 
-Checklist containing exact observable acceptance criteria. No unchecked item when row becomes `☑`.
+Checklist containing exact observable acceptance criteria. No unchecked item when coordinator marks PLAN `[x]` after merge.
