@@ -46,4 +46,4 @@ No scheduler, issue bot, machine task index, per-task progress ledger, Swift fea
 - [x] Agent session/dispatch rules updated.
 - [x] Task template is self-contained and coordinator-safe.
 - [x] Roadmap and completed evidence migrated without loss.
-- [ ] Latest-SHA CI green.
+- [x] Latest-SHA CI green: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/32962895860

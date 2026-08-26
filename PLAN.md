@@ -13,14 +13,14 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 1 — design system**
 
-Active setup task: **P0-2 — stateless agent workflow**
+Active wave: **none — prepare DS-1 and DS-2 task packets before dispatch**
 
 ## Phase 0 — Delivery foundation
 
 Exit gate: reproducible macOS build/test, protected `main`, stateless task workflow.
 
 - [x] [P0-1 — Bootstrap reproducible PR verification](docs/tasks/P0-1-bootstrap-ci.md)
-- [ ] 🔄 [P0-2 — PLAN/ARCHIVE stateless agent workflow](docs/tasks/P0-2-parallel-agent-contract.md) — requires P0-1
+- [x] [P0-2 — PLAN/ARCHIVE stateless agent workflow](docs/tasks/P0-2-parallel-agent-contract.md) — requires P0-1
 
 ## Phase 1 — Design system
 
