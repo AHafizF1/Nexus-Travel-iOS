@@ -41,6 +41,8 @@ jobs:
         run: |
           evidence_dir="$RUNNER_TEMP/design-system-gallery"
           mkdir -p "$evidence_dir"
+          xcrun simctl boot "iPhone 16e"
+          xcrun simctl bootstatus "iPhone 16e" -b
           xcrun simctl ui booted appearance light
           xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel
           xcrun simctl io booted screenshot "$evidence_dir/gallery-light.png"
