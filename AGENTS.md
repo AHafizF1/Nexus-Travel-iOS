@@ -27,7 +27,7 @@ Android Kotlin code is sole product/design truth. Legacy PNGs, mockups, boards, 
 3. `PLAN.md` — complete roadmap, current phase, active wave, dependencies, milestones, and live checklist. Coordinator-owned.
 4. Assigned `docs/tasks/<ID>-*.md` — self-contained execution contract. **Read completely before task work.**
 5. `docs/adr/` — recorded decisions. Never re-litigate; propose a new ADR instead. **ADR-0005 accepts email/password-only launch.**
-6. `ARCHIVE.md` — merged, latest-SHA CI-verified completion evidence. Read only entries relevant to current dependencies.
+6. `ARCHIVE.md` — merged, latest PR-head SHA CI-verified completion evidence. Read only entries relevant to current dependencies.
 
 ## Session loop (every agent run)
 
@@ -36,8 +36,8 @@ Android Kotlin code is sole product/design truth. Legacy PNGs, mockups, boards, 
 3. Read every Android/backend code truth source listed by the packet completely before writing Swift. Never consult legacy design artifacts.
 4. Implement following `CONVENTIONS.md` + `PORTING.md`.
 5. **Adversarial self-review** (fresh pass, assume the port is wrong): compare behavior against every packet truth source. List every mismatch; fix it or record it in PR evidence.
-6. Keep planning and test-first work local. After feature implementation, tests, and self-review are complete, push once, open PR, watch latest-SHA CI, read full failing logs, fix root cause on same branch, repeat until green or genuinely blocked.
-7. After merge, coordinator marks PLAN `[x]` and appends ARCHIVE evidence. `[x]` before merge plus latest-SHA green is forbidden.
+6. Keep planning and test-first work local. After feature implementation, tests, and self-review are complete, push once, open PR, watch latest PR-head SHA CI, read full failing logs, fix root cause on same branch, repeat until green or genuinely blocked.
+7. After merge, coordinator marks PLAN `[x]` and appends ARCHIVE evidence. `[x]` before merge plus latest PR-head SHA green is forbidden.
 8. If review found a defect caused by a missing/ambiguous rule: update `PORTING.md`/`CONVENTIONS.md` too. Fix upstream, not just the instance.
 
 ## Hard rules
@@ -47,7 +47,7 @@ Android Kotlin code is sole product/design truth. Legacy PNGs, mockups, boards, 
 - **No magic values**: raw hex colors, font sizes, spacing numbers live only in `Sources/Core/DesignSystem/`.
 - **Never edit `NexusTravel.xcodeproj`** (generated). Edit `project.yml`, regenerate.
 - **Git discipline**: never `git stash`, `git reset --hard`, force-push. Commits and PR title reference task ID (`PARITY SR-1: search results screen`).
-- **Never claim "verified" without gate evidence.** Windows cannot compile UI Swift. Verification = latest-SHA green CI and/or required Mac/device evidence linked from PR then ARCHIVE after merge.
+- **Never claim "verified" without gate evidence.** Windows cannot compile UI Swift. Verification = latest PR-head SHA green CI and/or required Mac/device evidence linked from PR then ARCHIVE after merge.
 - One feature chunk per agent run. Parallel tasks require merged dependencies and non-overlapping owned paths declared in their packets.
 - PLAN and ARCHIVE are coordinator-only during task execution. Feature PRs never edit either ledger.
 - Never open a planning-only or RED-only PR. Coordinator batches PLAN/task/ARCHIVE changes into next completed feature PR; macOS CI starts only after feature work is ready for verification.
@@ -157,7 +157,7 @@ Tasks flagged **CRITICAL** in PLAN.md are Apple-review rejection risks — treat
 
 | Level | Runs where | How |
 |---|---|---|
-| Compiles | GitHub Actions `macos-26` | push → `.github/workflows/ios.yml` → xcodegen + xcodebuild |
+| Compiles | GitHub Actions `macos-26` | completed feature PR → `.github/workflows/ios.yml` → xcodegen + xcodebuild; merge queue rechecks synthetic merges when used |
 | Unit logic | CI (from Phase 2) | `xcodebuild test` — validators, codecs, mappers, fakes |
 | Visual parity | MacinCloud or local Mac | Simulator screenshots proving Android code-defined states and token use, linked in PR and ARCHIVE after merge |
 | Reliability/perf | Real device via TestFlight | SE-class/low-RAM device, large Dynamic Type, offline flows |

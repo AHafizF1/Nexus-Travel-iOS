@@ -7,13 +7,13 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 - `[ ]` queued
 - `[ ] 🔄` active
 - `[ ] ⛔` blocked
-- `[x]` merged and verified by latest-SHA CI
+- `[x]` merged and verified by latest PR-head SHA CI
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
 Current phase: **Phase 1 — design system**
 
-Active wave: **DS-1 and DS-2 — parallel, non-overlapping token foundations**
+Active wave: **DS-2 — typography and Dynamic Type verification**
 
 ## Phase 0 — Delivery foundation
 
@@ -26,7 +26,7 @@ Exit gate: reproducible macOS build/test, protected `main`, stateless task workf
 
 Milestone: tokens, primitives, and gallery match Android design truth while respecting Dynamic Type and Apple accessibility.
 
-- [ ] 🔄 [DS-1 — Color, spacing, radius, layout, status, and motion tokens](docs/tasks/DS-1-design-tokens.md) — requires P0-2
+- [x] [DS-1 — Color, spacing, radius, layout, status, and motion tokens](docs/tasks/DS-1-design-tokens.md) — requires P0-2
 - [ ] 🔄 [DS-2 — Typography tokens and Dynamic Type](docs/tasks/DS-2-typography-dynamic-type.md) — requires P0-2
 - [ ] DS-3 — Button, text field, top bar, and feedback primitives — requires DS-1, DS-2
 - [ ] DS-4 — DesignSystemGalleryScreen — requires DS-3
@@ -107,4 +107,4 @@ Exit gate: current Apple-policy audit, exact Release archive validation, privacy
 - Target 0.5–2 agent-hours, normally no more than 8 production and 8 test files.
 - Parallel tasks must have merged dependencies and non-overlapping owned paths.
 - Coordinator marks `🔄` before dispatch, creates complete packet, then assigns agent.
-- Coordinator marks `[x]` and appends `ARCHIVE.md` only after merge and latest-SHA CI success.
+- Coordinator marks `[x]` and appends `ARCHIVE.md` only after merge and latest PR-head SHA CI success.

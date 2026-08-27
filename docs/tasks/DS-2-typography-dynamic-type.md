@@ -154,7 +154,7 @@ Tests must assert exact base size, line height, weight/face, relative Dynamic Ty
 2. Add smallest descriptor/catalog implementation.
 3. Add `UIAppFonts` filenames in `project.yml`; regenerate only in CI/local Mac. Do not commit generated project.
 4. Complete adversarial self-review, then push branch and open PR once.
-5. Wait for latest-SHA `build-test` green; fix real failures on same branch.
+5. Wait for latest PR-head SHA `build-test` green; fix real failures on same branch.
 6. Record run URL and test summary in PR body.
 
 ### REFACTOR
@@ -181,7 +181,7 @@ Only remove proven catalog duplication. Do not derive unrelated roles from each 
 
   `xcodebuild test -project NexusTravel.xcodeproj -scheme NexusTravel -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2' -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO`
 
-- Required check: latest-SHA `build-test` on `macos-26` with Xcode 26.6.
+- Required check: latest PR-head SHA `build-test` on `macos-26` with Xcode 26.6.
 - No screenshot required; DS-4 gallery will visually exercise typography.
 
 ## Adversarial review
@@ -200,7 +200,7 @@ Expected Android source SHA-256 values:
 
 - Title: `PARITY DS-2: add Android typography and Dynamic Type`.
 - Body links this packet, RED run/error, GREEN run, font hashes, parity review, risks.
-- Agent watches latest-SHA CI, reads full failing logs, fixes root cause, and pushes same branch until green.
+- Agent watches latest PR-head SHA CI, reads full failing logs, fixes root cause, and pushes same branch until green.
 - Max three recurrences of same root cause; third recurrence reports blocker with logs. Never weaken/delete contract tests.
 - Feature agent never edits PLAN/ARCHIVE or merges PR.
 

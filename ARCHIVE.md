@@ -1,6 +1,6 @@
 # Nexus Travel iOS archive
 
-Append-only evidence for completed work. An entry is allowed only after PR merge and latest-SHA CI success. Local tests, open PRs, and active work do not qualify.
+Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
 ## P0-1 — Bootstrap reproducible PR verification
 
@@ -23,3 +23,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Migration audit: all 31 original roadmap IDs preserved exactly once; P0-2 added; every checked task has archive evidence; task links resolve; `git diff --check` passes.
 - Adversarial review: removed speculative scheduler, issue bot, machine index, and per-task progress ledgers; PLAN/ARCHIVE are coordinator-only, while detailed packets remain agent-owned execution context.
 - Known deviations: Android/backend were not reread because this task changed orchestration documentation only, not product behavior or network contracts.
+
+## DS-1 — Android code-derived design tokens
+
+- Completed: 2026-08-27
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/5
+- Merge commit: `aed3e5518740409d8def45715c16810707551b5c`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33060960917
+- Evidence: Xcode 26.6 generated project, compiled app, and passed exact color, alias, semantic, scalar, adaptive-spacing, invalid-geometry, and status tests on PR head `dc1efd7`.
+- TDD: commit `b582e82` added contracts against missing production symbols before implementation; Windows could not execute Apple-platform tests, so first remote run occurred only after feature completion.
+- Adversarial review: zero Kotlin-code mismatches across 27 canonical colors, 69 alias/semantic mappings, 42 scalar tokens, three 16-field adaptive profiles, exact thresholds, and eight status mappings.
+- Known deviations: no elevation token because Android Kotlin defines none. No legacy design artifact was used. Theme composition remains DS-3 scope.
