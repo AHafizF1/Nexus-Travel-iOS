@@ -85,8 +85,10 @@ struct NexusTextStylesTests {
             NamedStyle("ticketNumber", NexusText.styles.ticketNumber)
         ]
 
+        let allUseTabularNumbers = tabularRoles.allSatisfy { $0.style.usesTabularNumbers }
+
         #expect(tabularRoles.count == 7)
-        #expect(tabularRoles.allSatisfy(\.style.usesTabularNumbers))
+        #expect(allUseTabularNumbers)
     }
 
     @Test
