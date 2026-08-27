@@ -7,6 +7,10 @@ struct DesignSystemGalleryContractsTests {
     @MainActor
     func galleryScreenConstructs() {
         _ = DesignSystemGalleryScreen()
+        _ = DesignSystemGalleryScreen(initialSection: .top)
+        _ = DesignSystemGalleryScreen(initialSection: .buttons)
+        _ = DesignSystemGalleryScreen(initialSection: .feedback)
+        #expect(DesignSystemGallerySection.allCases == [.top, .buttons, .feedback])
     }
 
     @Test("Gallery buttons support explicit full-width layout")
