@@ -46,3 +46,15 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Asset integrity: all five copied TTF SHA-256 values match Android sources. Bundled OFL 1.1 normalized text matches official Tokotype source.
 - Adversarial review: zero Kotlin-code metric/weight/tabular mismatches; no typography manager, protocol, duplicate Material scale, fixed-size-only font, package, or generated Xcode project edit.
 - Known deviations: Apple semantic Dynamic Type roles govern scaling while Android base metrics remain exact. DS-4 supplies visual clipping evidence.
+
+## DS-3 — Native SwiftUI component primitives
+
+- Completed: 2026-08-27
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/7
+- Merge commit: `1ad5ca86a5a312013e26f08e06a95ca0735d9df9`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33064276336
+- Evidence: Xcode 26.6 generated project, compiled all 12 component APIs, and passed compile-contract plus regression tests on PR head `9f18000`.
+- TDD: commit `7d52475` referenced all absent component symbols before implementation; Windows could not execute Apple-platform tests, so remote CI began only after completed feature and adversarial review.
+- Adversarial review: Android code-defined loading, disabled, selected, error, focus, status, variant, slot, geometry, color, and typography behavior covered without protocols, managers, type erasure, packages, or generated-project edits.
+- Apple deviations: native `ToolbarContent` preserves localized system back/swipe behavior; persistent external field label favors native editing, Dynamic Type, and VoiceOver; native `ProgressView` supplies spinner stroke. DS-4 owns visual/interaction evidence.
+- Known limitation: Android components consume static semantic colors and provide no complete code-defined dark-role mapping; no palette was invented.
