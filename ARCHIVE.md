@@ -34,3 +34,15 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `b582e82` added contracts against missing production symbols before implementation; Windows could not execute Apple-platform tests, so first remote run occurred only after feature completion.
 - Adversarial review: zero Kotlin-code mismatches across 27 canonical colors, 69 alias/semantic mappings, 42 scalar tokens, three 16-field adaptive profiles, exact thresholds, and eight status mappings.
 - Known deviations: no elevation token because Android Kotlin defines none. No legacy design artifact was used. Theme composition remains DS-3 scope.
+
+## DS-2 — Android typography and Dynamic Type
+
+- Completed: 2026-08-27
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/6
+- Merge commit: `c02b5b66a0f0d9bd7fbea03aab3eed084924648e`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33061846353
+- Evidence: Xcode 26.6 generated project, compiled app, registered five embedded Plus Jakarta Sans faces, proved accessibility-size scaling, and passed all 26 role/seven tabular-role contracts plus full regression suite on PR head `1ef506a`.
+- TDD: commit `77fff7c` added missing typography/font contracts before implementation. First CI exposed Swift Testing macro handling of a `rethrows` expression; commit `1ef506a` isolated the nonthrowing Bool and retry passed.
+- Asset integrity: all five copied TTF SHA-256 values match Android sources. Bundled OFL 1.1 normalized text matches official Tokotype source.
+- Adversarial review: zero Kotlin-code metric/weight/tabular mismatches; no typography manager, protocol, duplicate Material scale, fixed-size-only font, package, or generated Xcode project edit.
+- Known deviations: Apple semantic Dynamic Type roles govern scaling while Android base metrics remain exact. DS-4 supplies visual clipping evidence.
