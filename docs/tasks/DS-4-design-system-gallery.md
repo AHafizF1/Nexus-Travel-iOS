@@ -65,14 +65,15 @@ Use `ponytail`, `write-swift`, `swift-expert`, `swift-api-design-guidelines`, `t
 - Use native `ScrollView`, `LazyVGrid`, `GridItem(.adaptive(minimum:))`, safe-area padding, buttons, and components.
 - `GalleryStatus` stays private value enum/data. No ViewModel: gallery has no mutable business state/effects.
 - `NexusApp` temporarily launches gallery directly. Comment one sentence that Phase 4 app shell replaces root; no debug flag/config layer now.
+- Gallery accepts an internal initial-section value (`top`, `buttons`, `feedback`) and uses native `ScrollViewReader` to reveal same source-backed content for CI evidence. App reads one explicit process argument only for this temporary Phase 1 gallery root.
 - Primary/secondary button API may add `fillsWidth: Bool = false`; when true, styled label/background accepts full proposed width. Default preserves intrinsic-width callers. Do not redraw button chrome in gallery.
 - No custom animation. No async states. No backend access.
 
 ## CI visual evidence
 
 - Reuse simulator already booted by `xcodebuild test`; do not add UI-test target or second build.
-- After tests pass: create evidence directory, launch `com.nexustravel.NexusTravel`, capture light screenshot, switch simulator appearance to dark, relaunch/capture dark screenshot.
-- Upload two PNGs as `DesignSystemGalleryEvidence` on successful DS-4 run. Screenshot capture failure must fail job; evidence is gate, not best effort.
+- After tests pass: create evidence directory; capture top, buttons, and feedback in light appearance plus feedback in dark appearance by relaunching with deterministic initial-section arguments.
+- Upload four PNGs as `DesignSystemGalleryEvidence` on successful DS-4 run. Screenshot capture failure must fail job; evidence is gate, not best effort.
 - Keep commands direct and deterministic. No arbitrary long sleeps; poll launched app/readiness only if first run proves capture races.
 - Future app-root changes may remove/replace this temporary gallery capture in their own task.
 
@@ -111,7 +112,6 @@ No ViewInspector, Mirror, snapshots, test-only presentation descriptors, package
 | Adaptive grid | content reachable across widths/Dynamic Type | simulator evidence |
 | Component examples | exact buttons, four banners, four chips | compile + simulator |
 | Full-width buttons | opt-in primary/secondary fill includes background/border | compile + simulator |
-| Empty accessories | no phantom 24/48-point field spacing | DS-4 visual inspection |
 | Dark Mode | no invented palette; limitation visible/documented | simulator evidence |
 | Legacy artifacts | never read/used | scope review |
 
@@ -130,6 +130,6 @@ No ViewInspector, Mirror, snapshots, test-only presentation descriptors, package
 - [ ] Gallery exact content/sections/components compile.
 - [ ] Temporary app root opens gallery.
 - [ ] Accessibility/Dynamic Type layout has simulator evidence.
-- [ ] DS-3 empty-accessory fix visually confirmed.
+- [ ] Top, buttons, feedback, and dark evidence reviewed; DS-3 empty-accessory fix remains logically reviewed and gets visual proof in first field screen.
 - [ ] Latest PR-head CI green.
 - [ ] Mac visual evidence linked before PLAN `[x]` and ARCHIVE entry.
