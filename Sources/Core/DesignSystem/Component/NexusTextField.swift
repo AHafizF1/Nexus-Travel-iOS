@@ -9,6 +9,8 @@ struct NexusTextField<LeadingIcon: View, TrailingContent: View>: View {
     private let error: String?
     private let isEnabled: Bool
     private let isSecure: Bool
+    private let hasLeadingIcon: Bool
+    private let hasTrailingContent: Bool
     private let leadingIcon: () -> LeadingIcon
     private let trailingContent: () -> TrailingContent
 
@@ -32,6 +34,8 @@ struct NexusTextField<LeadingIcon: View, TrailingContent: View>: View {
         self.error = error
         self.isEnabled = isEnabled
         self.isSecure = isSecure
+        hasLeadingIcon = true
+        hasTrailingContent = true
         self.leadingIcon = leadingIcon
         self.trailingContent = trailingContent
     }
@@ -44,8 +48,10 @@ struct NexusTextField<LeadingIcon: View, TrailingContent: View>: View {
                 .nexusTextStyle(NexusText.styles.bodySmall)
 
             HStack(spacing: NexusSpacing.space16) {
-                leadingIcon()
-                    .frame(width: NexusIconSize.md, height: NexusIconSize.md)
+                if hasLeadingIcon {
+                    leadingIcon()
+                        .frame(width: NexusIconSize.md, height: NexusIconSize.md)
+                }
 
                 ZStack(alignment: .leading) {
                     if text.isEmpty, let placeholder {
@@ -63,11 +69,13 @@ struct NexusTextField<LeadingIcon: View, TrailingContent: View>: View {
                         .accessibilityHint(error.map { Text($0) } ?? Text(""))
                 }
 
-                trailingContent()
-                    .frame(
-                        minWidth: NexusLayout.touchRecommended,
-                        minHeight: NexusLayout.touchRecommended
-                    )
+                if hasTrailingContent {
+                    trailingContent()
+                        .frame(
+                            minWidth: NexusLayout.touchRecommended,
+                            minHeight: NexusLayout.touchRecommended
+                        )
+                }
             }
             .padding(.horizontal, NexusSpacing.space16)
             .frame(maxWidth: .infinity, minHeight: NexusLayout.inputHeight)
@@ -158,6 +166,8 @@ extension NexusTextField where LeadingIcon == EmptyView, TrailingContent == Empt
         self.error = error
         self.isEnabled = isEnabled
         self.isSecure = isSecure
+        hasLeadingIcon = false
+        hasTrailingContent = false
         leadingIcon = EmptyView.init
         trailingContent = EmptyView.init
     }
@@ -180,6 +190,8 @@ extension NexusTextField where TrailingContent == EmptyView {
         self.error = error
         self.isEnabled = isEnabled
         self.isSecure = isSecure
+        hasLeadingIcon = true
+        hasTrailingContent = false
         self.leadingIcon = leadingIcon
         trailingContent = EmptyView.init
     }
@@ -195,6 +207,8 @@ struct NexusAuthTextField<LeadingIcon: View, TrailingContent: View>: View {
     private let isEnabled: Bool
     private let isSecure: Bool
     private let minHeight: CGFloat
+    private let hasLeadingIcon: Bool
+    private let hasTrailingContent: Bool
     private let leadingIcon: () -> LeadingIcon
     private let trailingContent: () -> TrailingContent
 
@@ -220,6 +234,8 @@ struct NexusAuthTextField<LeadingIcon: View, TrailingContent: View>: View {
         self.isEnabled = isEnabled
         self.isSecure = isSecure
         self.minHeight = minHeight
+        hasLeadingIcon = true
+        hasTrailingContent = true
         self.leadingIcon = leadingIcon
         self.trailingContent = trailingContent
     }
@@ -240,8 +256,10 @@ struct NexusAuthTextField<LeadingIcon: View, TrailingContent: View>: View {
             }
 
             HStack(spacing: NexusSpacing.space16) {
-                leadingIcon()
-                    .frame(width: NexusIconSize.md, height: NexusIconSize.md)
+                if hasLeadingIcon {
+                    leadingIcon()
+                        .frame(width: NexusIconSize.md, height: NexusIconSize.md)
+                }
 
                 ZStack(alignment: .leading) {
                     if text.isEmpty {
@@ -259,11 +277,13 @@ struct NexusAuthTextField<LeadingIcon: View, TrailingContent: View>: View {
                         .accessibilityHint(error.map { Text($0) } ?? Text(""))
                 }
 
-                trailingContent()
-                    .frame(
-                        minWidth: NexusLayout.touchRecommended,
-                        minHeight: NexusLayout.touchRecommended
-                    )
+                if hasTrailingContent {
+                    trailingContent()
+                        .frame(
+                            minWidth: NexusLayout.touchRecommended,
+                            minHeight: NexusLayout.touchRecommended
+                        )
+                }
             }
             .padding(.horizontal, NexusSpacing.space16)
             .frame(maxWidth: .infinity, minHeight: minHeight)
@@ -329,6 +349,8 @@ extension NexusAuthTextField where LeadingIcon == EmptyView, TrailingContent == 
         self.isEnabled = isEnabled
         self.isSecure = isSecure
         self.minHeight = minHeight
+        hasLeadingIcon = false
+        hasTrailingContent = false
         leadingIcon = EmptyView.init
         trailingContent = EmptyView.init
     }
@@ -353,6 +375,8 @@ extension NexusAuthTextField where TrailingContent == EmptyView {
         self.isEnabled = isEnabled
         self.isSecure = isSecure
         self.minHeight = minHeight
+        hasLeadingIcon = true
+        hasTrailingContent = false
         self.leadingIcon = leadingIcon
         trailingContent = EmptyView.init
     }
