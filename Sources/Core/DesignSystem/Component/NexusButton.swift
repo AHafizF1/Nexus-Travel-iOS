@@ -109,6 +109,7 @@ struct NexusSecondaryButton<LeadingIcon: View>: View {
         }
         .buttonStyle(NexusSecondaryButtonStyle())
         .disabled(!isEnabled)
+        .accessibilityLabel(Text(title))
     }
 }
 

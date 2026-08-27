@@ -33,6 +33,7 @@ struct NexusTextButton<LeadingIcon: View>: View {
         }
         .buttonStyle(NexusTextButtonStyle())
         .disabled(!isEnabled)
+        .accessibilityLabel(Text(title))
     }
 }
 
