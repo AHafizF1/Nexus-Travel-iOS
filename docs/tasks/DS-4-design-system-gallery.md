@@ -65,7 +65,7 @@ Use `ponytail`, `write-swift`, `swift-expert`, `swift-api-design-guidelines`, `t
 - Use native `ScrollView`, `LazyVGrid`, `GridItem(.adaptive(minimum:))`, safe-area padding, buttons, and components.
 - `GalleryStatus` stays private value enum/data. No ViewModel: gallery has no mutable business state/effects.
 - `NexusApp` temporarily launches gallery directly. Comment one sentence that Phase 4 app shell replaces root; no debug flag/config layer now.
-- Gallery accepts an internal initial-section value (`top`, `buttons`, `feedback`) and uses native `ScrollViewReader` to reveal same source-backed content for CI evidence. App reads one explicit process argument only for this temporary Phase 1 gallery root.
+- Gallery accepts an internal evidence-section value (`top`, `buttons`, `feedback`). `top` renders full Android gallery; focused modes compose only same existing section views for deterministic CI screenshots. App reads one explicit process argument only for this temporary Phase 1 gallery root. Do not duplicate section implementations.
 - Primary/secondary button API may add `fillsWidth: Bool = false`; when true, styled label/background accepts full proposed width. Default preserves intrinsic-width callers. Do not redraw button chrome in gallery.
 - No custom animation. No async states. No backend access.
 

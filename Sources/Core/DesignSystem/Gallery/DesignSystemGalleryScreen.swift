@@ -24,29 +24,35 @@ struct DesignSystemGalleryScreen: View {
 
     /// Scrollable gallery content.
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: NexusSpacing.space24) {
-                    header
-                        .id(DesignSystemGallerySection.top)
-                    GallerySectionTitle("Icons")
-                    iconGrid
-                    GallerySectionTitle("Buttons")
-                        .id(DesignSystemGallerySection.buttons)
-                    buttons
-                    GallerySectionTitle("Feedback")
-                        .id(DesignSystemGallerySection.feedback)
-                    feedback
-                }
-                .padding(.horizontal, NexusSpacing.space24)
-                .padding(.top, NexusSpacing.space24)
-                .padding(.bottom, NexusSpacing.space32)
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: NexusSpacing.space24) {
+                galleryContent
             }
-            .onAppear {
-                proxy.scrollTo(initialSection, anchor: .top)
-            }
+            .padding(.horizontal, NexusSpacing.space24)
+            .padding(.top, NexusSpacing.space24)
+            .padding(.bottom, NexusSpacing.space32)
         }
         .background(NexusSemanticColors.backgroundPage.ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private var galleryContent: some View {
+        switch initialSection {
+        case .top:
+            header
+            GallerySectionTitle("Icons")
+            iconGrid
+            GallerySectionTitle("Buttons")
+            buttons
+            GallerySectionTitle("Feedback")
+            feedback
+        case .buttons:
+            GallerySectionTitle("Buttons")
+            buttons
+        case .feedback:
+            GallerySectionTitle("Feedback")
+            feedback
+        }
     }
 
     private var header: some View {
