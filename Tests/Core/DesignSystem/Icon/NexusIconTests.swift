@@ -16,17 +16,18 @@ struct NexusIconTests {
             "offline", "loading", "bell", "tag", "refund", "continue", "arrowsExchange"
         ]
 
-        #expect(NexusIconName.allCases.count == 51)
+        #expect(NexusIconName.allCases.count == 50)
         #expect(NexusIconName.allCases.map(\.rawValue) == expectedNames)
-        #expect(Set(NexusIconName.allCases.map(\.rawValue)).count == 51)
+        #expect(Set(NexusIconName.allCases.map(\.rawValue)).count == 50)
     }
 
     @Test("Every icon has one nonempty native symbol mapping")
     func everyIconHasOneNativeMapping() {
         let mappings = NexusIconName.allCases.map(\.systemName)
+        let everyMappingIsNonempty = mappings.allSatisfy { !$0.isEmpty }
 
-        #expect(mappings.allSatisfy { !$0.isEmpty })
-        #expect(mappings.count == 51)
+        #expect(everyMappingIsNonempty)
+        #expect(mappings.count == 50)
     }
 
     @Test("Icons construct decorative and labeled forms")

@@ -8,4 +8,11 @@ struct DesignSystemGalleryContractsTests {
     func galleryScreenConstructs() {
         _ = DesignSystemGalleryScreen()
     }
+
+    @Test("Gallery buttons support explicit full-width layout")
+    @MainActor
+    func galleryButtonsSupportFullWidthLayout() {
+        _ = NexusPrimaryButton("Continue booking", fillsWidth: true, action: {})
+        _ = NexusSecondaryButton("Download ticket", fillsWidth: true, action: {})
+    }
 }
