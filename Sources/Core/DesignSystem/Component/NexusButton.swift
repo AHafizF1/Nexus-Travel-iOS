@@ -5,6 +5,7 @@ struct NexusPrimaryButton<LeadingIcon: View>: View {
     private let title: String
     private let isEnabled: Bool
     private let isLoading: Bool
+    private let fillsWidth: Bool
     private let minHeight: CGFloat
     private let action: () -> Void
     private let leadingIcon: () -> LeadingIcon
@@ -14,6 +15,7 @@ struct NexusPrimaryButton<LeadingIcon: View>: View {
         _ title: String,
         isEnabled: Bool = true,
         isLoading: Bool = false,
+        fillsWidth: Bool = false,
         minHeight: CGFloat = NexusLayout.buttonHeight,
         action: @escaping () -> Void,
         @ViewBuilder leadingIcon: @escaping () -> LeadingIcon
@@ -21,6 +23,7 @@ struct NexusPrimaryButton<LeadingIcon: View>: View {
         self.title = title
         self.isEnabled = isEnabled
         self.isLoading = isLoading
+        self.fillsWidth = fillsWidth
         self.minHeight = minHeight
         self.action = action
         self.leadingIcon = leadingIcon
@@ -46,6 +49,7 @@ struct NexusPrimaryButton<LeadingIcon: View>: View {
             .padding(.horizontal, NexusSpacing.space16)
             .padding(.vertical, NexusSpacing.space12)
             .frame(minHeight: minHeight)
+            .frame(maxWidth: fillsWidth ? .infinity : nil)
         }
         .buttonStyle(NexusPrimaryButtonStyle())
         .disabled(!isEnabled || isLoading)
@@ -60,12 +64,14 @@ extension NexusPrimaryButton where LeadingIcon == EmptyView {
         _ title: String,
         isEnabled: Bool = true,
         isLoading: Bool = false,
+        fillsWidth: Bool = false,
         minHeight: CGFloat = NexusLayout.buttonHeight,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.isEnabled = isEnabled
         self.isLoading = isLoading
+        self.fillsWidth = fillsWidth
         self.minHeight = minHeight
         self.action = action
         leadingIcon = EmptyView.init
@@ -76,6 +82,7 @@ extension NexusPrimaryButton where LeadingIcon == EmptyView {
 struct NexusSecondaryButton<LeadingIcon: View>: View {
     private let title: String
     private let isEnabled: Bool
+    private let fillsWidth: Bool
     private let minHeight: CGFloat
     private let action: () -> Void
     private let leadingIcon: () -> LeadingIcon
@@ -84,12 +91,14 @@ struct NexusSecondaryButton<LeadingIcon: View>: View {
     init(
         _ title: String,
         isEnabled: Bool = true,
+        fillsWidth: Bool = false,
         minHeight: CGFloat = NexusLayout.buttonHeight,
         action: @escaping () -> Void,
         @ViewBuilder leadingIcon: @escaping () -> LeadingIcon
     ) {
         self.title = title
         self.isEnabled = isEnabled
+        self.fillsWidth = fillsWidth
         self.minHeight = minHeight
         self.action = action
         self.leadingIcon = leadingIcon
@@ -106,6 +115,7 @@ struct NexusSecondaryButton<LeadingIcon: View>: View {
             .padding(.horizontal, NexusSpacing.space16)
             .padding(.vertical, NexusSpacing.space12)
             .frame(minHeight: minHeight)
+            .frame(maxWidth: fillsWidth ? .infinity : nil)
         }
         .buttonStyle(NexusSecondaryButtonStyle())
         .disabled(!isEnabled)
@@ -118,11 +128,13 @@ extension NexusSecondaryButton where LeadingIcon == EmptyView {
     init(
         _ title: String,
         isEnabled: Bool = true,
+        fillsWidth: Bool = false,
         minHeight: CGFloat = NexusLayout.buttonHeight,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.isEnabled = isEnabled
+        self.fillsWidth = fillsWidth
         self.minHeight = minHeight
         self.action = action
         leadingIcon = EmptyView.init

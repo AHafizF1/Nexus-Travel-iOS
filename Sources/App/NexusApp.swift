@@ -4,7 +4,8 @@ import SwiftUI
 struct NexusApp: App {
     var body: some Scene {
         WindowGroup {
-            Text("Nexus Travel")
+            // Phase 4 app shell replaces this temporary gallery root.
+            DesignSystemGalleryScreen()
         }
     }
 }
