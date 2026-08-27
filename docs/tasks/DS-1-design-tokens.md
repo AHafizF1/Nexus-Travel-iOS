@@ -144,7 +144,7 @@ Boundary tests required before production code: `(360, 1000) -> compact`, `(1000
 1. Add minimum three production files.
 2. Run formatter only if already installed/configured; do not add tooling.
 3. Complete adversarial self-review, then push branch and open PR once.
-4. Wait for latest-SHA `build-test` green; fix real failures on same branch.
+4. Wait for latest PR-head SHA `build-test` green; fix real failures on same branch.
 5. Record run URL and test summary in PR body.
 
 ### REFACTOR
@@ -172,7 +172,7 @@ Only remove duplication visible across three or more declarations. Preserve publ
 
   `xcodebuild test -project NexusTravel.xcodeproj -scheme NexusTravel -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2' -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO`
 
-- Required check: latest-SHA `build-test` on `macos-26` with Xcode 26.6.
+- Required check: latest PR-head SHA `build-test` on `macos-26` with Xcode 26.6.
 - No screenshot required; task adds no UI.
 
 ## Adversarial review
@@ -183,7 +183,7 @@ Fresh pass compares every property and branch against the three Kotlin files. Se
 
 - Title: `PARITY DS-1: add Android code-derived design tokens`.
 - Body links this packet, RED run/error, GREEN run, exact parity review, risks.
-- Agent watches latest-SHA CI, reads full failing logs, fixes root cause, and pushes same branch until green.
+- Agent watches latest PR-head SHA CI, reads full failing logs, fixes root cause, and pushes same branch until green.
 - Max three recurrences of same root cause; third recurrence reports blocker with logs. Never weaken/delete contract tests.
 - Feature agent never edits PLAN/ARCHIVE or merges PR.
 

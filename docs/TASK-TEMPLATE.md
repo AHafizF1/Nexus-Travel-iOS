@@ -98,9 +98,9 @@ Fresh context compares implementation against every truth source. Record mismatc
 
 - Title: `PARITY <ID>: <outcome>`.
 - Body links task file, RED evidence, GREEN evidence, parity review, risks.
-- Agent keeps packet/RED/implementation local until feature is complete, then pushes and opens PR once. Agent watches latest-SHA checks, reads full failing log, fixes root cause, pushes same branch, repeats.
+- Agent keeps packet/RED/implementation local until feature is complete, then pushes and opens PR once. Agent watches latest PR-head SHA checks, reads full failing log, fixes root cause, pushes same branch, repeats.
 - Max three same-root CI failures. Third recurrence -> mark blocked with logs/root-cause evidence; never weaken/delete test.
-- Merge only when latest-SHA CI is green and every required review/conversation gate passes.
+- Merge only when latest PR-head SHA CI is green and every required review/conversation gate passes.
 - Feature agent never marks PLAN complete or appends ARCHIVE; coordinator does both after merge.
 
 ## Done

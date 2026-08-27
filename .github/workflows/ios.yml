@@ -3,8 +3,6 @@ name: iOS CI
 on:
   pull_request:
   merge_group:
-  push:
-    branches: [main]
 
 concurrency:
   group: ios-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
