@@ -39,7 +39,7 @@ Use `ponytail`, `write-swift`, `swift-expert`, `swift-api-design-guidelines`, `t
 
 ## Icon contract
 
-- Mirror exact `NexusIconName` type and all 51 Kotlin cases in Swift lower-camel spelling.
+- Mirror exact `NexusIconName` type and all 50 Kotlin cases in Swift lower-camel spelling.
 - Each case maps once to closest semantically equivalent native SF Symbol name. Mapping may change glyph mechanics for Apple idiom but not product meaning.
 - `NexusIcon` is smallest SwiftUI view wrapper around `Image(systemName:)`; accepts name and optional accessibility label. Nil label makes decorative image accessibility-hidden; nonnil label exposes that label.
 - Default rendering remains caller-controlled through `foregroundStyle`; no tint manager, protocol, image asset, package, or custom SVG.
@@ -88,7 +88,7 @@ Windows cannot run iOS tests. Keep RED local and do not trigger CI until feature
 ### RED
 
 1. Add tests referencing absent `NexusIconName`, `NexusIcon`, and `DesignSystemGalleryScreen`.
-2. Assert exact 51-case inventory/mapping metadata plus gallery construction.
+2. Assert exact 50-case inventory/mapping metadata plus gallery construction.
 3. Commit `PARITY DS-4: add failing gallery contracts`.
 
 ### GREEN
@@ -103,7 +103,7 @@ No ViewInspector, Mirror, snapshots, test-only presentation descriptors, package
 
 | Case | Expected | Evidence |
 |---|---|---|
-| Icon inventory | exact 51 Kotlin names, one native mapping each | table-driven test |
+| Icon inventory | exact 50 Kotlin names, one native mapping each | table-driven test |
 | Decorative/labeled icon | hidden versus one label | API compile + later VoiceOver |
 | Gallery sections/copy | exact Kotlin source strings | source review + simulator |
 | Adaptive grid | content reachable across widths/Dynamic Type | simulator evidence |
@@ -123,7 +123,7 @@ No ViewInspector, Mirror, snapshots, test-only presentation descriptors, package
 ## Done
 
 - [ ] Test-first commit precedes production.
-- [ ] 51 icon names and mappings pass.
+- [ ] 50 icon names and mappings pass.
 - [ ] Gallery exact content/sections/components compile.
 - [ ] Temporary app root opens gallery.
 - [ ] Accessibility/Dynamic Type layout has simulator evidence.
