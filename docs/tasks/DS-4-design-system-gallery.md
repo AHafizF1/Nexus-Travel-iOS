@@ -14,6 +14,7 @@
   - `Sources/Core/DesignSystem/Icon/NexusIcon.swift`
   - `Sources/Core/DesignSystem/Gallery/DesignSystemGalleryScreen.swift`
   - `Sources/App/NexusApp.swift` only to make gallery reachable during Phase 1.
+  - `Sources/Core/DesignSystem/Component/NexusButton.swift` only for an opt-in `fillsWidth` input proven by Android gallery callers.
   - `.github/workflows/ios.yml` only to capture light/dark gallery screenshots after successful tests using already-booted simulator.
   - DS-3 empty-accessory fix already committed as `fe515d0`; review but do not broaden it.
 - Tests:
@@ -58,12 +59,13 @@ Use `ponytail`, `write-swift`, `swift-expert`, `swift-api-design-guidelines`, `t
   - header internal gap 8;
   - adaptive icon grid with minimum cell width 64, horizontal/vertical gap 12;
   - icon tile surface, radius `md`, padding 12, gap 8, 24-point icon, one-line case label;
-  - buttons vertical gap 12; primary/secondary full width; matching leading icons;
+- buttons vertical gap 12; primary/secondary full width; matching leading icons;
   - feedback renders four banners then horizontally scrollable/wrapping-safe chips. Android Row overflows narrow width; Apple deviation must keep all chips reachable without clipping.
 - Use `NexusText.styles.screenTitle`, `.body`, `.sectionTitle`, `.caption` as closest existing explicit roles instead of inventing Material aliases.
 - Use native `ScrollView`, `LazyVGrid`, `GridItem(.adaptive(minimum:))`, safe-area padding, buttons, and components.
 - `GalleryStatus` stays private value enum/data. No ViewModel: gallery has no mutable business state/effects.
 - `NexusApp` temporarily launches gallery directly. Comment one sentence that Phase 4 app shell replaces root; no debug flag/config layer now.
+- Primary/secondary button API may add `fillsWidth: Bool = false`; when true, styled label/background accepts full proposed width. Default preserves intrinsic-width callers. Do not redraw button chrome in gallery.
 - No custom animation. No async states. No backend access.
 
 ## CI visual evidence
@@ -108,6 +110,7 @@ No ViewInspector, Mirror, snapshots, test-only presentation descriptors, package
 | Gallery sections/copy | exact Kotlin source strings | source review + simulator |
 | Adaptive grid | content reachable across widths/Dynamic Type | simulator evidence |
 | Component examples | exact buttons, four banners, four chips | compile + simulator |
+| Full-width buttons | opt-in primary/secondary fill includes background/border | compile + simulator |
 | Empty accessories | no phantom 24/48-point field spacing | DS-4 visual inspection |
 | Dark Mode | no invented palette; limitation visible/documented | simulator evidence |
 | Legacy artifacts | never read/used | scope review |
