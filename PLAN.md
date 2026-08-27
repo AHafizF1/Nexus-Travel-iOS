@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 1 — design system**
 
-Active wave: **DS-2 — typography and Dynamic Type verification**
+Active wave: **DS-3 — native SwiftUI component primitives**
 
 ## Phase 0 — Delivery foundation
 
@@ -27,8 +27,8 @@ Exit gate: reproducible macOS build/test, protected `main`, stateless task workf
 Milestone: tokens, primitives, and gallery match Android design truth while respecting Dynamic Type and Apple accessibility.
 
 - [x] [DS-1 — Color, spacing, radius, layout, status, and motion tokens](docs/tasks/DS-1-design-tokens.md) — requires P0-2
-- [ ] 🔄 [DS-2 — Typography tokens and Dynamic Type](docs/tasks/DS-2-typography-dynamic-type.md) — requires P0-2
-- [ ] DS-3 — Button, text field, top bar, and feedback primitives — requires DS-1, DS-2
+- [x] [DS-2 — Typography tokens and Dynamic Type](docs/tasks/DS-2-typography-dynamic-type.md) — requires P0-2
+- [ ] 🔄 [DS-3 — Button, text field, top bar, and feedback primitives](docs/tasks/DS-3-component-primitives.md) — requires DS-1, DS-2
 - [ ] DS-4 — DesignSystemGalleryScreen — requires DS-3
 
 Exit gate: token tests green; gallery screenshots prove Android code-defined states on Mac.
