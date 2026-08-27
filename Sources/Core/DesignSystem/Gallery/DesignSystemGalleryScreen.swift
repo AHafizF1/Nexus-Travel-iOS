@@ -69,10 +69,10 @@ struct DesignSystemGalleryScreen: View {
     private var feedback: some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space24) {
             ForEach(GalleryStatus.allCases, id: \.self) { item in
-                NexusBanner(text: item.banner, status: item.status) {
+                NexusBanner(text: item.banner, status: item.status, leadingContent: {
                     NexusIcon(name: item.icon)
                         .frame(width: NexusIconSize.sm, height: NexusIconSize.sm)
-                }
+                })
             }
 
             ScrollView(.horizontal) {
