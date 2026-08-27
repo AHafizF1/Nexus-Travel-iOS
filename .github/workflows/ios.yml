@@ -41,14 +41,16 @@ jobs:
         run: |
           evidence_dir="$RUNNER_TEMP/design-system-gallery"
           mkdir -p "$evidence_dir"
-          xcrun simctl boot "iPhone 16e"
-          xcrun simctl bootstatus "iPhone 16e" -b
           xcrun simctl ui booted appearance light
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-light.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=top
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-top-light.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=buttons
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-buttons-light.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-light.png"
           xcrun simctl ui booted appearance dark
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-dark.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-dark.png"
       - name: Upload design-system gallery evidence
         uses: actions/upload-artifact@v4
         with:

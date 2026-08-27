@@ -1,7 +1,15 @@
 import SwiftUI
 
+/// Gallery positions available to deterministic visual-evidence launches.
+enum DesignSystemGallerySection: String, CaseIterable, Equatable {
+    case top
+    case buttons
+    case feedback
+}
+
 /// Debug gallery for Android-defined Nexus design-system primitives.
 struct DesignSystemGalleryScreen: View {
+    private let initialSection: DesignSystemGallerySection
     private let iconColumns = [
         GridItem(
             .adaptive(minimum: NexusSpacing.space64),
@@ -9,24 +17,34 @@ struct DesignSystemGalleryScreen: View {
         )
     ]
 
-    /// Creates the stateless design-system gallery.
-    init() {}
+    /// Creates the stateless gallery focused on one source-backed section.
+    init(initialSection: DesignSystemGallerySection = .top) {
+        self.initialSection = initialSection
+    }
 
     /// Scrollable gallery content.
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: NexusSpacing.space24) {
-                header
-                GallerySectionTitle("Icons")
-                iconGrid
-                GallerySectionTitle("Buttons")
-                buttons
-                GallerySectionTitle("Feedback")
-                feedback
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: NexusSpacing.space24) {
+                    header
+                        .id(DesignSystemGallerySection.top)
+                    GallerySectionTitle("Icons")
+                    iconGrid
+                    GallerySectionTitle("Buttons")
+                        .id(DesignSystemGallerySection.buttons)
+                    buttons
+                    GallerySectionTitle("Feedback")
+                        .id(DesignSystemGallerySection.feedback)
+                    feedback
+                }
+                .padding(.horizontal, NexusSpacing.space24)
+                .padding(.top, NexusSpacing.space24)
+                .padding(.bottom, NexusSpacing.space32)
             }
-            .padding(.horizontal, NexusSpacing.space24)
-            .padding(.top, NexusSpacing.space24)
-            .padding(.bottom, NexusSpacing.space32)
+            .onAppear {
+                proxy.scrollTo(initialSection, anchor: .top)
+            }
         }
         .background(NexusSemanticColors.backgroundPage.ignoresSafeArea())
     }
