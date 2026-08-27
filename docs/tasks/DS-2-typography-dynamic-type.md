@@ -20,7 +20,7 @@
   - `Sources/Core/DesignSystem/Resources/Fonts/plus_jakarta_sans_semibold.ttf`
   - `Sources/Core/DesignSystem/Resources/Fonts/plus_jakarta_sans_bold.ttf`
   - `Sources/Core/DesignSystem/Resources/Fonts/plus_jakarta_sans_extrabold.ttf`
-  - `ThirdPartyNotices/PlusJakartaSans-OFL.txt`
+  - `Sources/Core/DesignSystem/Resources/Fonts/OFL.txt`
   - `project.yml` only for font resource registration.
 - Allowed test paths:
   - `Tests/Core/DesignSystem/NexusTextStylesTests.swift`
@@ -80,7 +80,7 @@ Do not load concurrency, Instruments, App Store, SwiftLint, motion-audit, or cop
 - Preserve intended line height without hardcoding per-screen padding. If SwiftUI cannot guarantee exact absolute line height after scaling, store base line height and derive proportional line spacing at use site; document behavior and test metadata.
 - Roles marked `.tabular()` in Kotlin set tabular-number intent: priceAmount, priceAmountSmall, flightTime, flightTimeCompact, durationStop, bookingReference, ticketNumber.
 - Five source TTF files must be byte-for-byte copies, not downloads or substituted packages.
-- Distribution must include official SIL Open Font License 1.1 text at `ThirdPartyNotices/PlusJakartaSans-OFL.txt`; license source does not control design values.
+- Distribution must bundle official SIL Open Font License 1.1 text at `Sources/Core/DesignSystem/Resources/Fonts/OFL.txt`; license source does not control design values.
 - Register filenames through `project.yml` `UIAppFonts`; never edit generated `NexusTravel.xcodeproj` or generated Info.plist directly.
 - A simulator unit test must prove each expected custom face resolves through `UIFont(name:size:)`. If actual PostScript names differ from filenames, inspect registered faces and use actual embedded metadata—never guess silently.
 - No colors, components, strings, theme environment, previews, or screens in this PR.
