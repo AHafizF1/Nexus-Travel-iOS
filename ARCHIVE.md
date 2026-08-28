@@ -93,3 +93,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `a0befcc` added contracts while `LocalDate`, home models, state, and validator symbols were absent; completed feature passed first CI run.
 - Adversarial review: exact Android defaults, validation precedence, traveler normalization, trip-type transitions, auto-link rules, date propagation, labels, and boundary behavior confirmed.
 - Known deviations: invalid indices and add-on-empty operations safely no-op instead of reproducing Kotlin crashes.
+
+## SR-1 — Search models, codec, and display mapping
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/11
+- Merge commit: `70296993e7967e78a9e2e3607531b80ad85821e3`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33148505012
+- Evidence: Xcode 26.6 generated project, compiled search domain/display code, and passed LocalTime, request-shape, codec, mapper, filter, and stable-sort tests on PR head `5e69dca`.
+- TDD: commit `bb6403c` added contracts while SR-1 production symbols were absent; completed feature passed first CI run.
+- Adversarial review: exact Android model defaults, search-ID field order/codes, traveler normalization, labels, price/time/duration/stop formatting, composed filters, and sort order confirmed.
+- Known deviations: invalid request shapes return nil; malformed encoded dates use injected deterministic fallback instead of Kotlin traps.
