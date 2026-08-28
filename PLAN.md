@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 3 — transport and authentication**
 
-Active wave: **Wave 6 — AU-2 Keychain session storage**
+Active wave: **Wave 7 — AU-3 remote email authentication**
 
 ## Phase 0 — Delivery foundation
 
@@ -48,8 +48,8 @@ Exit gate: Swift Testing suite green; no UI or network dependency in domain logi
 ## Phase 3 — Transport and authentication
 
 - [x] [NT-1 — App config and HTTP transport classification](docs/tasks/NT-1-http-transport.md) — requires Phase 2
-- [ ] 🔄 [AU-2 — Keychain session store](docs/tasks/AU-2-keychain-session.md) — requires AU-1
-- [ ] AU-3 — Remote email/password auth Adapter and contract fixtures — requires NT-1, AU-2
+- [x] [AU-2 — Keychain session store](docs/tasks/AU-2-keychain-session.md) — requires AU-1
+- [ ] 🔄 [AU-3 — Remote email/password auth Adapter and contract fixtures](docs/tasks/AU-3-remote-auth.md) — requires NT-1, AU-2
 
 Exit gate: backend contract fixtures green; demo email auth flow verified.
 

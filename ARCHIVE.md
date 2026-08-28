@@ -137,3 +137,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `d677e9c` added missing-symbol request/transport contracts before production implementation.
 - Adversarial review: backend route boundaries, 30-second default, authorization protection, repository-owned HTTP mapping, private correlation logging, and cancellation propagation confirmed.
 - Known exclusions: no decoding, retries, reachability, auth store, endpoint catalog, idempotency generation, or third-party dependency.
+
+## AU-2 — Keychain session storage
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/15
+- Merge commit: `e409029052294ea71e23ac29ffbb2537fe8a2917`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33169919406
+- Evidence: Xcode 26.6 compiled Security-framework storage under strict concurrency and passed 12 payload, overwrite, self-heal, native-query, failure, and token-provider tests on PR head `860deeb`.
+- TDD: commit `b0d85da` added missing-symbol Keychain contracts before production implementation.
+- Security review: full session/token payload lives only in one non-synchronizing `AfterFirstUnlockThisDeviceOnly` generic-password item; no token logging, UserDefaults, file storage, iCloud sync, or refresh behavior.
+- Boundary: storage preserves session data but does not decide expiry or contact backend; AU-3 owns lifecycle policy.
