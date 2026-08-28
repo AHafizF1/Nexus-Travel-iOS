@@ -126,3 +126,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `dd71b09` added missing-symbol contracts before production implementation.
 - Adversarial review: exact Android defaults, required/error copy, selective-field behavior, date precedence, Ethiopian/generic phone rules, stable summary ordering, status labels, and country fallback confirmed.
 - Backend boundary: Android passenger domain request remains UI/domain data only; PD-1 must explicitly map it to current backend coded DTO after signed passport upload.
+
+## NT-1 — Shared HTTP transport
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/14
+- Merge commit: `7b434a0220e786e842df5611c9b2883fc84932d9`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33164157051
+- Evidence: Xcode 26.6 compiled strict-concurrency URLSession transport and passed URL construction, bearer/signed-upload header, status preservation, connectivity, cancellation, and unknown-error tests on PR head `c63319a`.
+- TDD: commit `d677e9c` added missing-symbol request/transport contracts before production implementation.
+- Adversarial review: backend route boundaries, 30-second default, authorization protection, repository-owned HTTP mapping, private correlation logging, and cancellation propagation confirmed.
+- Known exclusions: no decoding, retries, reachability, auth store, endpoint catalog, idempotency generation, or third-party dependency.
