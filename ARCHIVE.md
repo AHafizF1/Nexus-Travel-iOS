@@ -104,3 +104,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `bb6403c` added contracts while SR-1 production symbols were absent; completed feature passed first CI run.
 - Adversarial review: exact Android model defaults, search-ID field order/codes, traveler normalization, labels, price/time/duration/stop formatting, composed filters, and sort order confirmed.
 - Known deviations: invalid request shapes return nil; malformed encoded dates use injected deterministic fallback instead of Kotlin traps.
+
+## FD-1 — Flight details models and display mapping
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/12
+- Merge commit: `3544f558299d8d5d00208ec99ca13d47743100fd`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33149321084
+- Evidence: Xcode 26.6 compiled flight-details models, nonthrowing repository result seam, deterministic display mapper, semantic airline mapping, and exact error presenter; full tests passed on PR head `d8aa493`.
+- TDD: commit `d23d4b5` added missing-symbol contracts before production implementation.
+- Adversarial review: exact Android nested defaults, result cases, date/time/price/traveler formatting, leg order, 14 airline mappings, and failure copy confirmed.
+- Known deviations: platform-independent semantic airline identifiers replace Android resource IDs; no image assets or UI behavior entered domain scope.

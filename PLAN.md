@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 2 — domain models and fakes**
 
-Active wave: **Wave 3 — FD-1 flight-details domain foundation**
+Active wave: **Wave 4 — BK-1 passenger and booking domain**
 
 ## Phase 0 — Delivery foundation
 
@@ -40,8 +40,8 @@ Milestone: presentation-independent domain behavior has Swift Testing coverage.
 - [x] [AU-1 — Auth models, validator, and error presenter](docs/tasks/AU-1-auth-domain.md) — requires DS-4
 - [x] [HM-1 — Home models, multi-city state, and search validator](docs/tasks/HM-1-home-domain.md) — requires DS-4
 - [x] [SR-1 — Search models, codec, and display mapper](docs/tasks/SR-1-search-domain.md) — requires HM-1
-- [ ] 🔄 [FD-1 — Flight details models and mapper](docs/tasks/FD-1-flight-details-domain.md) — requires HM-1, SR-1
-- [ ] BK-1 — Passenger and booking models with validation — requires DS-4
+- [x] [FD-1 — Flight details models and mapper](docs/tasks/FD-1-flight-details-domain.md) — requires HM-1, SR-1
+- [ ] 🔄 [BK-1 — Passenger and booking models with validation](docs/tasks/BK-1-booking-domain.md) — requires FD-1
 
 Exit gate: Swift Testing suite green; no UI or network dependency in domain logic.
 
