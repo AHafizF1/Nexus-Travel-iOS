@@ -71,3 +71,25 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Adversarial review: exact ordered 50-case Kotlin icon inventory, 16 gallery strings, section/component composition, token geometry, accessible labels, full-width button chrome, four banners, and reachable horizontal chips confirmed. No legacy visual artifact or third-party dependency used.
 - Apple deviations: SF Symbols replace Android glyph mechanics; adaptive grid replaces fixed-height nested grid; horizontal chip scrolling prevents narrow-width overflow.
 - Known limitation: feedback dark capture matches light because Android code provides only static semantic roles. No dark palette was invented; first product theme task must resolve this from new code truth/ADR.
+
+## AU-1 — Auth models, validation, and error presentation
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/9
+- Merge commit: `2995c775203f01fe3b2c4309734a5f0d8c296d38`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33146905071
+- Evidence: Xcode 26.6 generated project, compiled auth domain/state code, and passed validation plus presenter tests on PR head `720fe91`.
+- TDD: commit `300355a` added contracts while auth production symbols were absent; feature-complete push then passed first CI run.
+- Adversarial review: exact Android email/password/name/terms boundaries, UTF-16 password length, permissive multiple-`@` behavior, state preservation, and user copy confirmed.
+- Known deviations: Google-specific Android residue omitted per ADR-0005; `Date` represents Kotlin `Instant`; no refresh behavior inferred from optional token data.
+
+## HM-1 — Home models, multi-city state, and search validation
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/10
+- Merge commit: `3f9f4caba365b53f35135757e9c53ea04d70860e`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33147279937
+- Evidence: Xcode 26.6 generated project, compiled home domain/state code, and passed 21 calendar, traveler, validation, and multi-city contracts on PR head `cc0420a`.
+- TDD: commit `a0befcc` added contracts while `LocalDate`, home models, state, and validator symbols were absent; completed feature passed first CI run.
+- Adversarial review: exact Android defaults, validation precedence, traveler normalization, trip-type transitions, auto-link rules, date propagation, labels, and boundary behavior confirmed.
+- Known deviations: invalid indices and add-on-empty operations safely no-op instead of reproducing Kotlin crashes.
