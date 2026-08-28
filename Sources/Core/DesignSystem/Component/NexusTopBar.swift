@@ -10,6 +10,7 @@ enum NexusTopBarTitleAlignment: CaseIterable, Equatable {
 struct NexusTopBar<Trailing: View>: ToolbarContent {
     private let title: String
     private let titleAlignment: NexusTopBarTitleAlignment
+    private let hasTrailingContent: Bool
     private let trailing: () -> Trailing
 
     /// Creates toolbar content with a trailing view.
@@ -20,6 +21,7 @@ struct NexusTopBar<Trailing: View>: ToolbarContent {
     ) {
         self.title = title
         self.titleAlignment = titleAlignment
+        hasTrailingContent = true
         self.trailing = trailing
     }
 
@@ -35,8 +37,10 @@ struct NexusTopBar<Trailing: View>: ToolbarContent {
                 titleView
             }
         }
-        ToolbarItem(placement: .topBarTrailing) {
-            trailing()
+        if hasTrailingContent {
+            ToolbarItem(placement: .topBarTrailing) {
+                trailing()
+            }
         }
     }
 
@@ -58,6 +62,7 @@ extension NexusTopBar where Trailing == EmptyView {
     ) {
         self.title = title
         self.titleAlignment = titleAlignment
+        hasTrailingContent = false
         trailing = EmptyView.init
     }
 }

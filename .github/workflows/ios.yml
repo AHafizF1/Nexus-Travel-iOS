@@ -37,6 +37,32 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
           -resultBundlePath TestResults.xcresult
           CODE_SIGNING_ALLOWED=NO
+      - name: Capture design-system gallery
+        run: |
+          evidence_dir="$RUNNER_TEMP/design-system-gallery"
+          mkdir -p "$evidence_dir"
+          xcrun simctl boot "iPhone 16e"
+          xcrun simctl bootstatus "iPhone 16e" -b
+          xcrun simctl ui booted appearance light
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=top
+          sleep 1
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-top-light.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=buttons
+          sleep 1
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-buttons-light.png"
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          sleep 1
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-light.png"
+          xcrun simctl ui booted appearance dark
+          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          sleep 1
+          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-dark.png"
+      - name: Upload design-system gallery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesignSystemGalleryEvidence
+          path: ${{ runner.temp }}/design-system-gallery/*.png
+          if-no-files-found: error
       - name: Upload test result on failure
         if: failure()
         uses: actions/upload-artifact@v4
