@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 2 — domain models and fakes**
 
-Active wave: **Wave 1 — AU-1 and HM-1 domain foundations**
+Active wave: **Wave 2 — SR-1 search domain foundation**
 
 ## Phase 0 — Delivery foundation
 
@@ -37,10 +37,10 @@ Exit gate: token tests green; gallery screenshots prove Android code-defined sta
 
 Milestone: presentation-independent domain behavior has Swift Testing coverage.
 
-- [ ] 🔄 [AU-1 — Auth models, validator, and error presenter](docs/tasks/AU-1-auth-domain.md) — requires DS-4
-- [ ] 🔄 [HM-1 — Home models, multi-city state, and search validator](docs/tasks/HM-1-home-domain.md) — requires DS-4
-- [ ] SR-1 — Search models, codec, and display mapper — requires HM-1
-- [ ] FD-1 — Flight details models and mapper — requires DS-4
+- [x] [AU-1 — Auth models, validator, and error presenter](docs/tasks/AU-1-auth-domain.md) — requires DS-4
+- [x] [HM-1 — Home models, multi-city state, and search validator](docs/tasks/HM-1-home-domain.md) — requires DS-4
+- [ ] 🔄 [SR-1 — Search models, codec, and display mapper](docs/tasks/SR-1-search-domain.md) — requires HM-1
+- [ ] FD-1 — Flight details models and mapper — requires SR-1
 - [ ] BK-1 — Passenger and booking models with validation — requires DS-4
 
 Exit gate: Swift Testing suite green; no UI or network dependency in domain logic.
