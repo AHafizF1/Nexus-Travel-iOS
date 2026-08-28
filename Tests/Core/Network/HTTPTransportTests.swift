@@ -35,6 +35,13 @@ struct HTTPTransportTests {
                 .send(HTTPRequest(target: .mobile("test")))
         }
     }
+
+    @Test func preservesUnknownErrors() async {
+        await #expect(throws: StubError.self) {
+            try await HTTPTransport(loader: StubHTTPDataLoader(outcome: .unknown))
+                .send(HTTPRequest(target: .mobile("test")))
+        }
+    }
 }
 
 private struct StubHTTPDataLoader: HTTPDataLoading {
@@ -53,6 +60,7 @@ private struct StubHTTPDataLoader: HTTPDataLoading {
         case .nonHTTP:
             return (Data(), URLResponse(url: url, mimeType: nil, expectedContentLength: 0,
                                         textEncodingName: nil))
+        case .unknown: throw StubError()
         }
     }
 }
@@ -61,4 +69,7 @@ private enum StubOutcome: Sendable {
     case http(Int, Data)
     case urlError(URLError.Code)
     case nonHTTP
+    case unknown
 }
+
+private struct StubError: Error, Sendable {}
