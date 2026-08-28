@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 1 — design system**
+Current phase: **Phase 2 — domain models and fakes**
 
-Active wave: **DS-4 — design-system gallery and icon catalog**
+Active wave: **Wave 1 — AU-1 and HM-1 domain foundations**
 
 ## Phase 0 — Delivery foundation
 
@@ -29,7 +29,7 @@ Milestone: tokens, primitives, and gallery match Android design truth while resp
 - [x] [DS-1 — Color, spacing, radius, layout, status, and motion tokens](docs/tasks/DS-1-design-tokens.md) — requires P0-2
 - [x] [DS-2 — Typography tokens and Dynamic Type](docs/tasks/DS-2-typography-dynamic-type.md) — requires P0-2
 - [x] [DS-3 — Button, text field, top bar, and feedback primitives](docs/tasks/DS-3-component-primitives.md) — requires DS-1, DS-2
-- [ ] 🔄 [DS-4 — DesignSystemGalleryScreen and icon catalog](docs/tasks/DS-4-design-system-gallery.md) — requires DS-3
+- [x] [DS-4 — DesignSystemGalleryScreen and icon catalog](docs/tasks/DS-4-design-system-gallery.md) — requires DS-3
 
 Exit gate: token tests green; gallery screenshots prove Android code-defined states on Mac.
 
@@ -37,9 +37,9 @@ Exit gate: token tests green; gallery screenshots prove Android code-defined sta
 
 Milestone: presentation-independent domain behavior has Swift Testing coverage.
 
-- [ ] AU-1 — Auth models, validator, and error presenter — requires DS-4
-- [ ] HM-1 — Home models, multi-city state, and search validator — requires DS-4
-- [ ] SR-1 — Search models, codec, and display mapper — requires DS-4
+- [ ] 🔄 [AU-1 — Auth models, validator, and error presenter](docs/tasks/AU-1-auth-domain.md) — requires DS-4
+- [ ] 🔄 [HM-1 — Home models, multi-city state, and search validator](docs/tasks/HM-1-home-domain.md) — requires DS-4
+- [ ] SR-1 — Search models, codec, and display mapper — requires HM-1
 - [ ] FD-1 — Flight details models and mapper — requires DS-4
 - [ ] BK-1 — Passenger and booking models with validation — requires DS-4
 

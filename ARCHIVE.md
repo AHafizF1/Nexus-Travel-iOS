@@ -58,3 +58,16 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Adversarial review: Android code-defined loading, disabled, selected, error, focus, status, variant, slot, geometry, color, and typography behavior covered without protocols, managers, type erasure, packages, or generated-project edits.
 - Apple deviations: native `ToolbarContent` preserves localized system back/swipe behavior; persistent external field label favors native editing, Dynamic Type, and VoiceOver; native `ProgressView` supplies spinner stroke. DS-4 owns visual/interaction evidence.
 - Known limitation: Android components consume static semantic colors and provide no complete code-defined dark-role mapping; no palette was invented.
+
+## DS-4 — Design-system gallery and icon catalog
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/8
+- Merge commit: `98d56b8f0ce77fe278884016134dfe9fe9e253f5`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33068852237
+- Evidence: Xcode 26.6 generated project, compiled app, passed exact 50-icon inventory/mapping and gallery contracts, then uploaded reviewed top-light, buttons-light, feedback-light, and feedback-dark simulator captures on PR head `c8a5a89`.
+- TDD: RED commits `cecb71b`, `5b32c05`, and `afc209a` established absent icon/gallery, full-width-button, and focused-evidence contracts before their production implementations.
+- CI repair loop: fixed ambiguous banner overload, booted test-shutdown simulator, then replaced nondeterministic lazy-grid scrolling with focused reuse of same section views after artifact review exposed wrong captures.
+- Adversarial review: exact ordered 50-case Kotlin icon inventory, 16 gallery strings, section/component composition, token geometry, accessible labels, full-width button chrome, four banners, and reachable horizontal chips confirmed. No legacy visual artifact or third-party dependency used.
+- Apple deviations: SF Symbols replace Android glyph mechanics; adaptive grid replaces fixed-height nested grid; horizontal chip scrolling prevents narrow-width overflow.
+- Known limitation: feedback dark capture matches light because Android code provides only static semantic roles. No dark palette was invented; first product theme task must resolve this from new code truth/ADR.
