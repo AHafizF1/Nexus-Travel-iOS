@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 2 — domain models and fakes**
+Current phase: **Phase 3 — transport and authentication**
 
-Active wave: **Wave 4 — BK-1 passenger and booking domain**
+Active wave: **Wave 5 — NT-1 shared HTTP transport**
 
 ## Phase 0 — Delivery foundation
 
@@ -41,13 +41,13 @@ Milestone: presentation-independent domain behavior has Swift Testing coverage.
 - [x] [HM-1 — Home models, multi-city state, and search validator](docs/tasks/HM-1-home-domain.md) — requires DS-4
 - [x] [SR-1 — Search models, codec, and display mapper](docs/tasks/SR-1-search-domain.md) — requires HM-1
 - [x] [FD-1 — Flight details models and mapper](docs/tasks/FD-1-flight-details-domain.md) — requires HM-1, SR-1
-- [ ] 🔄 [BK-1 — Passenger and booking models with validation](docs/tasks/BK-1-booking-domain.md) — requires FD-1
+- [x] [BK-1 — Passenger and booking models with validation](docs/tasks/BK-1-booking-domain.md) — requires FD-1
 
 Exit gate: Swift Testing suite green; no UI or network dependency in domain logic.
 
 ## Phase 3 — Transport and authentication
 
-- [ ] NT-1 — App config and HTTP transport classification — requires Phase 2
+- [ ] 🔄 [NT-1 — App config and HTTP transport classification](docs/tasks/NT-1-http-transport.md) — requires Phase 2
 - [ ] AU-2 — Keychain session store — requires AU-1
 - [ ] AU-3 — Remote email/password auth Adapter and contract fixtures — requires NT-1, AU-2
 

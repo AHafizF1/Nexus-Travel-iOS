@@ -115,3 +115,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `d23d4b5` added missing-symbol contracts before production implementation.
 - Adversarial review: exact Android nested defaults, result cases, date/time/price/traveler formatting, leg order, 14 airline mappings, and failure copy confirmed.
 - Known deviations: platform-independent semantic airline identifiers replace Android resource IDs; no image assets or UI behavior entered domain scope.
+
+## BK-1 — Passenger and booking domain
+
+- Completed: 2026-08-28
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/13
+- Merge commit: `0c18fa2a85746b97ce405eaf861b1581226839cc`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33151380562
+- Evidence: Xcode 26.6 compiled passenger/booking models, deterministic split-date handling, contact/passport validation, and country catalog; full tests passed on PR head `d1ada31`.
+- TDD: commit `dd71b09` added missing-symbol contracts before production implementation.
+- Adversarial review: exact Android defaults, required/error copy, selective-field behavior, date precedence, Ethiopian/generic phone rules, stable summary ordering, status labels, and country fallback confirmed.
+- Backend boundary: Android passenger domain request remains UI/domain data only; PD-1 must explicitly map it to current backend coded DTO after signed passport upload.
