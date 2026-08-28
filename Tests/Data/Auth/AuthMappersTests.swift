@@ -37,6 +37,12 @@ struct AuthMappersTests {
         #expect(session.expiresAt == ISO8601DateFormatter().date(from: "2026-09-04T12:00:00Z"))
     }
 
+    @Test func sessionEnvelopeAcceptsExpiryWithoutFractionalSeconds() throws {
+        let data = Data(#"{"session":{"id":"session-1","userId":"user-1","token":"token","expiresAt":"2026-09-04T12:00:00Z"},"user":{"id":"user-1","name":"Selam","email":"selam@example.com","emailVerified":true,"image":null}}"#.utf8)
+        let dto = try JSONDecoder().decode(AuthSessionEnvelopeDTO.self, from: data)
+        #expect(try AuthMapper.session(from: dto).sessionId == "session-1")
+    }
+
     @Test func additiveFieldsDecodeButMissingRequiredUserFails() throws {
         _ = try JSONDecoder().decode(AuthTokenEnvelopeDTO.self, from: AuthContractFixtures.tokenEnvelope)
         #expect(throws: DecodingError.self) {

@@ -60,6 +60,19 @@ struct RemoteAuthRepositoryTests {
         #expect(await store.writeCount == 0)
     }
 
+    @Test func missingAuthenticationTokenClearsAndReturnsUnauthenticated() async throws {
+        let loader = AuthStubLoader(responses: [
+            .response(200, AuthContractFixtures.tokenEnvelopeWithoutToken, [:])
+        ])
+        let store = AuthFakeSessionStore(session: storedSession(expiresAt: .distantFuture, token: "old-token"))
+
+        let result = try await makeRepository(loader: loader, store: store)
+            .signInEmail(request: .init(email: "selam@example.com", password: "password123"))
+
+        #expect(failure(result) == .unauthenticated)
+        #expect(await store.current == nil)
+    }
+
     @Test func getSessionReturnsUsableLocalWithoutNetwork() async throws {
         let loader = AuthStubLoader(responses: [])
         let stored = storedSession(expiresAt: AuthContractFixtures.now.addingTimeInterval(1), token: "token")
@@ -105,8 +118,20 @@ struct RemoteAuthRepositoryTests {
         _ = try await repository.signOut()
 
         let requests = await loader.requests
-        #expect(requests[0].value(forHTTPHeaderField: "Authorization") == nil)
-        #expect(requests[1].value(forHTTPHeaderField: "Authorization") == "Bearer session-token")
+        let first = try #require(requests.first)
+        let last = try #require(requests.last)
+        #expect(first.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(last.value(forHTTPHeaderField: "Authorization") == "Bearer session-token")
+        #expect(await store.current == nil)
+    }
+
+    @Test func signOutClearsAfterRemoteFailure() async throws {
+        let loader = AuthStubLoader(responses: [.response(500, Data(), [:])])
+        let store = AuthFakeSessionStore(session: storedSession(expiresAt: .distantFuture, token: "token"))
+
+        let result = try await makeRepository(loader: loader, store: store).signOut()
+
+        #expect(failure(result) == .unknown)
         #expect(await store.current == nil)
     }
 
@@ -123,6 +148,9 @@ struct RemoteAuthRepositoryTests {
     @Test func mapsHTTPTransportAndMalformedResponses() async throws {
         let timeout = makeRepository(loader: AuthStubLoader(responses: [.transportError(.timedOut)]))
         #expect(failure(try await timeout.requestPasswordReset(email: "selam@example.com")) == .networkUnavailable)
+
+        let offline = makeRepository(loader: AuthStubLoader(responses: [.transportError(.networkUnavailable)]))
+        #expect(failure(try await offline.requestPasswordReset(email: "selam@example.com")) == .networkUnavailable)
 
         let server = makeRepository(loader: AuthStubLoader(responses: [.response(500, Data(), [:])]))
         #expect(failure(try await server.requestPasswordReset(email: "selam@example.com")) == .unknown)
@@ -147,6 +175,24 @@ struct RemoteAuthRepositoryTests {
         await store.setReadError(AuthStoreTestError.failed)
         await #expect(throws: AuthStoreTestError.self) {
             try await makeRepository(loader: AuthStubLoader(responses: []), store: store).getLocalSession()
+        }
+
+        let writeStore = AuthFakeSessionStore()
+        await writeStore.setWriteError(.failed)
+        await #expect(throws: AuthStoreTestError.self) {
+            try await makeRepository(
+                loader: AuthStubLoader(responses: [.response(200, AuthContractFixtures.tokenEnvelope, [:])]),
+                store: writeStore
+            ).signInEmail(request: .init(email: "selam@example.com", password: "password123"))
+        }
+
+        let clearStore = AuthFakeSessionStore(session: storedSession(expiresAt: .distantFuture, token: "token"))
+        await clearStore.setClearError(.failed)
+        await #expect(throws: AuthStoreTestError.self) {
+            try await makeRepository(
+                loader: AuthStubLoader(responses: [.response(200, Data(#"{"success":true}"#.utf8), [:])]),
+                store: clearStore
+            ).signOut()
         }
     }
 
@@ -187,7 +233,7 @@ struct RemoteAuthRepositoryTests {
         return session
     }
 
-    private func failure<Value>(_ result: AuthResult<Value>) -> AuthError? {
+    private func failure<Value: Sendable>(_ result: AuthResult<Value>) -> AuthError? {
         guard case let .failure(error) = result else { return nil }
         return error
     }
@@ -233,14 +279,24 @@ private actor AuthFakeSessionStore: AuthSessionStore {
     private(set) var current: StoredAuthSession?
     private(set) var writeCount = 0
     private(set) var clearCount = 0
-    private var readError: (any Error)?
+    private var readError: AuthStoreTestError?
+    private var writeError: AuthStoreTestError?
+    private var clearError: AuthStoreTestError?
 
     init(session: StoredAuthSession? = nil) {
         current = session
     }
 
-    func setReadError(_ error: any Error) {
+    func setReadError(_ error: AuthStoreTestError) {
         readError = error
+    }
+
+    func setWriteError(_ error: AuthStoreTestError) {
+        writeError = error
+    }
+
+    func setClearError(_ error: AuthStoreTestError) {
+        clearError = error
     }
 
     func read() async throws -> StoredAuthSession? {
@@ -249,11 +305,13 @@ private actor AuthFakeSessionStore: AuthSessionStore {
     }
 
     func write(_ session: StoredAuthSession) async throws {
+        if let writeError { throw writeError }
         writeCount += 1
         current = session
     }
 
     func clear() async throws {
+        if let clearError { throw clearError }
         clearCount += 1
         current = nil
     }
