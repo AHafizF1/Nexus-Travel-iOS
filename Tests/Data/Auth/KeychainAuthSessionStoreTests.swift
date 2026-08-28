@@ -52,6 +52,35 @@ struct KeychainAuthSessionStoreTests {
         #expect(try await store.read() == replacement)
     }
 
+    @Test func failedOverwritePreservesExistingSession() async throws {
+        let client = FakeKeychainClient()
+        let store = KeychainAuthSessionStore(client: client)
+        let original = StoredAuthSession(session: richSession)
+        try await store.write(original)
+        await client.setWriteError(.init(status: errSecInteractionNotAllowed))
+
+        await #expect(throws: KeychainError(status: errSecInteractionNotAllowed)) {
+            try await store.write(StoredAuthSession(session: session(id: "replacement")))
+        }
+        await client.setWriteError(nil)
+
+        #expect(try await store.read() == original)
+    }
+
+    @Test func additivePayloadFieldsAreIgnored() async throws {
+        let client = FakeKeychainClient()
+        let store = KeychainAuthSessionStore(client: client)
+        let expected = StoredAuthSession(session: richSession)
+        try await store.write(expected)
+        let original = try #require(await client.currentData)
+        var bytes = Array(original)
+        _ = bytes.popLast()
+        bytes.append(contentsOf: Array(",\"future\":true}".utf8))
+        await client.replaceData(Data(bytes))
+
+        #expect(try await store.read() == expected)
+    }
+
     @Test func clearRemovesItemAndMissingClearSucceeds() async throws {
         let client = FakeKeychainClient()
         let store = KeychainAuthSessionStore(client: client)
@@ -70,6 +99,15 @@ struct KeychainAuthSessionStoreTests {
 
         #expect(try await store.read() == nil)
         #expect(await client.deleteCount == 1)
+    }
+
+    @Test func payloadMissingRequiredFieldsSelfClears() async throws {
+        let client = FakeKeychainClient(data: Data(#"{"sessionId":"only"}"#.utf8))
+        let store = KeychainAuthSessionStore(client: client)
+
+        #expect(try await store.read() == nil)
+        #expect(await client.deleteCount == 1)
+        #expect(await client.currentData == nil)
     }
 
     @Test func clientReadWriteAndExplicitDeleteFailuresPropagate() async {
@@ -181,7 +219,10 @@ private actor FakeKeychainClient: KeychainClient {
     }
 
     func setReadError(_ error: KeychainError) { readError = error }
-    func setWriteError(_ error: KeychainError) { writeError = error }
+    var currentData: Data? { data }
+
+    func replaceData(_ data: Data?) { self.data = data }
+    func setWriteError(_ error: KeychainError?) { writeError = error }
     func setDeleteError(_ error: KeychainError) { deleteError = error }
 
     func read(service: String, account: String) async throws -> Data? {
