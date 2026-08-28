@@ -10,25 +10,25 @@ struct PassengerDateInputTests {
         #expect(input.year == "2026")
     }
 
-    @Test func parsingRequiresCompleteValidGregorianDateInSupportedYears() {
+    @Test func parsingRequiresCompleteValidGregorianDateInSupportedYears() throws {
         #expect(!PassengerDateInput(day: "", month: "2", year: "2024").complete)
-        #expect(PassengerDateInput(day: "29", month: "2", year: "2024").parsed == date(2024, 2, 29))
+        #expect(PassengerDateInput(day: "29", month: "2", year: "2024").parsed == (try date(2024, 2, 29)))
         #expect(PassengerDateInput(day: "29", month: "2", year: "2023").parsed == nil)
         #expect(PassengerDateInput(day: "1", month: "1", year: "1899").parsed == nil)
         #expect(PassengerDateInput(day: "1", month: "1", year: "2101").parsed == nil)
     }
 
-    @Test func formHelpersSynchronizePartsAndAggregateDates() {
+    @Test func formHelpersSynchronizePartsAndAggregateDates() throws {
         let form = PassengerDetailsFormState()
             .withDateOfBirth(PassengerDateInput(day: "15", month: "1", year: "1995"))
             .withPassportExpiry(PassengerDateInput(day: "1", month: "12", year: "2030"))
-        #expect(form.dateOfBirth == date(1995, 1, 15))
-        #expect(form.passportExpiryDate == date(2030, 12, 1))
+        #expect(form.dateOfBirth == (try date(1995, 1, 15)))
+        #expect(form.passportExpiryDate == (try date(2030, 12, 1)))
         #expect(form.dateOfBirthInput().day == "15")
         #expect(form.passportExpiryInput().year == "2030")
     }
 
-    private func date(_ year: Int, _ month: Int, _ day: Int) -> LocalDate {
-        LocalDate(year: year, month: month, day: day)!
+    private func date(_ year: Int, _ month: Int, _ day: Int) throws -> LocalDate {
+        try #require(LocalDate(year: year, month: month, day: day))
     }
 }

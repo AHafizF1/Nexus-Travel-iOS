@@ -2,8 +2,6 @@ import Testing
 @testable import NexusTravel
 
 struct PassengerDetailsValidationTests {
-    private let today = LocalDate(year: 2026, month: 5, day: 28)!
-
     @Test func formDefaultsMatchAndroid() {
         let form = PassengerDetailsFormState()
         #expect(form.title == "Mr" && form.gender == "Male")
@@ -18,7 +16,7 @@ struct PassengerDetailsValidationTests {
     @Test func selectiveDayValidationDoesNotValidateSiblingParts() throws {
         let result = PassengerDetailsValidator.validateFields(
             form: validForm().withDateOfBirth(PassengerDateInput(day: "", month: "1", year: "1995")),
-            details: try details(), fields: [.dateOfBirthDay], today: today
+            details: try details(), fields: [.dateOfBirthDay], today: try today()
         )
         #expect(result.error(for: .dateOfBirthDay) == "Day is required.")
         #expect(result.error(for: .dateOfBirthMonth) == nil)
@@ -28,7 +26,7 @@ struct PassengerDetailsValidationTests {
     @Test func completeDatesRunCombinedValidationWithoutSubmit() throws {
         let future = PassengerDateInput(day: "29", month: "5", year: "2026")
         let result = PassengerDetailsValidator.validateFields(
-            form: validForm().withDateOfBirth(future), details: try details(), fields: [], today: today
+            form: validForm().withDateOfBirth(future), details: try details(), fields: [], today: try today()
         )
         #expect(result.errors(for: .dateOfBirth) == ["Date of birth cannot be in the future."])
     }
@@ -36,46 +34,50 @@ struct PassengerDetailsValidationTests {
     @Test func submitReportsEveryMissingDatePart() throws {
         let result = PassengerDetailsValidator.validate(
             form: validForm().withDateOfBirth(PassengerDateInput(day: "", month: "", year: "")),
-            details: try details(), today: today
+            details: try details(), today: try today()
         )
         #expect(result.errors(for: .dateOfBirth) == ["Day is required.", "Month is required.", "Year is required."])
     }
 
     @Test func dateBoundariesAndPrecedenceMatchAndroid() throws {
         let invalidDOB = validForm().withDateOfBirth(PassengerDateInput(day: "31", month: "2", year: "1995"))
-        #expect(PassengerDetailsValidator.validate(form: invalidDOB, details: try details(), today: today)
+        #expect(PassengerDetailsValidator.validate(form: invalidDOB, details: try details(), today: try today())
             .errors(for: .dateOfBirth) == ["Enter a valid date of birth."])
         let todayDOB = validForm().withDateOfBirth(PassengerDateInput(day: "28", month: "5", year: "2026"))
-        #expect(PassengerDetailsValidator.validate(form: todayDOB, details: try details(), today: today)
+        #expect(PassengerDetailsValidator.validate(form: todayDOB, details: try details(), today: try today())
             .errors(for: .dateOfBirth).isEmpty)
         let pastExpiry = validForm().withPassportExpiry(PassengerDateInput(day: "27", month: "5", year: "2026"))
-        #expect(PassengerDetailsValidator.validate(form: pastExpiry, details: try details(), today: today)
+        #expect(PassengerDetailsValidator.validate(form: pastExpiry, details: try details(), today: try today())
             .errors(for: .passportExpiry) == ["Passport expiry date cannot be in the past."])
         let travelExpiry = validForm().withPassportExpiry(PassengerDateInput(day: "1", month: "6", year: "2026"))
-        #expect(PassengerDetailsValidator.validate(form: travelExpiry, details: try details(), today: today)
+        #expect(PassengerDetailsValidator.validate(form: travelExpiry, details: try details(), today: try today())
             .errors(for: .passportExpiry) == ["Passport expiry date must be after travel date."])
     }
 
-    @Test(arguments: [
-        (PassengerDetailsField.title, "Title is required."),
-        (.gender, "Gender is required."), (.firstName, "First name is required."),
-        (.lastName, "Last name is required."), (.nationality, "Nationality is required."),
-        (.passportNumber, "Passport number is required."),
-        (.passportIssuingCountry, "Passport issuing country is required.")
-    ])
-    func requiredTextMessages(field: PassengerDetailsField, message: String) throws {
-        let form = formWithBlank(field)
-        let result = PassengerDetailsValidator.validateFields(
-            form: form, details: try details(), fields: [field], today: today
-        )
-        #expect(result.error(for: field) == message)
+    @Test func requiredTextMessages() throws {
+        let expected: [(PassengerDetailsField, String)] = [
+            (.title, "Title is required."), (.gender, "Gender is required."),
+            (.firstName, "First name is required."), (.lastName, "Last name is required."),
+            (.nationality, "Nationality is required."), (.passportNumber, "Passport number is required."),
+            (.passportIssuingCountry, "Passport issuing country is required.")
+        ]
+        for (field, message) in expected {
+            let result = PassengerDetailsValidator.validateFields(
+                form: formWithBlank(field), details: try details(), fields: [field], today: try today()
+            )
+            #expect(result.error(for: field) == message)
+        }
     }
 
     @Test func passportDocumentIsRequired() throws {
         let result = PassengerDetailsValidator.validateFields(
-            form: validForm(passportDocument: nil), details: try details(), fields: [.passportDocument], today: today
+            form: validForm(passportDocument: nil), details: try details(), fields: [.passportDocument], today: try today()
         )
         #expect(result.error(for: .passportDocument) == "Passport document is required.")
+    }
+
+    @Test func validFormHasNoErrors() throws {
+        #expect(!PassengerDetailsValidator.validate(form: validForm(), details: try details(), today: try today()).hasErrors)
     }
 
     @Test(arguments: ["selam@example.com", " selam@example.com "])
@@ -94,13 +96,15 @@ struct PassengerDetailsValidationTests {
         #expect(PassengerContactValidator.phoneError(dialCode: "", value: "") == "Select phone country code.")
         #expect(PassengerContactValidator.phoneError(dialCode: "+1", value: "") == "Enter a mobile number.")
         #expect(PassengerContactValidator.phoneError(dialCode: "+1", value: "1234567") == nil)
+        #expect(PassengerContactValidator.phoneError(dialCode: "+1", value: "123456789012345") == nil)
         #expect(PassengerContactValidator.phoneError(dialCode: "+1", value: "123456") == "Enter a valid phone number.")
+        #expect(PassengerContactValidator.phoneError(dialCode: "+1", value: "1234567890123456") == "Enter a valid phone number.")
     }
 
     @Test func summaryOrderDeduplicationAndRemovalAreStable() throws {
         let result = PassengerDetailsValidator.validateFields(
             form: PassengerDetailsFormState(), details: try details(),
-            fields: [.firstName, .lastName, .dateOfBirthDay], today: today
+            fields: [.firstName, .lastName, .dateOfBirthDay], today: try today()
         )
         #expect(result.summaryErrors == ["First name is required.", "Last name is required.", "Day is required."])
         let removed = result.removing(fields: [.firstName], groups: [.dateOfBirth])
@@ -153,5 +157,9 @@ struct PassengerDetailsValidationTests {
 
     private func details() throws -> FlightDetails {
         try makeDetails()
+    }
+
+    private func today() throws -> LocalDate {
+        try #require(LocalDate(year: 2026, month: 5, day: 28))
     }
 }
