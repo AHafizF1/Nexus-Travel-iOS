@@ -5,6 +5,7 @@ struct AppShell: View {
     let homeViewModel: HomeViewModel
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
+    let authRepository: any AuthRepository
 
     var body: some View {
         TabView(
@@ -15,28 +16,28 @@ struct AppShell: View {
         ) {
             NavigationStack(path: $router.homePath) {
                 HomeRoute(viewModel: homeViewModel, router: router)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 AppTabRoot(tab: .explore)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
             }
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 AppTabRoot(tab: .trips)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
             }
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
                 AppTabRoot(tab: .profile)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
             }
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
@@ -61,6 +62,7 @@ private struct AppDestinations: ViewModifier {
     let router: Router
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
+    let authRepository: any AuthRepository
 
     func body(content: Content) -> some View {
         content.navigationDestination(for: AppRoute.self) { route in
@@ -80,6 +82,16 @@ private struct AppDestinations: ViewModifier {
                     router: router
                 )
                 .toolbar(.hidden, for: .tabBar)
+            case .mainAuth:
+                AuthRoute(
+                    viewModel: AuthViewModel(repository: authRepository),
+                    onAuthenticated: router.completeMainAuth
+                )
+            case .bookingAuth:
+                AuthRoute(
+                    viewModel: AuthViewModel(repository: authRepository),
+                    onAuthenticated: router.completeBookingAuth
+                )
             default:
                 AppDestination(route: route)
             }
@@ -134,12 +146,14 @@ private extension View {
     func appDestinations(
         router: Router,
         searchResultsRepository: any SearchResultsRepository,
-        flightDetailsRepository: any FlightDetailsRepository
+        flightDetailsRepository: any FlightDetailsRepository,
+        authRepository: any AuthRepository
     ) -> some View {
         modifier(AppDestinations(
             router: router,
             searchResultsRepository: searchResultsRepository,
-            flightDetailsRepository: flightDetailsRepository
+            flightDetailsRepository: flightDetailsRepository,
+            authRepository: authRepository
         ))
     }
 }

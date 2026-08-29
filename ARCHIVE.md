@@ -222,3 +222,13 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33243797678
 - Evidence: Xcode 26.6 compiled strict canonical DTO mapping and pricing/revalidation adapter; full tests passed on PR head `dc2c71207cec2fa3620e5a348f0e32c1c958811a`.
 - Contract review: anonymous 90-second details request, confirmed/price-change mapping, segments/rules/availability, status matrix, connectivity, malformed data, and cancellation verified.
+
+## FD-2 — Flight details screen
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/23
+- Merge commit: `c9a1ffb`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33247965119
+- Evidence: Xcode 26.6 compiled Flight Details orchestration, screen states, typed routing, shared dependency wiring, cancellation hardening, and composed Home request reuse; 223 tests in 44 suites plus gallery capture passed on PR head `b09266f`.
+- Adversarial review: corrected continuation failures to retain details, restored valid state on cancellation, blocked duplicate revalidation/stale Home loads, moved AppShell to composition root, and removed fixed-delay async tests.
+- Deferred evidence: final device accessibility, motion, and full cold-launch journey verification remains Phase 8 QA scope.
