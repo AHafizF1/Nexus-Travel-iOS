@@ -5,6 +5,7 @@ struct AppShell: View {
     let homeViewModel: HomeViewModel
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
+    let passengerDetailsRepository: any PassengerDetailsRepository
     let authRepository: any AuthRepository
     let bookingFlowState: BookingFlowState
 
@@ -17,28 +18,28 @@ struct AppShell: View {
         ) {
             NavigationStack(path: $router.homePath) {
                 HomeRoute(viewModel: homeViewModel, router: router)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 AppTabRoot(tab: .explore)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 AppTabRoot(tab: .trips)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
                 AppTabRoot(tab: .profile)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
@@ -63,6 +64,7 @@ private struct AppDestinations: ViewModifier {
     let router: Router
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
+    let passengerDetailsRepository: any PassengerDetailsRepository
     let authRepository: any AuthRepository
     let bookingFlowState: BookingFlowState
 
@@ -102,10 +104,31 @@ private struct AppDestinations: ViewModifier {
                         router.completeBookingAuth()
                     }
                 )
+            case .passengerDetails:
+                if let details = bookingFlowState.passengerDetails {
+                    PassengerDetailsScreenRoute(
+                        viewModel: PassengerDetailsViewModel(
+                            details: details, repository: passengerDetailsRepository,
+                            today: Self.currentLocalDate
+                        ), router: router, bookingFlowState: bookingFlowState
+                    )
+                    .toolbar(.hidden, for: .tabBar)
+                } else {
+                    ContentUnavailableView("Passenger details unavailable", systemImage: "person.crop.circle.badge.exclamationmark")
+                }
             default:
                 AppDestination(route: route)
             }
         }
+    }
+
+    private static func currentLocalDate() -> LocalDate {
+        let values = Calendar(identifier: .gregorian).dateComponents([.year, .month, .day], from: Date())
+        guard let year = values.year, let month = values.month, let day = values.day,
+              let date = LocalDate(year: year, month: month, day: day) else {
+            preconditionFailure("Current Gregorian date must be representable.")
+        }
+        return date
     }
 }
 
@@ -157,6 +180,7 @@ private extension View {
         router: Router,
         searchResultsRepository: any SearchResultsRepository,
         flightDetailsRepository: any FlightDetailsRepository,
+        passengerDetailsRepository: any PassengerDetailsRepository,
         authRepository: any AuthRepository,
         bookingFlowState: BookingFlowState
     ) -> some View {
@@ -164,6 +188,7 @@ private extension View {
             router: router,
             searchResultsRepository: searchResultsRepository,
             flightDetailsRepository: flightDetailsRepository,
+            passengerDetailsRepository: passengerDetailsRepository,
             authRepository: authRepository,
             bookingFlowState: bookingFlowState
         ))

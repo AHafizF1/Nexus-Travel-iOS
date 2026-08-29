@@ -14,7 +14,7 @@ struct RemotePassportUploadRepositoryTests {
             documentLoader: { _ in Data([1, 2, 3]) }
         )
 
-        let result = await repository.upload(
+        let result = try await repository.upload(
             document: PassengerDocumentAttachment(uriString: "file:///passport.png", displayName: "passport.png", mimeType: "image/png"),
             idempotencyKey: "operation:passport:0"
         )
@@ -28,18 +28,19 @@ struct RemotePassportUploadRepositoryTests {
         #expect(requests[1].value(forHTTPHeaderField: "Content-Type") == "image/png")
     }
 
-    @Test func rejectsUnsupportedDocumentBeforeNetwork() async {
+    @Test func rejectsUnsupportedDocumentBeforeNetwork() async throws {
         let loader = PassportUploadRecordingLoader(responses: [])
         let repository = RemotePassportUploadRepository(
             transport: HTTPTransport(loader: loader), tokenProvider: AuthTokenProvider(sessionStore: PassportSessionStore()),
             documentLoader: { _ in Data([1]) }
         )
-        let result = await repository.upload(
+        let result = try await repository.upload(
             document: PassengerDocumentAttachment(uriString: "file:///a.txt", displayName: "a.txt", mimeType: "text/plain"),
             idempotencyKey: "stable"
         )
         #expect(result == .invalidDocument)
-        #expect(await loader.requests.isEmpty)
+        let requests = await loader.requests
+        #expect(requests.isEmpty)
     }
 
     private static func response(_ status: Int, _ body: String) -> (Data, URLResponse) {
@@ -59,11 +60,12 @@ private actor PassportUploadRecordingLoader: HTTPDataLoading {
 }
 
 private struct PassportSessionStore: AuthSessionStore {
-    func read() async throws -> AuthSession? {
-        AuthSession(user: AuthUser(id: "u", email: "a@b.com", name: "A"),
-                    session: AuthSessionMetadata(id: "s", expiresAt: nil,
-                                                 tokens: AuthTokens(accessToken: "secret")))
+    func read() async throws -> StoredAuthSession? {
+        StoredAuthSession(session: AuthSession(
+            sessionId: "s", user: AuthUser(id: "u", displayName: "A", email: "a@b.com", avatarUrl: nil),
+            tokens: AuthTokenSet(accessToken: "secret", refreshToken: nil), expiresAt: .distantFuture
+        ))
     }
-    func write(_ session: AuthSession) async throws {}
+    func write(_ session: StoredAuthSession) async throws {}
     func clear() async throws {}
 }

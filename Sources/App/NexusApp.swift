@@ -24,6 +24,7 @@ struct NexusApp: App {
                 AppShell(router: router, homeViewModel: dependencies.homeViewModel,
                          searchResultsRepository: dependencies.searchResultsRepository,
                          flightDetailsRepository: dependencies.flightDetailsRepository,
+                         passengerDetailsRepository: dependencies.passengerDetailsRepository,
                          authRepository: dependencies.authRepository,
                          bookingFlowState: bookingFlowState)
             }
