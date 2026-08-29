@@ -232,3 +232,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Evidence: Xcode 26.6 compiled Flight Details orchestration, screen states, typed routing, shared dependency wiring, cancellation hardening, and composed Home request reuse; 223 tests in 44 suites plus gallery capture passed on PR head `b09266f`.
 - Adversarial review: corrected continuation failures to retain details, restored valid state on cancellation, blocked duplicate revalidation/stale Home loads, moved AppShell to composition root, and removed fixed-delay async tests.
 - Deferred evidence: final device accessibility, motion, and full cold-launch journey verification remains Phase 8 QA scope.
+
+## AU-4 — Email authentication screens and session gate
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/24
+- Merge commit: `287af2c`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33252802840
+- Evidence: Xcode 26.6 compiled session restoration, native email login/signup, password reset request, and main/booking auth returns; 230 tests in 45 suites plus gallery capture passed on PR head `1160de2`.
+- Adversarial review: cancellation restores prior form/gate state, duplicate submissions are suppressed, password mismatch stays local, backend-disabled reset fails honestly, and social login remains excluded by ADR-0005.
+- CI repair: replaced actor-isolated method references with explicit closures after Xcode 26.6 crashed during AuthScreens IR generation.
+- Deferred evidence: final device accessibility, keyboard, and cold-launch verification remains Phase 8 QA scope.

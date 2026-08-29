@@ -4,10 +4,23 @@ struct FlightDetailsScreenRoute: View {
     @State private var viewModel: FlightDetailsViewModel
     @State private var eventTask: Task<Void, Never>?
     let router: Router
-    init(viewModel: FlightDetailsViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }
+    let bookingFlowState: BookingFlowState
+    let reference: FlightOfferReference
+    init(
+        viewModel: FlightDetailsViewModel,
+        router: Router,
+        bookingFlowState: BookingFlowState,
+        reference: FlightOfferReference
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.router = router
+        self.bookingFlowState = bookingFlowState
+        self.reference = reference
+    }
     var body: some View {
         FlightDetailsScreen(state: viewModel.uiState, onEvent: send)
             .task {
+                bookingFlowState.selectOffer(reference)
                 do { try await viewModel.load() } catch is CancellationError { return } catch { return }
             }
             .onDisappear { eventTask?.cancel() }
@@ -20,7 +33,18 @@ struct FlightDetailsScreenRoute: View {
             eventTask = nil
         }
     }
-    private func route() { while let event = viewModel.consumeNavigationEvent() { switch event { case .back: router.pop(); case .toPassengerDetails: router.push(.passengerDetails(.init())) } } }
+    private func route() {
+        while let event = viewModel.consumeNavigationEvent() {
+            switch event {
+            case .back:
+                router.pop()
+            case .toPassengerDetails:
+                guard let details = viewModel.uiState.details,
+                      bookingFlowState.acceptPassengerDetails(details) else { return }
+                router.push(.passengerDetails(.init()))
+            }
+        }
+    }
 }
 
 struct FlightDetailsScreen: View {
