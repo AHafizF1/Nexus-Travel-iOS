@@ -1,7 +1,7 @@
 /// Prices one selected flight offer.
 protocol FlightDetailsRepository: Sendable {
     /// Returns current pricing result for offer reference.
-    func priceOffer(reference: FlightOfferReference) async -> FlightDetailsResult
+    func priceOffer(reference: FlightOfferReference) async throws -> FlightDetailsResult
 }
 
 /// Outcome of pricing selected flight offer.

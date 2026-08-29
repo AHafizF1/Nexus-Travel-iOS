@@ -203,3 +203,13 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: `9029f0a` established missing ViewModel/screen contracts; coordinator and independent parity/concurrency reviews closed retry, load/search state, date clock, traveler ages, route-name, request-shape, and nested-task cancellation gaps before first push.
 - Android parity: every Home event/state/copy path, one/round/multi-city request shape, ADD/DXB fallback, airport search, recent/trending search, and result/package handoff confirmed.
 - Apple adaptations: native DatePicker/sheets/navigation, Dynamic Type wrapping, Reduce Motion transition, code-only background, remote URL images only, labeled non-actionable notification indicator, and no dead Recent Searches clear control.
+
+## SR-3 — Search results screen
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/21
+- Merge commit: `68f04b4e3d6f6f65b19d54eda003e2cf170c90be`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33243023779
+- Evidence: Xcode 26.6 compiled observable search-results orchestration, four UI states, sorting/filtering, expiry countdown, typed flight-details navigation, accessibility, and gallery capture on PR head `0ca9e41845ef997fa4eb14e81d666e65ea7aed10`.
+- CI repair loop: first run exposed a Swift route/view name collision; renamed only the SwiftUI destination seam to `SearchResultsScreenRoute`, preserving Android model name parity.
+- Known boundary: selected-offer pricing/details remains FD-API-1; destination stayed an honest placeholder until its production repository exists.
