@@ -21,6 +21,20 @@ struct RemotePaymentProofRepositoryTests {
         #expect(requests[1].value(forHTTPHeaderField: "Authorization") == nil)
         #expect(requests[1].value(forHTTPHeaderField: "x-meta") == "proof")
     }
+
+    @Test func unsupportedDocumentIsRejectedBeforeNetwork() async throws {
+        let loader = PaymentProofLoader(responses: [])
+        let repository = RemotePaymentProofRepository(
+            transport: HTTPTransport(loader: loader), tokenProvider: AuthTokenProvider(sessionStore: PaymentProofSessionStore()),
+            documentLoader: { _ in Data([1]) }
+        )
+        let result = try await repository.upload(
+            bookingId: "b-1", document: .init(uriString: "file:///receipt.txt", displayName: "receipt.txt", mimeType: "text/plain")
+        )
+        #expect(result == .invalidDocument)
+        let requests = await loader.requests
+        #expect(requests.isEmpty)
+    }
 }
 
 private actor PaymentProofLoader: HTTPDataLoading {
