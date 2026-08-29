@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## PD-1 — Passenger details and passport signed upload
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/26
+- Merge commit: `b148f1eb35a18b654e9539dab8032a98d4df01ad`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33254999846
+- Evidence: Xcode 26.6 built latest head `a9484c1`; 239 tests across 47 suites passed.
+- Contract: stable passport idempotency, bearer-free signed PUT with required headers, completion, booking draft, passenger submission, auth resume, and seat route compiled and passed contract tests.
+- Adversarial review: corrected Android “Other” gender to backend-required `X` before merge.
+- Known deviations: simulator/device visual and accessibility evidence deferred to Phase 8 by user direction.
+
 ## P0-1 — Bootstrap reproducible PR verification
 
 - Completed: 2026-08-24
