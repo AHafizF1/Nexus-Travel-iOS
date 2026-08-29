@@ -63,10 +63,15 @@ enum SearchResponseMapper {
         return fractional.date(from: value) ?? ISO8601DateFormatter().date(from: value)
     }
 
-    private static func formattedMoney(_ minor: Int, currency: String) -> String {
+    static func formattedMoney(_ minor: Int, currency: String) -> String {
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.numberStyle = .currency
+        currencyFormatter.currencyCode = currency
+        let fractionDigits = currencyFormatter.maximumFractionDigits
         let formatter = NumberFormatter(); formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2; formatter.maximumFractionDigits = 2
-        let value = NSDecimalNumber(value: minor).dividing(by: 100)
+        formatter.minimumFractionDigits = fractionDigits; formatter.maximumFractionDigits = fractionDigits
+        let divisor = NSDecimalNumber(mantissa: 1, exponent: Int16(fractionDigits), isNegative: false)
+        let value = NSDecimalNumber(value: minor).dividing(by: divisor)
         return "\(currency) \(formatter.string(from: value) ?? value.stringValue)"
     }
 }

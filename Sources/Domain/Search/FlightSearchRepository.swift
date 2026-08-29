@@ -5,5 +5,5 @@ protocol FlightSearchRepository: Sendable {
 
 /// Loads results previously created for an exact search identifier.
 protocol SearchResultsRepository: Sendable {
-    func results(searchId: String) async throws -> SearchResultsResult
+    func getSearchResults(searchId: String) async throws -> SearchResultsResult
 }
