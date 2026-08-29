@@ -74,10 +74,14 @@ struct RouterTests {
         router.select(.home)
         router.beginMainAuth(returningTo: .trips)
 
+        #expect(router.pendingTab == .trips)
+        #expect(router.homePath.last == .mainAuth(MainAuthRoute()))
+
         router.completeMainAuth()
 
         #expect(router.selectedTab == .trips)
         #expect(router.pendingTab == nil)
+        #expect(router.homePath.isEmpty)
         #expect(router.profilePath == [.settings(SettingsRoute())])
     }
 

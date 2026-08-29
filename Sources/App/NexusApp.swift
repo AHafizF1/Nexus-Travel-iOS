@@ -2,21 +2,23 @@ import Foundation
 import SwiftUI
 
 @main
+@MainActor
 struct NexusApp: App {
-    private let initialGallerySection: DesignSystemGallerySection
+    private let launchDestination: AppLaunchDestination
+    @State private var router: Router
 
     init() {
-        let prefix = "--gallery-section="
-        initialGallerySection = ProcessInfo.processInfo.arguments
-            .first { $0.hasPrefix(prefix) }
-            .flatMap { DesignSystemGallerySection(rawValue: String($0.dropFirst(prefix.count))) }
-            ?? .top
+        launchDestination = AppLaunchDestination(arguments: ProcessInfo.processInfo.arguments)
+        _router = State(initialValue: Router())
     }
 
     var body: some Scene {
         WindowGroup {
-            // Phase 4 app shell replaces this temporary gallery root.
-            DesignSystemGalleryScreen(initialSection: initialGallerySection)
+            if let gallerySection = launchDestination.gallerySection {
+                DesignSystemGalleryScreen(initialSection: gallerySection)
+            } else {
+                AppShell(router: router)
+            }
         }
     }
 }
