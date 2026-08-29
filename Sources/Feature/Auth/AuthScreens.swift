@@ -46,7 +46,10 @@ struct LoginScreen: View {
     var body: some View {
         AuthScaffold(title: "Welcome back", subtitle: "Sign in to manage trips, tickets, and check-in.") {
             NexusAuthTextField(
-                text: Binding(get: { viewModel.loginState.email }, set: viewModel.updateLoginEmail),
+                text: Binding(
+                    get: { viewModel.loginState.email },
+                    set: { viewModel.updateLoginEmail($0) }
+                ),
                 placeholder: "Email",
                 label: "Email",
                 error: viewModel.loginState.emailError
@@ -56,7 +59,10 @@ struct LoginScreen: View {
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             PasswordAuthField(
-                text: Binding(get: { viewModel.loginState.password }, set: viewModel.updateLoginPassword),
+                text: Binding(
+                    get: { viewModel.loginState.password },
+                    set: { viewModel.updateLoginPassword($0) }
+                ),
                 label: "Password",
                 error: viewModel.loginState.passwordError
             )
@@ -68,7 +74,7 @@ struct LoginScreen: View {
             }
             HStack {
                 Text("Don’t have an account?")
-                Button("Sign up", action: viewModel.showSignup)
+                Button("Sign up") { viewModel.showSignup() }
             }
             .nexusTextStyle(NexusText.styles.body)
         }
@@ -82,12 +88,18 @@ struct SignupScreen: View {
     var body: some View {
         AuthScaffold(title: "Create your account", subtitle: "Book faster, manage trips, and keep every journey in one place.") {
             NexusAuthTextField(
-                text: Binding(get: { viewModel.signupState.fullName }, set: viewModel.updateSignupName),
+                text: Binding(
+                    get: { viewModel.signupState.fullName },
+                    set: { viewModel.updateSignupName($0) }
+                ),
                 placeholder: "Full name", label: "Full name", error: viewModel.signupState.fullNameError
             )
             .textContentType(.name)
             NexusAuthTextField(
-                text: Binding(get: { viewModel.signupState.email }, set: viewModel.updateSignupEmail),
+                text: Binding(
+                    get: { viewModel.signupState.email },
+                    set: { viewModel.updateSignupEmail($0) }
+                ),
                 placeholder: "Email", label: "Email", error: viewModel.signupState.emailError
             )
             .textContentType(.emailAddress)
@@ -95,15 +107,22 @@ struct SignupScreen: View {
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             PasswordAuthField(
-                text: Binding(get: { viewModel.signupState.password }, set: viewModel.updateSignupPassword),
+                text: Binding(
+                    get: { viewModel.signupState.password },
+                    set: { viewModel.updateSignupPassword($0) }
+                ),
                 label: "Password", error: viewModel.signupState.passwordError, contentType: .newPassword
             )
             PasswordAuthField(
-                text: Binding(get: { viewModel.signupState.confirmPassword }, set: viewModel.updateSignupConfirmPassword),
+                text: Binding(
+                    get: { viewModel.signupState.confirmPassword },
+                    set: { viewModel.updateSignupConfirmPassword($0) }
+                ),
                 label: "Confirm password", error: viewModel.signupState.confirmPasswordError, contentType: .newPassword
             )
             Toggle("I agree to the terms and privacy policy.", isOn: Binding(
-                get: { viewModel.signupState.acceptedTerms }, set: viewModel.updateTerms
+                get: { viewModel.signupState.acceptedTerms },
+                set: { viewModel.updateTerms($0) }
             ))
             if let error = viewModel.signupState.termsError {
                 Text(error).nexusTextStyle(NexusText.styles.errorText).foregroundStyle(NexusSemanticColors.errorText)
@@ -114,7 +133,7 @@ struct SignupScreen: View {
             }
             HStack {
                 Text("Already have an account?")
-                Button("Sign in", action: viewModel.showLogin)
+                Button("Sign in") { viewModel.showLogin() }
             }
             .nexusTextStyle(NexusText.styles.body)
         }
