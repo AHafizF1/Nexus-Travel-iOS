@@ -159,3 +159,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `39dd9c8` added remote-auth contracts before production implementation; CI exposed one Swift 6 inference defect, fixed at source in `f3a03a1`, then latest-SHA CI passed.
 - Contract review: root Better Auth routes, `200 null` unauthenticated session, token precedence, bearer attachment, expiry boundaries, clearing policy, and full error/status matrix confirmed.
 - Backend blocker: password reset remains disabled server-side as `RESET_PASSWORD_DISABLED`; iOS reports unknown failure honestly and does not call obsolete Android `/forget-password`.
+
+## NV-1 — Typed app shell navigation
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/17
+- Merge commit: `41e3535d2eb28139c71ed1a6fdbad5f77f56bee0`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33232280871
+- Evidence: Xcode 26.6 compiled native four-tab shell and passed 25-route inventory, filter, independent-history, reselect, safe-pop, auth-return, and launch-selection tests on PR head `4709863`.
+- TDD: commit `b264536` added missing-symbol navigation contracts before production implementation; feature passed first CI run.
+- Adversarial review: every Android route, tab label, icon intent, auth return, and detail tab-bar visibility matched.
+- Intentional Apple adaptation: native `TabView`, one `NavigationStack` per tab, retained independent histories, and current-tab reselect-to-root.

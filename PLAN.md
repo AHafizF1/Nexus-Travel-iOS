@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 4 — app shell and navigation**
+Current phase: **Phase 5 — search journey**
 
-Active wave: **Wave 8 — NV-1 typed app shell**
+Active wave: **Wave 9 — SR-2 remote flight search**
 
 ## Phase 0 — Delivery foundation
 
@@ -55,14 +55,14 @@ Exit gate: backend contract fixtures green; demo email auth flow verified.
 
 ## Phase 4 — App shell and navigation
 
-- [ ] 🔄 [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
+- [x] [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 
 ## Phase 5 — Search journey
 
 - [ ] HM-2 — Home loading, content, empty, and error states — requires HM-1, NV-1
-- [ ] SR-2 — Remote search Adapter — requires SR-1, NT-1
+- [ ] 🔄 [SR-2 — Remote search Adapter](docs/tasks/SR-2-remote-search.md) — requires SR-1, NT-1
 - [ ] SR-3 — Search results screen — requires SR-2, HM-2
 - [ ] FD-2 — Flight details screen — requires FD-1, SR-3
 
