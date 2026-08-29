@@ -213,3 +213,12 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Evidence: Xcode 26.6 compiled observable search-results orchestration, four UI states, sorting/filtering, expiry countdown, typed flight-details navigation, accessibility, and gallery capture on PR head `0ca9e41845ef997fa4eb14e81d666e65ea7aed10`.
 - CI repair loop: first run exposed a Swift route/view name collision; renamed only the SwiftUI destination seam to `SearchResultsScreenRoute`, preserving Android model name parity.
 - Known boundary: selected-offer pricing/details remains FD-API-1; destination stayed an honest placeholder until its production repository exists.
+
+## FD-API-1 — Remote flight details adapter
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/22
+- Merge commit: `5e03f7ebf7fbbca5d381011d318a13aec0242f44`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33243797678
+- Evidence: Xcode 26.6 compiled strict canonical DTO mapping and pricing/revalidation adapter; full tests passed on PR head `dc2c71207cec2fa3620e5a348f0e32c1c958811a`.
+- Contract review: anonymous 90-second details request, confirmed/price-change mapping, segments/rules/availability, status matrix, connectivity, malformed data, and cancellation verified.
