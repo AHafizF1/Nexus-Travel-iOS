@@ -9,6 +9,7 @@ struct AppDependencies {
     let searchResultsRepository: RemoteSearchResultsRepository
     let flightDetailsRepository: RemoteFlightDetailsRepository
     let passengerDetailsRepository: RemotePassengerDetailsRepository
+    let flightSeatsRepository: RemoteFlightSeatsRepository
     let authRepository: RemoteAuthRepository
     let homeViewModel: HomeViewModel
 
@@ -37,6 +38,9 @@ struct AppDependencies {
             passportUploadRepository: RemotePassportUploadRepository(
                 transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore)
             )
+        )
+        flightSeatsRepository = RemoteFlightSeatsRepository(
+            transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore)
         )
         authRepository = sharedAuthRepository
         homeViewModel = HomeViewModel(
