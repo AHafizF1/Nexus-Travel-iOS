@@ -8,12 +8,12 @@ struct SearchRequestMapperTests {
         (.business, "BUSINESS"), (.first, "FIRST")
     ])
     func encodesCabinValues(_ cabin: CabinClass, _ raw: String) throws {
-        let dto = try #require(SearchRequestDTO(request(cabin: cabin)))
+        let dto = SearchRequestDTO(try request(cabin: cabin))
         #expect(dto.cabinClass == raw)
     }
 
     @Test func oneWayUsesUppercaseRootShapeAndNormalizedTravelers() throws {
-        let dto = try #require(SearchRequestDTO(request(travelers: .init(adults: 0, children: 9, infants: 9))))
+        let dto = SearchRequestDTO(try request(travelers: .init(adults: 0, children: 9, infants: 9)))
         #expect(dto.tripType == "ONE_WAY")
         #expect(dto.from == "JFK" && dto.to == "LHR")
         #expect(dto.departureDate == "2026-08-01" && dto.returnDate == nil && dto.legs == nil)
@@ -35,8 +35,11 @@ struct SearchRequestMapperTests {
         #expect(dto.departureDate == nil && dto.returnDate == nil && dto.legs?.count == 2)
     }
 
-    private func request(cabin: CabinClass = .economy, travelers: TravelerCounts = .init()) -> FlightSearchRequest {
-        FlightSearchRequest.make(tripType: .oneWay, originCode: "JFK", destinationCode: "LHR", departureDate: date(1), returnDate: nil, travelers: travelers, cabinClass: cabin, cheapestFirst: true, childAges: [4], infantAges: [1])!
+    private func request(cabin: CabinClass = .economy, travelers: TravelerCounts = .init()) throws -> FlightSearchRequest {
+        try #require(FlightSearchRequest.make(tripType: .oneWay, originCode: "JFK", destinationCode: "LHR", departureDate: date(1), returnDate: nil, travelers: travelers, cabinClass: cabin, cheapestFirst: true, childAges: [4], infantAges: [1]))
     }
-    private func date(_ day: Int) -> LocalDate { LocalDate(year: 2026, month: 8, day: day)! }
+    private func date(_ day: Int) -> LocalDate {
+        guard let value = LocalDate(year: 2026, month: 8, day: day) else { preconditionFailure("Valid fixture date") }
+        return value
+    }
 }

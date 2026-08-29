@@ -67,7 +67,13 @@ struct RemoteFlightSearchRepositoryTests {
         await #expect(throws: CancellationError.self) { try await cancelled.createSearch(request: request()) }
     }
 
-    private func request() -> FlightSearchRequest { FlightSearchRequest.make(tripType: .oneWay, originCode: "JFK", destinationCode: "LHR", departureDate: LocalDate(year: 2026, month: 8, day: 1)!, returnDate: nil, travelers: .init(), cabinClass: .economy)! }
+    private func request() -> FlightSearchRequest {
+        guard let date = LocalDate(year: 2026, month: 8, day: 1),
+              let value = FlightSearchRequest.make(tripType: .oneWay, originCode: "JFK", destinationCode: "LHR", departureDate: date, returnDate: nil, travelers: .init(), cabinClass: .economy) else {
+            preconditionFailure("Valid fixture request")
+        }
+        return value
+    }
 }
 
 private actor SearchStubLoader: HTTPDataLoading {
@@ -78,7 +84,12 @@ private actor SearchStubLoader: HTTPDataLoading {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         requests.append(request)
         switch outcomes.removeFirst() {
-        case let .response(status, data): return (data, HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
+        case let .response(status, data):
+            guard let url = request.url,
+                  let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil) else {
+                throw HTTPTransportError.nonHTTPResponse
+            }
+            return (data, response)
         case let .failure(error): throw error
         case .cancel: throw CancellationError()
         }
