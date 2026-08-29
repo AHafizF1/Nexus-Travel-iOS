@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppShell: View {
     @Bindable var router: Router
+    let homeViewModel: HomeViewModel
 
     var body: some View {
         TabView(
@@ -11,7 +12,7 @@ struct AppShell: View {
             )
         ) {
             NavigationStack(path: $router.homePath) {
-                AppTabRoot(tab: .home)
+                HomeRoute(viewModel: homeViewModel, router: router)
                     .appDestinations()
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }

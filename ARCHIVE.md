@@ -181,3 +181,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: `97b4bcf` established missing-symbol contracts; coordinator review added name-parity/currency-precision RED `1ed30f9`; one syntax failure was repaired at source and latest-SHA CI passed.
 - Contract review: exact one-way/round-trip/multi-city shapes, normalized travelers/ages, 201 success, strict required fields, additive JSON, offer legs/carrier/price/expiry, status/transport/cancellation, and no-write failures confirmed.
 - Known boundary: results remain memory-only by Android contract; process restart requires a new search. No retry, refresh, details/price call, bearer, or supplier reference leakage.
+
+## HD-1 — Remote Home and airport data adapters
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/19
+- Merge commit: `27320a35dfba82ebc87b84b6b8e631693e19d5fe`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33238883005
+- Evidence: Xcode 26.6 compiled structured query construction, strict Home/airport DTO mapping, anonymous remote adapters, and actor airport cache; 179 tests plus gallery capture passed on PR head `b3c22e2`.
+- TDD: `9d0ce17` established missing-symbol contracts before `d6070bb`; CI exposed one nested test-macro compile defect plus two fixture/spec mismatches, each repaired at source before latest-SHA green.
+- Contract review: popular/search route limits, original-query percent encoding, ADD/DXB precedence, Android index/fallback mapping, ten-minute stale revalidation, no-empty cache, complete status/connectivity/cancellation behavior, and no auth headers confirmed.
+- Known boundary: Home mapper intentionally preserves Android zero/empty price presentation. No image assets, retries, disk cache, ViewModel, or UI entered scope.
