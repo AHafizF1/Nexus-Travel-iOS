@@ -7,6 +7,7 @@ struct AppShell: View {
     let flightDetailsRepository: any FlightDetailsRepository
     let passengerDetailsRepository: any PassengerDetailsRepository
     let flightSeatsRepository: any FlightSeatsRepository
+    let bookingRequestRepository: any BookingRequestRepository
     let authRepository: any AuthRepository
     let bookingFlowState: BookingFlowState
 
@@ -19,28 +20,28 @@ struct AppShell: View {
         ) {
             NavigationStack(path: $router.homePath) {
                 HomeRoute(viewModel: homeViewModel, router: router)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 AppTabRoot(tab: .explore)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 AppTabRoot(tab: .trips)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
                 AppTabRoot(tab: .profile)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
@@ -67,6 +68,7 @@ private struct AppDestinations: ViewModifier {
     let flightDetailsRepository: any FlightDetailsRepository
     let passengerDetailsRepository: any PassengerDetailsRepository
     let flightSeatsRepository: any FlightSeatsRepository
+    let bookingRequestRepository: any BookingRequestRepository
     let authRepository: any AuthRepository
     let bookingFlowState: BookingFlowState
 
@@ -125,6 +127,13 @@ private struct AppDestinations: ViewModifier {
                         passengerCount: bookingFlowState.passengerDetails?.travelers.total ?? 1,
                         repository: flightSeatsRepository
                     ), router: router
+                )
+                .toolbar(.hidden, for: .tabBar)
+            case let .bookingReview(route):
+                BookingReviewScreenRoute(
+                    viewModel: BookingReviewViewModel(reviewId: route.reviewId, repository: bookingRequestRepository),
+                    flightDetails: bookingFlowState.passengerDetails,
+                    router: router
                 )
                 .toolbar(.hidden, for: .tabBar)
             default:
@@ -193,6 +202,7 @@ private extension View {
         flightDetailsRepository: any FlightDetailsRepository,
         passengerDetailsRepository: any PassengerDetailsRepository,
         flightSeatsRepository: any FlightSeatsRepository,
+        bookingRequestRepository: any BookingRequestRepository,
         authRepository: any AuthRepository,
         bookingFlowState: BookingFlowState
     ) -> some View {
@@ -202,6 +212,7 @@ private extension View {
             flightDetailsRepository: flightDetailsRepository,
             passengerDetailsRepository: passengerDetailsRepository,
             flightSeatsRepository: flightSeatsRepository,
+            bookingRequestRepository: bookingRequestRepository,
             authRepository: authRepository,
             bookingFlowState: bookingFlowState
         ))

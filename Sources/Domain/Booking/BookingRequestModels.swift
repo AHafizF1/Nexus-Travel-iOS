@@ -40,3 +40,26 @@ enum BookingRequestStatus: String, Equatable, Hashable, Codable, Sendable {
         }
     }
 }
+
+struct BookingReviewDetails: Equatable, Sendable {
+    let reviewId: String; let bookingReference: String?; let status: BookingRequestStatus
+    let passengers: [BookingReviewPassenger]; let contact: BookingReviewContact
+    let seats: [SeatAssignment]; let fareTotal: Money
+}
+struct BookingReviewPassenger: Equatable, Sendable {
+    let title, firstName, lastName, passportNumber, nationality: String
+}
+struct BookingReviewContact: Equatable, Sendable { let email, phone: String }
+enum BookingRequestResult: Equatable, Sendable {
+    case success(BookingReviewDetails), notFound, networkUnavailable, expired, unavailable, unknownError
+}
+enum BookingSubmitResult: Equatable, Sendable {
+    case success(reviewId: String, bookingReference: String, status: BookingRequestStatus)
+    case notFound, networkUnavailable, outcomeUnknown, expired
+    case fareUnavailable(String), unavailable, unknownError
+}
+
+protocol BookingRequestRepository: Sendable {
+    func getReview(reviewId: String) async throws -> BookingRequestResult
+    func submitReview(reviewId: String, idempotencyKey: String) async throws -> BookingSubmitResult
+}
