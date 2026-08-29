@@ -192,3 +192,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: `9d0ce17` established missing-symbol contracts before `d6070bb`; CI exposed one nested test-macro compile defect plus two fixture/spec mismatches, each repaired at source before latest-SHA green.
 - Contract review: popular/search route limits, original-query percent encoding, ADD/DXB precedence, Android index/fallback mapping, ten-minute stale revalidation, no-empty cache, complete status/connectivity/cancellation behavior, and no auth headers confirmed.
 - Known boundary: Home mapper intentionally preserves Android zero/empty price presentation. No image assets, retries, disk cache, ViewModel, or UI entered scope.
+
+## HM-2 — Home screen and orchestration
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/20
+- Merge commit: `a2cbb3291d51d35213f8d0e96909eb2e4ac09691`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33240910861
+- Evidence: Xcode 26.6 compiled production Home dependency wiring, observable orchestration, native SwiftUI Home states/sheets, typed navigation, stale-query protection, and cancellation; full tests plus gallery capture passed on PR head `868c8c9`.
+- TDD: `9029f0a` established missing ViewModel/screen contracts; coordinator and independent parity/concurrency reviews closed retry, load/search state, date clock, traveler ages, route-name, request-shape, and nested-task cancellation gaps before first push.
+- Android parity: every Home event/state/copy path, one/round/multi-city request shape, ADD/DXB fallback, airport search, recent/trending search, and result/package handoff confirmed.
+- Apple adaptations: native DatePicker/sheets/navigation, Dynamic Type wrapping, Reduce Motion transition, code-only background, remote URL images only, labeled non-actionable notification indicator, and no dead Recent Searches clear control.
