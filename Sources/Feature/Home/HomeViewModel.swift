@@ -15,6 +15,8 @@ final class HomeViewModel {
     private var airportSearchGeneration = 0
     private var airportSearchTask: Task<[Airport], Error>?
 
+    var currentDate: LocalDate { today() }
+
     init(
         homeRepository: any HomeRepository,
         airportRepository: any AirportRepository,

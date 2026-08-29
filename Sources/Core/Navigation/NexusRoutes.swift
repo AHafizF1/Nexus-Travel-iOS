@@ -7,7 +7,7 @@ enum ExploreFilter: Hashable, Sendable {
     var showsDestinations: Bool { self != .packages }
 }
 
-struct HomeRoute: Hashable, Sendable {}
+struct HomeRootRoute: Hashable, Sendable {}
 
 struct ExploreRoute: Hashable, Sendable {
     let filter: ExploreFilter
@@ -42,7 +42,7 @@ struct BookingReviewRoute: Hashable, Sendable { let reviewId: String }
 struct PaymentProofRoute: Hashable, Sendable { let bookingId: String }
 
 enum AppRoute: Hashable, Sendable {
-    case home(HomeRoute)
+    case home(HomeRootRoute)
     case explore(ExploreRoute)
     case destinationDetail(DestinationDetailRoute)
     case packageDetail(PackageDetailRoute)

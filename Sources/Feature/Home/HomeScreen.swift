@@ -29,6 +29,7 @@ struct HomeRoute: View {
     var body: some View {
         HomeScreen(
             state: viewModel.uiState,
+            today: viewModel.currentDate,
             onEvent: send,
             onExplore: { router.select(.explore) },
             onRetry: retry
@@ -50,7 +51,7 @@ struct HomeRoute: View {
     }
 
     private func send(_ event: HomeUiEvent) {
-        if case .airportQueryChanged = event {
+        if event.usesAirportTask {
             airportQueryTask?.cancel()
             airportQueryTask = Task { await perform(event) }
         } else if event == .searchClicked || event.isSearchPrefill {
@@ -79,6 +80,7 @@ struct HomeRoute: View {
 
 struct HomeScreen: View {
     let state: HomeUiState
+    let today: LocalDate
     let onEvent: (HomeUiEvent) -> Void
     let onExplore: () -> Void
     let onRetry: () -> Void
@@ -100,7 +102,7 @@ struct HomeScreen: View {
         .background(NexusSemanticColors.backgroundPage)
         .animation(reduceMotion ? .linear : .smooth, value: state.selectedService)
         .sheet(item: Binding(get: { state.activeSheet }, set: { if $0 == nil { onEvent(.dismissSheet) } })) { sheet in
-            HomeSheetView(sheet: sheet, state: state, onEvent: onEvent)
+            HomeSheetView(sheet: sheet, state: state, today: today, onEvent: onEvent)
                 .presentationDragIndicator(.visible)
         }
     }
@@ -280,15 +282,16 @@ struct HomeScreen: View {
 private struct HomeSheetView: View {
     let sheet: HomeSheet
     let state: HomeUiState
+    let today: LocalDate
     let onEvent: (HomeUiEvent) -> Void
 
     @ViewBuilder var body: some View {
         switch sheet {
         case .originAirport, .destinationAirport, .multiCityOrigin, .multiCityDestination:
             AirportSelectorSheet(state: state, onEvent: onEvent)
-        case .departureDate: DateSelectorSheet(title: "Select departure", selected: state.departureDate, minimum: nil) { onEvent(.departureDateSelected($0)) }
+        case .departureDate: DateSelectorSheet(title: "Select departure", selected: state.departureDate, minimum: today) { onEvent(.departureDateSelected($0)) }
         case .returnDate: DateSelectorSheet(title: "Select return", selected: state.returnDate, minimum: state.departureDate?.addingDays(1)) { onEvent(.returnDateSelected($0)) }
-        case let .multiCityDate(index): DateSelectorSheet(title: "Select date for Flight \(index + 1)", selected: state.multiCityLegs[safe: index]?.departureDate, minimum: state.multiCityLegs[safe: index - 1]?.departureDate) { onEvent(.multiCityDateSelected(index: index, date: $0)) }
+        case let .multiCityDate(index): DateSelectorSheet(title: "Select date for Flight \(index + 1)", selected: state.multiCityLegs[safe: index]?.departureDate, minimum: state.multiCityLegs[safe: index - 1]?.departureDate ?? today) { onEvent(.multiCityDateSelected(index: index, date: $0)) }
         case .travelers: TravelerSelectorSheet(state: state, onEvent: onEvent)
         case .cabinClass:
             List(CabinClass.allCases, id: \.self) { cabin in
@@ -403,6 +406,16 @@ private extension HomeUiEvent {
         switch self {
         case .trendingEscapeClicked, .recentSearchClicked: true
         default: false
+        }
+    }
+
+    var usesAirportTask: Bool {
+        switch self {
+        case .airportQueryChanged, .originClicked, .destinationClicked,
+             .multiCityOriginClicked, .multiCityDestinationClicked:
+            true
+        default:
+            false
         }
     }
 }

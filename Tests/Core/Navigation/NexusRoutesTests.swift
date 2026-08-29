@@ -5,7 +5,7 @@ struct NexusRoutesTests {
     @Test
     func routeInventoryPreservesPayloadEquality() {
         let routes: [AppRoute] = [
-            .home(HomeRoute()),
+            .home(HomeRootRoute()),
             .explore(ExploreRoute()),
             .destinationDetail(DestinationDetailRoute(destinationId: "destination-1")),
             .packageDetail(PackageDetailRoute(packageId: "package-1")),

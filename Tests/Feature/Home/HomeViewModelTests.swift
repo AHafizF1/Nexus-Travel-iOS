@@ -85,7 +85,8 @@ struct HomeViewModelTests {
         try await model.load()
         await model.onEvent(.tripTypeChanged(.roundTrip))
         await model.onEvent(.swapAirportsClicked)
-        await model.onEvent(.departureDateSelected(today.addingDays(20)))
+        let newDeparture = try #require(today.addingDays(20))
+        await model.onEvent(.departureDateSelected(newDeparture))
         await model.onEvent(.travelersChanged(TravelerCounts(adults: 2, children: 2, infants: 3), childAges: [4, 7], infantAges: [0, 1, 1]))
         await model.onEvent(.cabinClassChanged(.business))
         #expect(model.uiState.origin == dxb)
@@ -156,6 +157,39 @@ struct HomeViewModelTests {
         #expect(request.returnDate == nil)
         #expect(request.legs.isEmpty)
         #expect(!request.cheapestFirst)
+    }
+
+    @Test func roundTripSearchIncludesOnlyReturnDate() async throws {
+        let repository = RequestSpySearchRepository()
+        let model = makeModel(searchRepository: repository)
+        try await model.load()
+        await model.onEvent(.tripTypeChanged(.roundTrip))
+        await model.onEvent(.searchClicked)
+
+        let capturedRequest = await repository.lastRequest
+        let request = try #require(capturedRequest)
+        #expect(request.tripType == .roundTrip)
+        #expect(request.returnDate == today.addingDays(14))
+        #expect(request.legs.isEmpty)
+    }
+
+    @Test func multiCitySearchUsesOrderedLegsWithoutRootReturnDate() async throws {
+        let repository = RequestSpySearchRepository()
+        let model = makeModel(searchRepository: repository)
+        try await model.load()
+        await model.onEvent(.tripTypeChanged(.multiCity))
+        await model.onEvent(.multiCityDestinationClicked(index: 1))
+        await model.onEvent(.airportSelected(add))
+        await model.onEvent(.searchClicked)
+
+        let capturedRequest = await repository.lastRequest
+        let request = try #require(capturedRequest)
+        #expect(request.tripType == .multiCity)
+        #expect(request.originCode == "ADD")
+        #expect(request.destinationCode == "ADD")
+        #expect(request.returnDate == nil)
+        #expect(request.legs.map(\.originCode) == ["ADD", "DXB"])
+        #expect(request.legs.map(\.destinationCode) == ["DXB", "ADD"])
     }
 
     @Test func duplicateSubmitDoesNotStartSecondSearch() async throws {
