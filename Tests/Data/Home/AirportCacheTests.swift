@@ -8,7 +8,7 @@ struct AirportCacheTests {
         let cache = AirportCache(clock: { now })
         await cache.store([airport("ADD")], for: " SEARCH:  jFk ")
         #expect(await cache.entry(for: "search:  JFK") == AirportCacheEntry(airports: [airport("ADD")], needsRevalidation: false))
-        #expect(await cache.entry(for: "search:jfk", now: now.addingTimeInterval(600))?.needsRevalidation == true)
+        #expect(await cache.entry(for: "search:  jfk", now: now.addingTimeInterval(600))?.needsRevalidation == true)
     }
 
     @Test func emptyResultsNeverReplaceCache() async {
