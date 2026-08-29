@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## BR-1 — Booking review and stable hold idempotency
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/28
+- Merge commit: `f4067bc083589a325ad6b7cb8bb2443d08f582e3`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33258574905
+- Evidence: latest head `74f5948` built with Xcode 26.6; 248 tests across 51 suites passed.
+- Contract: server review snapshots, stable hold key, duplicate-submit prevention, supplier-locator validation, honest unconfirmed outcome, failure states, cancellation rollback, payment/trip routing.
+- Adversarial review: review metadata corrected to Android date and traveler-summary copy before merge.
+- Known deviations: simulator/device visual and accessibility evidence deferred to Phase 8 by user direction.
+
 ## ST-1 — Seat selection
 
 - Completed: 2026-08-29
