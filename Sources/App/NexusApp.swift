@@ -26,6 +26,7 @@ struct NexusApp: App {
                          flightDetailsRepository: dependencies.flightDetailsRepository,
                          passengerDetailsRepository: dependencies.passengerDetailsRepository,
                          flightSeatsRepository: dependencies.flightSeatsRepository,
+                         bookingRequestRepository: dependencies.bookingRequestRepository,
                          authRepository: dependencies.authRepository,
                          bookingFlowState: bookingFlowState)
             }

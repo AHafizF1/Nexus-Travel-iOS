@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## ST-1 — Seat selection
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/27
+- Merge commit: `5de2623d7e98882804b848105fab944ef670e328`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33256117583
+- Evidence: latest head `bb832c4` built with Xcode 26.6; 243 tests across 49 suites passed.
+- Contract: authenticated GET seat map, PUT assignments, DELETE optional selection, conflict mapping, passenger/segment uniqueness, fees, skip, accessibility, and review navigation.
+- Adversarial review: CI exposed observable-state exclusivity trap; active passenger was snapshotted before assignment mutation and full suite reran green.
+- Known deviations: simulator/device visual and accessibility evidence deferred to Phase 8 by user direction.
+
 ## PD-1 — Passenger details and passport signed upload
 
 - Completed: 2026-08-29
