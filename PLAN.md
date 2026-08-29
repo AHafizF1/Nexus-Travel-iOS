@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 5 — search journey**
 
-Active wave: **Wave 11 — HM-2 Home screen**
+Active wave: **Wave 12 — SR-3 Search Results screen**
 
 ## Phase 0 — Delivery foundation
 
@@ -62,9 +62,9 @@ Exit gate: independent tab-history and restoration tests green; simulator eviden
 ## Phase 5 — Search journey
 
 - [x] [HD-1 — Remote Home and airport data adapters](docs/tasks/HD-1-home-data.md) — requires HM-1, NT-1
-- [ ] 🔄 [HM-2 — Home loading, content, empty, and error states](docs/tasks/HM-2-home-screen.md) — requires HM-1, NV-1, HD-1, SR-2
+- [x] [HM-2 — Home loading, content, empty, and error states](docs/tasks/HM-2-home-screen.md) — requires HM-1, NV-1, HD-1, SR-2
 - [x] [SR-2 — Remote search Adapter](docs/tasks/SR-2-remote-search.md) — requires SR-1, NT-1
-- [ ] SR-3 — Search results screen — requires SR-2, HM-2
+- [ ] 🔄 [SR-3 — Search results screen](docs/tasks/SR-3-search-results-screen.md) — requires SR-2, HM-2
 - [ ] FD-2 — Flight details screen — requires FD-1, SR-3
 
 Exit gate: Home → search → results → details passes parity, contract, mapper, and UI-state gates.

@@ -4,6 +4,11 @@ import Testing
 struct NexusRoutesTests {
     @Test
     func routeInventoryPreservesPayloadEquality() {
+        let reference = FlightOfferReference(
+            searchId: "search-1", offerId: "offer-1", offerToken: "token-1", provider: .travelportGds,
+            contentSource: "GDS", responseId: "response-1", productIds: ["product-1"],
+            termsAndConditionsId: "terms-1", brandRef: "brand-1", expiresAt: nil
+        )
         let routes: [AppRoute] = [
             .home(HomeRootRoute()),
             .explore(ExploreRoute()),
@@ -24,7 +29,7 @@ struct NexusRoutesTests {
             .deleteAccount(DeleteAccountRoute()),
             .mainAuth(MainAuthRoute()),
             .searchResults(SearchResultsRoute(searchId: "search-1")),
-            .flightDetails(FlightDetailsRoute()),
+            .flightDetails(FlightDetailsRoute(reference: reference)),
             .passengerDetails(PassengerDetailsRoute()),
             .bookingAuth(BookingAuthRoute()),
             .seatSelection(SeatSelectionRoute(bookingId: "booking-1")),
@@ -38,6 +43,7 @@ struct NexusRoutesTests {
         #expect(PackageDetailRoute(packageId: "1") != PackageDetailRoute(packageId: "2"))
         #expect(TripDetailRoute(tripId: "1") != TripDetailRoute(tripId: "2"))
         #expect(SearchResultsRoute(searchId: "search-1") != SearchResultsRoute(searchId: "search-2"))
+        #expect(FlightDetailsRoute(reference: reference).reference == reference)
         #expect(SeatSelectionRoute(bookingId: "1") != SeatSelectionRoute(bookingId: "2"))
         #expect(BookingReviewRoute(reviewId: "1") != BookingReviewRoute(reviewId: "2"))
         #expect(PaymentProofRoute(bookingId: "1") != PaymentProofRoute(bookingId: "2"))
