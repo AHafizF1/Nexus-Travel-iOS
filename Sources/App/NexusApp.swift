@@ -21,7 +21,8 @@ struct NexusApp: App {
             } else if let dependencies {
                 AppShell(router: router, homeViewModel: dependencies.homeViewModel,
                          searchResultsRepository: dependencies.searchResultsRepository,
-                         flightDetailsRepository: dependencies.flightDetailsRepository)
+                         flightDetailsRepository: dependencies.flightDetailsRepository,
+                         authRepository: dependencies.authRepository)
             }
         }
     }
