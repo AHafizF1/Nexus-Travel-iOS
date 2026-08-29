@@ -43,8 +43,14 @@ struct RemoteFlightSearchRepositoryTests {
         let cache = SearchResultsCache()
         let repository = RemoteFlightSearchRepository(transport: HTTPTransport(loader: SearchStubLoader([.response(201, SearchContractFixtures.empty)])), cache: cache)
         #expect(try await repository.createSearch(request: request()) == .success(searchId: "empty"))
-        #expect(try await RemoteSearchResultsRepository(cache: cache).results(searchId: "empty") != .empty)
-        #expect(try await RemoteSearchResultsRepository(cache: cache).results(searchId: "missing") == .empty)
+        #expect(try await RemoteSearchResultsRepository(cache: cache).getSearchResults(searchId: "empty") != .empty)
+        #expect(try await RemoteSearchResultsRepository(cache: cache).getSearchResults(searchId: "missing") == .empty)
+    }
+
+    @Test func moneyFormattingUsesCurrencyFractionDigits() throws {
+        #expect(SearchResponseMapper.formattedMoney(15_875, currency: "USD") == "USD 158.75")
+        #expect(SearchResponseMapper.formattedMoney(15_875, currency: "JPY") == "JPY 15,875")
+        #expect(SearchResponseMapper.formattedMoney(15_875, currency: "BHD") == "BHD 15.875")
     }
 
     @Test(arguments: [HTTPTransportError.networkUnavailable, .timedOut])
