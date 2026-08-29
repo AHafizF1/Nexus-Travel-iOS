@@ -170,3 +170,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `b264536` added missing-symbol navigation contracts before production implementation; feature passed first CI run.
 - Adversarial review: every Android route, tab label, icon intent, auth return, and detail tab-bar visibility matched.
 - Intentional Apple adaptation: native `TabView`, one `NavigationStack` per tab, retained independent histories, and current-tab reselect-to-root.
+
+## SR-2 — Remote flight search
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/18
+- Merge commit: `c41a166d130729b5875bc09fbb711315ff982ff8`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33237776609
+- Evidence: Xcode 26.6 compiled anonymous remote search, strict DTO mapping, actor cache, and cache-backed results repository; full tests and gallery evidence passed on PR head `910d02b`.
+- TDD: `97b4bcf` established missing-symbol contracts; coordinator review added name-parity/currency-precision RED `1ed30f9`; one syntax failure was repaired at source and latest-SHA CI passed.
+- Contract review: exact one-way/round-trip/multi-city shapes, normalized travelers/ages, 201 success, strict required fields, additive JSON, offer legs/carrier/price/expiry, status/transport/cancellation, and no-write failures confirmed.
+- Known boundary: results remain memory-only by Android contract; process restart requires a new search. No retry, refresh, details/price call, bearer, or supplier reference leakage.
