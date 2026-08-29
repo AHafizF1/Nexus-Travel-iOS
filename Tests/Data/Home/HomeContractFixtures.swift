@@ -1,0 +1,11 @@
+import Foundation
+
+enum HomeContractFixtures {
+    static let airports = Data(#"{"items":[{"iataCode":"ADD","name":"Bole","city":"Addis Ababa","country":"Ethiopia","extra":true},{"iataCode":"DXB","name":"Dubai International","city":"Dubai","country":"United Arab Emirates"},{"iataCode":"NBO","name":"Jomo Kenyatta","city":"Nairobi","country":"Kenya"}],"limit":20,"cursor":"ignored"}"#.utf8)
+    static let emptyAirports = Data(#"{"items":[],"limit":20}"#.utf8)
+    static let explore = Data(#"{"destinations":[{"id":"d1","title":"Nairobi","city":"Nairobi","country":"Kenya","summary":"Safari gateway","airportCode":"NBO","imageUrl":"https://fake-r2.local/nairobi.png","imageCacheKey":"explore/destinations/nairobi.png"},{"id":"d2","title":"Paris","city":"Paris","country":"France","summary":"City lights"},{"id":"d3","title":"Tokyo","city":"Tokyo","country":"Japan","summary":"Night markets","airportCode":"NRT"}],"packages":[{"id":"p1","title":"Nairobi Weekend","summary":"Two nights","priceFromMinor":120000,"currency":"ETB","imageUrl":"https://fake-r2.local/package.png","imageCacheKey":"explore/packages/p1.png"},{"id":"p2","title":"Paris Break","summary":"Three nights","priceFromMinor":99999,"currency":"EUR"},{"id":"p3","title":"Tokyo Tour","summary":"Four nights","priceFromMinor":88888,"currency":"JPY"},{"id":"p4","title":"Unpaired Package","summary":"Fallback destination","priceFromMinor":777,"currency":"USD"}],"banners":[{"title":"Discover Nairobi","imageUrl":"https://fake-r2.local/banner.jpg"}],"additive":"ignored"}"#.utf8)
+    static let emptyExplore = Data(#"{"destinations":[],"packages":[],"banners":[]}"#.utf8)
+    static let missingAirportRequired = Data(#"{"items":[{"iataCode":"ADD","name":"Bole","city":"Addis Ababa"}],"limit":20}"#.utf8)
+    static let missingAirportEnvelopeLimit = Data(#"{"items":[]}"#.utf8)
+    static let missingExploreRequired = Data(#"{"destinations":[{"id":"d1","title":"Nairobi","city":"Nairobi","country":"Kenya"}],"packages":[]}"#.utf8)
+}
