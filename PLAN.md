@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 6 — booking journey**
 
-Active wave: **Wave 18 — ST-1 Seat selection**
+Active wave: **Wave 19 — BR-1 Booking review and stable hold idempotency**
 
 ## Phase 0 — Delivery foundation
 
@@ -75,8 +75,8 @@ Exit gate: Home → search → results → details passes parity, contract, mapp
 
 - [x] [BJ-1 — Booking journey Module and valid transitions](docs/tasks/BJ-1-booking-journey.md) — requires BK-1, NV-1, AU-4
 - [x] [PD-1 — Passenger details and passport signed upload](docs/tasks/PD-1-passenger-details-passport-upload.md) — requires BJ-1, NT-1
-- [ ] 🔄 [ST-1 — Seat selection](docs/tasks/ST-1-seat-selection.md) — requires PD-1
-- [ ] BR-1 — Booking review and stable hold idempotency — requires ST-1
+- [x] [ST-1 — Seat selection](docs/tasks/ST-1-seat-selection.md) — requires PD-1
+- [ ] 🔄 [BR-1 — Booking review and stable hold idempotency](docs/tasks/BR-1-booking-review-hold.md) — requires ST-1
 - [ ] PP-1 — Payment-proof signed upload — requires BR-1
 
 Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review gates pass.
