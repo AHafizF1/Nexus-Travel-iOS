@@ -68,10 +68,11 @@ struct RemoteFlightSeatsRepository: FlightSeatsRepository {
 private struct SeatMapDTO: Decodable {
     let availability: String; let segments: [SegmentDTO]
     var domain: FlightSeatMap {
-        FlightSeatMap(availability: switch availability {
+        let mappedAvailability: SeatMapAvailability = switch availability {
         case "AVAILABLE": .available; case "NOT_SUPPORTED": .notSupported
         case "TEMPORARILY_UNAVAILABLE": .temporarilyUnavailable; default: .notProvided
-        }, segments: segments.map(\.domain))
+        }
+        return FlightSeatMap(availability: mappedAvailability, segments: segments.map(\.domain))
     }
 }
 private struct SegmentDTO: Decodable {
@@ -89,10 +90,14 @@ private struct RowDTO: Decodable {
 private struct SeatDTO: Decodable {
     let number, status, position: String; let features: [String]; let price: SeatMoneyDTO?
     var domain: FlightSeat {
-        .init(number: number, status: switch status {
+        let mappedStatus: FlightSeatStatus = switch status {
         case "AVAILABLE": .available; case "SELECTED": .selected; case "OCCUPIED": .occupied
         case "RESTRICTED": .restricted; default: .blocked
-        }, position: switch position { case "WINDOW": .window; case "AISLE": .aisle; default: .middle },
+        }
+        let mappedPosition: SeatPosition = switch position {
+        case "WINDOW": .window; case "AISLE": .aisle; default: .middle
+        }
+        return .init(number: number, status: mappedStatus, position: mappedPosition,
               features: Set(features.compactMap { $0 == "EXTRA_LEGROOM" ? .extraLegroom : $0 == "EXIT_ROW" ? .exitRow : nil }),
               price: price?.money)
     }
