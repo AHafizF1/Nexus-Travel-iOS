@@ -83,7 +83,12 @@ private struct PassengerPayload: Encodable {
     let passportNumber, passportExpiryDate, passportIssuingCountry, passportUploadId: String
     init(_ pair: (PassengerDetailsDraft, String)) {
         let (value, uploadId) = pair
-        title = value.title.uppercased(); gender = value.gender.prefix(1).uppercased()
+        title = value.title.uppercased()
+        gender = switch value.gender.lowercased() {
+        case "male": "M"
+        case "female": "F"
+        default: "X"
+        }
         firstName = value.firstName; lastName = value.lastName; dateOfBirth = value.dateOfBirth?.iso8601 ?? ""
         type = switch value.passengerType { case .adult: "ADT"; case .child: "CNN"; case .infant: "INF" }
         nationality = value.nationalityCountryCode; passportNumber = value.passportNumber
