@@ -147,26 +147,31 @@ final class HomeViewModel {
         case .dismissSheet:
             uiState.activeSheet = nil
             uiState.airportQuery = ""
-            airportSearchGeneration += 1
-            airportSearchTask?.cancel()
+            cancelAirportSearch()
         case .clearValidationError: uiState.validationError = nil
         }
     }
 
-    func prefillDestination(airportCode: String) async {
-        guard let airport = await airport(matching: airportCode) else { return }
+    func prefillDestination(airportCode: String) async throws {
+        guard let airport = try await airport(matching: airportCode) else { return }
         uiState.destination = airport
         clearFeedback()
     }
 
-    func prefillOrigin(airportCode: String) async {
-        guard let airport = await airport(matching: airportCode) else { return }
+    func prefillOrigin(airportCode: String) async throws {
+        guard let airport = try await airport(matching: airportCode) else { return }
         uiState.origin = airport
         clearFeedback()
     }
 
     func consumeNavigationEvent() -> HomeNavigationEvent? {
         pendingNavigationEvents.isEmpty ? nil : pendingNavigationEvents.removeFirst()
+    }
+
+    func cancelAirportSearch() {
+        airportSearchGeneration += 1
+        airportSearchTask?.cancel()
+        airportSearchTask = nil
     }
 
     private func fallbackState(
@@ -198,7 +203,11 @@ final class HomeViewModel {
         let task = Task { try await airportRepository.searchAirports(query: query) }
         airportSearchTask = task
         do {
-            let airports = try await task.value
+            let airports = try await withTaskCancellationHandler {
+                try await task.value
+            } onCancel: {
+                task.cancel()
+            }
             guard generation == airportSearchGeneration, uiState.airportQuery == query else { return }
             uiState.airports = airports
         } catch is CancellationError {
@@ -277,11 +286,15 @@ final class HomeViewModel {
         uiState.isSearching = false
     }
 
-    private func airport(matching code: String) async -> Airport? {
+    private func airport(matching code: String) async throws -> Airport? {
         do {
             return try await airportRepository.searchAirports(query: code)
                 .first { $0.code.caseInsensitiveCompare(code) == .orderedSame }
-        } catch { return nil }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            return nil
+        }
     }
 
     private func clearFeedback() {

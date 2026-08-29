@@ -37,6 +37,7 @@ struct HomeRoute: View {
             .task { await viewModel.retry() }
             .onDisappear {
                 airportQueryTask?.cancel()
+                viewModel.cancelAirportSearch()
                 searchTask?.cancel()
                 reloadTask?.cancel()
             }
@@ -119,6 +120,12 @@ struct HomeScreen: View {
             Spacer()
             NexusIcon(name: .bell, accessibilityLabel: "Notifications")
                 .frame(width: NexusLayout.touchRecommended, height: NexusLayout.touchRecommended)
+                .overlay(alignment: .topTrailing) {
+                    Circle()
+                        .fill(NexusSemanticColors.brandPrimary)
+                        .frame(width: NexusSpacing.space8, height: NexusSpacing.space8)
+                        .accessibilityHidden(true)
+                }
         }
     }
 

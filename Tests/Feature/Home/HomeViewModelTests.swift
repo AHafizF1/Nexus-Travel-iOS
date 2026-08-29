@@ -220,13 +220,35 @@ struct HomeViewModelTests {
     @Test func prefillAndMultiCityTransitionsMatchAndroid() async throws {
         let model = makeModel()
         try await model.load()
-        await model.prefillDestination(airportCode: "add")
+        try await model.prefillDestination(airportCode: "add")
         #expect(model.uiState.destination == add)
         await model.onEvent(.tripTypeChanged(.multiCity))
         await model.onEvent(.addMultiCityLeg)
         #expect(model.uiState.multiCityLegs.count == 3)
         await model.onEvent(.removeMultiCityLeg(index: 1))
         #expect(model.uiState.multiCityLegs.count == 2)
+    }
+
+    @Test func cancellingAirportSearchCancelsRepositoryWorkAndPreventsMutation() async throws {
+        let repository = CancellationAwareAirportRepository(popular: [add, dxb])
+        let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+        let model = HomeViewModel(
+            homeRepository: StubHomeRepository(result: .success(content)),
+            airportRepository: repository,
+            flightSearchRepository: StubFlightSearchRepository(result: .unknownError),
+            authRepository: StubAuthRepository(displayName: nil),
+            today: { self.today }
+        )
+        try await model.load()
+        let search = Task { await model.onEvent(.airportQueryChanged("slow")) }
+        await repository.waitUntilStarted()
+
+        model.cancelAirportSearch()
+        await search.value
+
+        #expect(await repository.wasCancelled)
+        #expect(model.uiState.airports == [add, dxb])
     }
 
     private func makeModel(
@@ -305,6 +327,35 @@ private actor ControllableAirportRepository: AirportRepository {
 
     func resolve(query: String, airports: [Airport]) {
         continuations.removeValue(forKey: query)?.resume(returning: airports)
+    }
+}
+
+private actor CancellationAwareAirportRepository: AirportRepository {
+    let popular: [Airport]
+    private var started = false
+    private var startedWaiters: [CheckedContinuation<Void, Never>] = []
+    private(set) var wasCancelled = false
+
+    init(popular: [Airport]) { self.popular = popular }
+
+    func searchAirports(query: String) async throws -> [Airport] {
+        if query.isEmpty { return popular }
+        started = true
+        let waiters = startedWaiters
+        startedWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+        do {
+            try await Task.sleep(for: .seconds(60))
+            return []
+        } catch is CancellationError {
+            wasCancelled = true
+            throw CancellationError()
+        }
+    }
+
+    func waitUntilStarted() async {
+        if started { return }
+        await withCheckedContinuation { startedWaiters.append($0) }
     }
 }
 
