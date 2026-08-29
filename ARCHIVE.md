@@ -243,3 +243,4 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Adversarial review: cancellation restores prior form/gate state, duplicate submissions are suppressed, password mismatch stays local, backend-disabled reset fails honestly, and social login remains excluded by ADR-0005.
 - CI repair: replaced actor-isolated method references with explicit closures after Xcode 26.6 crashed during AuthScreens IR generation.
 - Deferred evidence: final device accessibility, keyboard, and cold-launch verification remains Phase 8 QA scope.
+- **BJ-1 — Booking journey Module and valid transitions** — merged PR #25 at `d241cb7`; PR head `ea22fd1`; CI run `33253338540` green (237 tests, 46 suites). Added typed booking state, auth-resume transition, stale-offer rejection, and composition-root ownership.

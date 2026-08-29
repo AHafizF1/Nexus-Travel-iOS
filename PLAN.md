@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 6 — booking journey**
 
-Active wave: **Wave 16 — BJ-1 Booking journey state and transitions**
+Active wave: **Wave 17 — PD-1 Passenger details and passport signed upload**
 
 ## Phase 0 — Delivery foundation
 
@@ -73,8 +73,8 @@ Exit gate: Home → search → results → details passes parity, contract, mapp
 
 ## Phase 6 — Booking journey
 
-- [ ] 🔄 [BJ-1 — Booking journey Module and valid transitions](docs/tasks/BJ-1-booking-journey.md) — requires BK-1, NV-1, AU-4
-- [ ] PD-1 — Passenger details and passport signed upload — requires BJ-1, NT-1
+- [x] [BJ-1 — Booking journey Module and valid transitions](docs/tasks/BJ-1-booking-journey.md) — requires BK-1, NV-1, AU-4
+- [ ] 🔄 [PD-1 — Passenger details and passport signed upload](docs/tasks/PD-1-passenger-details-passport-upload.md) — requires BJ-1, NT-1
 - [ ] ST-1 — Seat selection — requires PD-1
 - [ ] BR-1 — Booking review and stable hold idempotency — requires ST-1
 - [ ] PP-1 — Payment-proof signed upload — requires BR-1
