@@ -67,7 +67,10 @@ struct RemoteFlightSearchRepositoryTests {
     }
 
     @Test func malformedMapsUnknownAndCancellationRethrows() async throws {
-        let malformed = RemoteFlightSearchRepository(transport: HTTPTransport(loader: SearchStubLoader([.response(201, Data("{}".utf8)])), cache: SearchResultsCache())
+        let malformed = RemoteFlightSearchRepository(
+            transport: HTTPTransport(loader: SearchStubLoader([.response(201, Data("{}".utf8))])),
+            cache: SearchResultsCache()
+        )
         #expect(try await malformed.createSearch(request: request()) == .unknownError)
         let cancelled = RemoteFlightSearchRepository(transport: HTTPTransport(loader: SearchStubLoader([.cancel])), cache: SearchResultsCache())
         await #expect(throws: CancellationError.self) { try await cancelled.createSearch(request: request()) }
