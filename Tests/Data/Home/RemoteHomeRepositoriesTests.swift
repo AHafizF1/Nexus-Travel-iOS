@@ -35,8 +35,18 @@ struct RemoteHomeRepositoriesTests {
         #expect(try await success.searchAirports(query: "").first?.displayName == "Addis Ababa (ADD)")
         let malformed = RemoteAirportRepository(transport: HTTPTransport(loader: HomeStubLoader([.response(200, HomeContractFixtures.missingAirportRequired)])), cache: AirportCache())
         await #expect(throws: DecodingError.self) { try await malformed.searchAirports(query: "") }
+        let missingEnvelope = RemoteAirportRepository(transport: HTTPTransport(loader: HomeStubLoader([.response(200, HomeContractFixtures.missingAirportEnvelopeLimit)])), cache: AirportCache())
+        await #expect(throws: DecodingError.self) { try await missingEnvelope.searchAirports(query: "") }
         let cancelled = RemoteAirportRepository(transport: HTTPTransport(loader: HomeStubLoader([.cancel])), cache: AirportCache())
         await #expect(throws: CancellationError.self) { try await cancelled.searchAirports(query: "") }
+    }
+
+    @Test func emptyAirportResponseIsNotCached() async throws {
+        let loader = HomeStubLoader([.response(200, HomeContractFixtures.emptyAirports), .response(200, HomeContractFixtures.airports)])
+        let repository = RemoteAirportRepository(transport: HTTPTransport(loader: loader), cache: AirportCache())
+        #expect(try await repository.searchAirports(query: "").isEmpty)
+        #expect(try await repository.searchAirports(query: "").first?.code == "ADD")
+        #expect(await loader.requests.count == 2)
     }
 
     @Test func homeUsesAddDxbAndAndroidMapping() async throws {
@@ -50,7 +60,10 @@ struct RemoteHomeRepositoriesTests {
         #expect(content.trendingEscapes[0].startingPrice == Money(amount: 0, currency: "ETB", formatted: ""))
         #expect(content.trendingEscapes[3].airport.code == "DXB" && content.trendingEscapes[3].airport.name == "Unpaired Package")
         #expect(content.recentSearches.map(\.destinationCode) == ["NBO", "DXB", "NRT"])
-        #expect(await loader.requests.allSatisfy { $0.value(forHTTPHeaderField: "Authorization") == nil })
+        let requests = await loader.requests
+        #expect(requests.map { $0.url?.path } == ["/api/v1/mobile/airports/popular", "/api/v1/mobile/explore"])
+        #expect(requests[0].url?.query == "limit=20")
+        #expect(requests.allSatisfy { $0.value(forHTTPHeaderField: "Authorization") == nil })
     }
 
     @Test func homeFallbackPrecedenceAndEmptyContent() async throws {
@@ -75,6 +88,8 @@ struct RemoteHomeRepositoriesTests {
         #expect(try await status.getHomeContent() == .unknownError)
         let malformed = RemoteHomeRepository(transport: HTTPTransport(loader: HomeStubLoader([.response(200, HomeContractFixtures.emptyAirports), .response(200, HomeContractFixtures.missingExploreRequired)])))
         #expect(try await malformed.getHomeContent() == .unknownError)
+        let noPartial = RemoteHomeRepository(transport: HTTPTransport(loader: HomeStubLoader([.response(200, HomeContractFixtures.airports), .response(500, Data())])))
+        #expect(try await noPartial.getHomeContent() == .unknownError)
         let cancelled = RemoteHomeRepository(transport: HTTPTransport(loader: HomeStubLoader([.cancel])))
         await #expect(throws: CancellationError.self) { try await cancelled.getHomeContent() }
     }

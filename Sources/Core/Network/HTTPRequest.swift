@@ -25,6 +25,7 @@ enum HTTPAuthorization: Equatable, Sendable {
 /// Complete input for one HTTP operation.
 struct HTTPRequest: Equatable, Sendable {
     let target: HTTPRequestTarget
+    let queryItems: [URLQueryItem]
     let method: HTTPMethod
     let headers: [String: String]
     let body: Data?
@@ -32,10 +33,11 @@ struct HTTPRequest: Equatable, Sendable {
     let timeout: TimeInterval
 
     /// Creates a request with safe JSON defaults.
-    init(target: HTTPRequestTarget, method: HTTPMethod = .get,
+    init(target: HTTPRequestTarget, queryItems: [URLQueryItem] = [], method: HTTPMethod = .get,
          headers: [String: String] = [:], body: Data? = nil,
          authorization: HTTPAuthorization = .none, timeout: TimeInterval = 30) {
         self.target = target
+        self.queryItems = queryItems
         self.method = method
         self.headers = headers
         self.body = body
@@ -46,7 +48,7 @@ struct HTTPRequest: Equatable, Sendable {
     /// Builds native request while protecting authorization headers.
     func urlRequest() throws -> URLRequest {
         guard timeout > 0 else { throw HTTPTransportError.invalidRequest }
-        var request = URLRequest(url: try AppConfiguration.url(for: target), timeoutInterval: timeout)
+        var request = URLRequest(url: try AppConfiguration.url(for: target, queryItems: queryItems), timeoutInterval: timeout)
         request.httpMethod = method.rawValue
         request.httpBody = body
         for (name, value) in headers where name.caseInsensitiveCompare("Authorization") != .orderedSame {

@@ -13,18 +13,27 @@ enum AppConfiguration {
     static let healthPath = "/api/v1/health"
 
     /// Resolves configured or absolute request target without path traversal.
-    static func url(for target: HTTPRequestTarget) throws -> URL {
+    static func url(for target: HTTPRequestTarget, queryItems: [URLQueryItem] = []) throws -> URL {
+        let url: URL
         switch target {
         case let .absolute(url):
             guard ["http", "https"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else {
                 throw HTTPTransportError.invalidRequest
             }
+            guard queryItems.isEmpty else { throw HTTPTransportError.invalidRequest }
             return url
         case let .mobile(path):
-            return try configuredURL(prefix: mobileBasePath, path: path)
+            url = try configuredURL(prefix: mobileBasePath, path: path)
         case let .root(path):
-            return try configuredURL(prefix: "", path: path)
+            url = try configuredURL(prefix: "", path: path)
         }
+        guard !queryItems.isEmpty else { return url }
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw HTTPTransportError.invalidRequest
+        }
+        components.queryItems = queryItems
+        guard let queriedURL = components.url else { throw HTTPTransportError.invalidRequest }
+        return queriedURL
     }
 
     private static func configuredURL(prefix: String, path: String) throws -> URL {
