@@ -6,6 +6,7 @@ struct AppDependencies {
     let sessionStore: KeychainAuthSessionStore
     let airportCache: AirportCache
     let searchResultsCache: SearchResultsCache
+    let searchResultsRepository: RemoteSearchResultsRepository
     let homeViewModel: HomeViewModel
 
     init() {
@@ -17,6 +18,7 @@ struct AppDependencies {
         sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
         searchResultsCache = sharedSearchResultsCache
+        searchResultsRepository = RemoteSearchResultsRepository(cache: sharedSearchResultsCache)
         homeViewModel = HomeViewModel(
             homeRepository: RemoteHomeRepository(transport: sharedTransport),
             airportRepository: RemoteAirportRepository(transport: sharedTransport, cache: sharedAirportCache),

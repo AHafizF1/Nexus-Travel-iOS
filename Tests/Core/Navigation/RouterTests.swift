@@ -44,7 +44,12 @@ struct RouterTests {
     func pushPopAndPopToRootAffectOnlySelectedTab() {
         let router = Router()
         router.push(.searchResults(SearchResultsRoute(searchId: "search-1")))
-        router.push(.flightDetails(FlightDetailsRoute()))
+        let reference = FlightOfferReference(
+            searchId: "search-1", offerId: "offer-1", offerToken: "token", provider: .travelportGds,
+            contentSource: nil, responseId: nil, productIds: [], termsAndConditionsId: nil,
+            brandRef: nil, expiresAt: nil
+        )
+        router.push(.flightDetails(FlightDetailsRoute(reference: reference)))
         router.pop()
 
         #expect(router.homePath == [.searchResults(SearchResultsRoute(searchId: "search-1"))])
