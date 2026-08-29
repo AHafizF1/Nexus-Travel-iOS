@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 5 — search journey**
+Current phase: **Phase 4 — authentication UI completion**
 
-Active wave: **Wave 14 — FD-2 Flight details screen**
+Active wave: **Wave 15 — AU-4 Email authentication screens and session gate**
 
 ## Phase 0 — Delivery foundation
 
@@ -56,7 +56,7 @@ Exit gate: backend contract fixtures green; demo email auth flow verified.
 ## Phase 4 — App shell and navigation
 
 - [x] [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
-- [ ] AU-4 — Email authentication screens and session gate — requires AU-3, NV-1
+- [ ] 🔄 [AU-4 — Email authentication screens and session gate](docs/tasks/AU-4-auth-screens-session-gate.md) — requires AU-3, NV-1
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 
@@ -67,7 +67,7 @@ Exit gate: independent tab-history and restoration tests green; simulator eviden
 - [x] [SR-2 — Remote search Adapter](docs/tasks/SR-2-remote-search.md) — requires SR-1, NT-1
 - [x] [SR-3 — Search results screen](docs/tasks/SR-3-search-results-screen.md) — requires SR-2, HM-2
 - [x] [FD-API-1 — Remote flight details adapter](docs/tasks/FD-API-1-remote-flight-details.md) — requires FD-1, NT-1, SR-3
-- [ ] 🔄 [FD-2 — Flight details screen](docs/tasks/FD-2-flight-details-screen.md) — requires FD-1, SR-3, FD-API-1
+- [x] [FD-2 — Flight details screen](docs/tasks/FD-2-flight-details-screen.md) — requires FD-1, SR-3, FD-API-1
 
 Exit gate: Home → search → results → details passes parity, contract, mapper, and UI-state gates.
 
