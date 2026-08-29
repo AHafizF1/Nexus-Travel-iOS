@@ -273,9 +273,10 @@ private struct DateSelectorSheet: View {
         _draft = State(initialValue: (selected ?? minimum)?.foundationDate ?? Date())
     }
     var body: some View {
+        let earliestDate = minimum?.foundationDate ?? Calendar(identifier: .gregorian).startOfDay(for: Date())
         VStack(spacing: NexusSpacing.space16) {
             Text(title).nexusTextStyle(NexusText.styles.sectionTitle)
-            DatePicker(title, selection: $draft, in: (minimum?.foundationDate ?? Date.distantPast)..., displayedComponents: .date).datePickerStyle(.graphical).labelsHidden()
+            DatePicker(title, selection: $draft, in: earliestDate..., displayedComponents: .date).datePickerStyle(.graphical).labelsHidden()
             NexusPrimaryButton("Select date", fillsWidth: true) { if let date = LocalDate(date: draft) { onSelect(date) } }
         }.padding(NexusSpacing.space24)
     }
