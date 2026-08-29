@@ -335,6 +335,7 @@ private actor CancellationAwareAirportRepository: AirportRepository {
     private var started = false
     private var startedWaiters: [CheckedContinuation<Void, Never>] = []
     private(set) var wasCancelled = false
+    private var completion: CheckedContinuation<[Airport], Error>?
 
     init(popular: [Airport]) { self.popular = popular }
 
@@ -345,8 +346,11 @@ private actor CancellationAwareAirportRepository: AirportRepository {
         startedWaiters.removeAll()
         waiters.forEach { $0.resume() }
         do {
-            try await Task.sleep(for: .seconds(60))
-            return []
+            return try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { completion = $0 }
+            } onCancel: {
+                Task { await self.cancel() }
+            }
         } catch is CancellationError {
             wasCancelled = true
             throw CancellationError()
@@ -356,6 +360,11 @@ private actor CancellationAwareAirportRepository: AirportRepository {
     func waitUntilStarted() async {
         if started { return }
         await withCheckedContinuation { startedWaiters.append($0) }
+    }
+    private func cancel() {
+        wasCancelled = true
+        completion?.resume(throwing: CancellationError())
+        completion = nil
     }
 }
 

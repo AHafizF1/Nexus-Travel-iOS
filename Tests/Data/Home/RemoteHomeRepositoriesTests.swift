@@ -66,6 +66,31 @@ struct RemoteHomeRepositoriesTests {
         #expect(requests.allSatisfy { $0.value(forHTTPHeaderField: "Authorization") == nil })
     }
 
+    @Test func composedHomeLoadReusesPopularAirportCache() async throws {
+        let loader = HomeStubLoader([
+            .response(200, HomeContractFixtures.airports),
+            .response(200, HomeContractFixtures.explore)
+        ])
+        let transport = HTTPTransport(loader: loader)
+        let airportRepository = RemoteAirportRepository(transport: transport, cache: AirportCache())
+        _ = try await airportRepository.searchAirports(query: "")
+        let repository = RemoteHomeRepository(
+            transport: transport,
+            airportRepository: airportRepository
+        )
+
+        guard case .success = try await repository.getHomeContent() else {
+            Issue.record("Expected success")
+            return
+        }
+
+        let requests = await loader.requests
+        #expect(requests.map { $0.url?.path } == [
+            "/api/v1/mobile/airports/popular",
+            "/api/v1/mobile/explore"
+        ])
+    }
+
     @Test func homeFallbackPrecedenceAndEmptyContent() async throws {
         let airportsWithoutDefaults = Data(#"{"items":[{"iataCode":"NBO","name":"Jomo Kenyatta","city":"Nairobi","country":"Kenya"},{"iataCode":"JFK","name":"Kennedy","city":"New York","country":"USA"}],"limit":20}"#.utf8)
         let fallback = RemoteHomeRepository(transport: HTTPTransport(loader: HomeStubLoader([.response(200, airportsWithoutDefaults), .response(200, HomeContractFixtures.emptyExplore)])))

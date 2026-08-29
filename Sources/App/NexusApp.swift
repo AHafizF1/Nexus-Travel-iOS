@@ -20,7 +20,8 @@ struct NexusApp: App {
                 DesignSystemGalleryScreen(initialSection: gallerySection)
             } else if let dependencies {
                 AppShell(router: router, homeViewModel: dependencies.homeViewModel,
-                         searchResultsRepository: dependencies.searchResultsRepository)
+                         searchResultsRepository: dependencies.searchResultsRepository,
+                         flightDetailsRepository: dependencies.flightDetailsRepository)
             }
         }
     }

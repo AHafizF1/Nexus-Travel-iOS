@@ -42,6 +42,7 @@ final class SearchResultsViewModel {
 
     func loadResults() async throws {
         guard !isLoading else { return }
+        let previousState = uiState
         isLoading = true
         uiState.isInitialLoading = true
         uiState.resultState = .loading
@@ -53,8 +54,7 @@ final class SearchResultsViewModel {
             isLoading = false
         } catch is CancellationError {
             isLoading = false
-            uiState.isInitialLoading = false
-            uiState.resultState = .error
+            uiState = previousState
             throw CancellationError()
         } catch {
             isLoading = false

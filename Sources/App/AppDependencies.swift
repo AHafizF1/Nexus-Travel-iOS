@@ -7,6 +7,7 @@ struct AppDependencies {
     let airportCache: AirportCache
     let searchResultsCache: SearchResultsCache
     let searchResultsRepository: RemoteSearchResultsRepository
+    let flightDetailsRepository: RemoteFlightDetailsRepository
     let homeViewModel: HomeViewModel
 
     init() {
@@ -14,14 +15,22 @@ struct AppDependencies {
         let sharedSessionStore = KeychainAuthSessionStore()
         let sharedAirportCache = AirportCache()
         let sharedSearchResultsCache = SearchResultsCache()
+        let sharedAirportRepository = RemoteAirportRepository(
+            transport: sharedTransport,
+            cache: sharedAirportCache
+        )
         transport = sharedTransport
         sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
         searchResultsCache = sharedSearchResultsCache
         searchResultsRepository = RemoteSearchResultsRepository(cache: sharedSearchResultsCache)
+        flightDetailsRepository = RemoteFlightDetailsRepository(transport: sharedTransport)
         homeViewModel = HomeViewModel(
-            homeRepository: RemoteHomeRepository(transport: sharedTransport),
-            airportRepository: RemoteAirportRepository(transport: sharedTransport, cache: sharedAirportCache),
+            homeRepository: RemoteHomeRepository(
+                transport: sharedTransport,
+                airportRepository: sharedAirportRepository
+            ),
+            airportRepository: sharedAirportRepository,
             flightSearchRepository: RemoteFlightSearchRepository(transport: sharedTransport, cache: sharedSearchResultsCache),
             authRepository: RemoteAuthRepository(transport: sharedTransport, sessionStore: sharedSessionStore),
             today: Self.currentLocalDate

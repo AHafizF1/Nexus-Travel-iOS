@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SearchResultsScreenRoute: View {
     @State private var viewModel: SearchResultsViewModel
+    @State private var eventTask: Task<Void, Never>?
     let router: Router
 
     init(viewModel: SearchResultsViewModel, router: Router) {
@@ -11,11 +12,15 @@ struct SearchResultsScreenRoute: View {
 
     var body: some View {
         SearchResultsScreen(state: viewModel.uiState, onEvent: send)
-            .task { try? await viewModel.loadResults() }
+            .task {
+                do { try await viewModel.loadResults() } catch is CancellationError { return } catch { return }
+            }
+            .onDisappear { eventTask?.cancel() }
     }
 
     private func send(_ event: SearchResultsUiEvent) {
-        Task {
+        eventTask?.cancel()
+        eventTask = Task {
             await viewModel.onEvent(event)
             while let navigation = viewModel.consumeNavigationEvent() {
                 switch navigation {
@@ -24,6 +29,7 @@ struct SearchResultsScreenRoute: View {
                     router.push(.flightDetails(FlightDetailsRoute(reference: reference)))
                 }
             }
+            eventTask = nil
         }
     }
 }

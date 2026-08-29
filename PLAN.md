@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 5 — search journey**
 
-Active wave: **Wave 13 — FD-API-1 Remote flight details adapter**
+Active wave: **Wave 14 — FD-2 Flight details screen**
 
 ## Phase 0 — Delivery foundation
 
@@ -56,6 +56,7 @@ Exit gate: backend contract fixtures green; demo email auth flow verified.
 ## Phase 4 — App shell and navigation
 
 - [x] [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
+- [ ] AU-4 — Email authentication screens and session gate — requires AU-3, NV-1
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 
@@ -65,14 +66,14 @@ Exit gate: independent tab-history and restoration tests green; simulator eviden
 - [x] [HM-2 — Home loading, content, empty, and error states](docs/tasks/HM-2-home-screen.md) — requires HM-1, NV-1, HD-1, SR-2
 - [x] [SR-2 — Remote search Adapter](docs/tasks/SR-2-remote-search.md) — requires SR-1, NT-1
 - [x] [SR-3 — Search results screen](docs/tasks/SR-3-search-results-screen.md) — requires SR-2, HM-2
-- [ ] 🔄 [FD-API-1 — Remote flight details adapter](docs/tasks/FD-API-1-remote-flight-details.md) — requires FD-1, NT-1, SR-3
-- [ ] FD-2 — Flight details screen — requires FD-1, SR-3, FD-API-1
+- [x] [FD-API-1 — Remote flight details adapter](docs/tasks/FD-API-1-remote-flight-details.md) — requires FD-1, NT-1, SR-3
+- [ ] 🔄 [FD-2 — Flight details screen](docs/tasks/FD-2-flight-details-screen.md) — requires FD-1, SR-3, FD-API-1
 
 Exit gate: Home → search → results → details passes parity, contract, mapper, and UI-state gates.
 
 ## Phase 6 — Booking journey
 
-- [ ] BJ-1 — Booking journey Module and valid transitions — requires BK-1, NV-1
+- [ ] BJ-1 — Booking journey Module and valid transitions — requires BK-1, NV-1, AU-4
 - [ ] PD-1 — Passenger details and passport signed upload — requires BJ-1, NT-1
 - [ ] ST-1 — Seat selection — requires PD-1
 - [ ] BR-1 — Booking review and stable hold idempotency — requires ST-1
@@ -82,8 +83,8 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 
 ## Phase 7 — Trips, profile, and explore
 
-- [ ] TR-1 — Trips list, detail, and ticket — requires Phase 3, NV-1
-- [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1
+- [ ] TR-1 — Trips list, detail, and ticket — requires Phase 3, NV-1, AU-4
+- [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1, AU-4
 - [ ] PR-2 — CRITICAL asynchronous account deletion — requires PR-1
 - [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
 

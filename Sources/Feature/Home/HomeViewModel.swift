@@ -14,6 +14,7 @@ final class HomeViewModel {
     private var pendingNavigationEvents: [HomeNavigationEvent] = []
     private var airportSearchGeneration = 0
     private var airportSearchTask: Task<[Airport], Error>?
+    private var loadGeneration = 0
 
     var currentDate: LocalDate { today() }
 
@@ -34,12 +35,16 @@ final class HomeViewModel {
     }
 
     func load() async throws {
+        loadGeneration += 1
+        let generation = loadGeneration
+        let previousState = uiState
         let service = uiState.selectedService
         let sheet = uiState.activeSheet
         let name: String
         do {
             name = greetingName(try await authRepository.getLocalSession()?.user.displayName)
         } catch is CancellationError {
+            if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
             name = "Traveler"
@@ -49,6 +54,7 @@ final class HomeViewModel {
         do {
             airports = try await airportRepository.searchAirports(query: "")
         } catch is CancellationError {
+            if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
             airports = []
@@ -57,11 +63,13 @@ final class HomeViewModel {
         do {
             result = try await homeRepository.getHomeContent()
         } catch is CancellationError {
+            if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
             result = .unknownError
         }
         let departure = today().addingDays(7)
+        guard generation == loadGeneration else { return }
         switch result {
         case let .success(content):
             uiState = HomeUiState(
