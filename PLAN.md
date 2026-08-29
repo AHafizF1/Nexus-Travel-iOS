@@ -56,6 +56,7 @@ Exit gate: backend contract fixtures green; demo email auth flow verified.
 ## Phase 4 — App shell and navigation
 
 - [x] [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
+- [ ] AU-4 — Email authentication screens and session gate — requires AU-3, NV-1
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 
@@ -72,7 +73,7 @@ Exit gate: Home → search → results → details passes parity, contract, mapp
 
 ## Phase 6 — Booking journey
 
-- [ ] BJ-1 — Booking journey Module and valid transitions — requires BK-1, NV-1
+- [ ] BJ-1 — Booking journey Module and valid transitions — requires BK-1, NV-1, AU-4
 - [ ] PD-1 — Passenger details and passport signed upload — requires BJ-1, NT-1
 - [ ] ST-1 — Seat selection — requires PD-1
 - [ ] BR-1 — Booking review and stable hold idempotency — requires ST-1
@@ -82,8 +83,8 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 
 ## Phase 7 — Trips, profile, and explore
 
-- [ ] TR-1 — Trips list, detail, and ticket — requires Phase 3, NV-1
-- [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1
+- [ ] TR-1 — Trips list, detail, and ticket — requires Phase 3, NV-1, AU-4
+- [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1, AU-4
 - [ ] PR-2 — CRITICAL asynchronous account deletion — requires PR-1
 - [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
 

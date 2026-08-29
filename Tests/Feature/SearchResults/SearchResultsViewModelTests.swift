@@ -118,7 +118,7 @@ struct SearchResultsViewModelTests {
         try await first.value
     }
 
-    @Test func cancellationPropagatesAndDoesNotRemainLoading() async {
+    @Test func cancellationPropagatesAndRestoresPreviousState() async {
         let repository = CancellingSearchResultsRepository()
         let model = SearchResultsViewModel(searchId: "search", repository: repository)
         let task = Task { try await model.loadResults() }
@@ -129,7 +129,7 @@ struct SearchResultsViewModelTests {
             Issue.record("Expected cancellation")
         } catch is CancellationError {}
         catch { Issue.record("Expected CancellationError, got \(error)") }
-        #expect(model.uiState.resultState != .loading)
+        #expect(model.uiState == SearchResultsUiState())
     }
 
     @Test func navigationEventsAreFIFOAndConsumedExactlyOnce() async throws {
@@ -224,15 +224,23 @@ private actor BlockingSearchResultsRepository: SearchResultsRepository {
 private actor CancellingSearchResultsRepository: SearchResultsRepository {
     private var started = false
     private var waiters: [CheckedContinuation<Void, Never>] = []
+    private var completion: CheckedContinuation<SearchResultsResult, Error>?
     func getSearchResults(searchId: String) async throws -> SearchResultsResult {
         started = true
         waiters.forEach { $0.resume() }
         waiters.removeAll()
-        try await Task.sleep(for: .seconds(60))
-        return .empty
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { completion = $0 }
+        } onCancel: {
+            Task { await self.cancel() }
+        }
     }
     func waitUntilStarted() async {
         if started { return }
         await withCheckedContinuation { waiters.append($0) }
+    }
+    private func cancel() {
+        completion?.resume(throwing: CancellationError())
+        completion = nil
     }
 }

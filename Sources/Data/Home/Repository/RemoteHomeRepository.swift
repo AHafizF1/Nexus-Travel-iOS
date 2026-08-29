@@ -2,16 +2,27 @@ import Foundation
 
 struct RemoteHomeRepository: HomeRepository {
     let transport: HTTPTransport
+    let airportRepository: (any AirportRepository)?
+
+    init(transport: HTTPTransport, airportRepository: (any AirportRepository)? = nil) {
+        self.transport = transport
+        self.airportRepository = airportRepository
+    }
 
     func getHomeContent() async throws -> HomeResult<HomeContent> {
         do {
-            let airportsResponse = try await transport.send(HTTPRequest(
-                target: .mobile(HomeEndpoints.popularAirports),
-                queryItems: [URLQueryItem(name: "limit", value: "20")]
-            ))
-            guard (200..<300).contains(airportsResponse.statusCode) else { return .unknownError }
-            let airportDTOs = try JSONDecoder().decode(AirportListDTO.self, from: airportsResponse.data)
-            let airports = airportDTOs.items.map(AirportMapper.map)
+            let airports: [Airport]
+            if let airportRepository {
+                airports = try await airportRepository.searchAirports(query: "")
+            } else {
+                let airportsResponse = try await transport.send(HTTPRequest(
+                    target: .mobile(HomeEndpoints.popularAirports),
+                    queryItems: [URLQueryItem(name: "limit", value: "20")]
+                ))
+                guard (200..<300).contains(airportsResponse.statusCode) else { return .unknownError }
+                let airportDTOs = try JSONDecoder().decode(AirportListDTO.self, from: airportsResponse.data)
+                airports = airportDTOs.items.map(AirportMapper.map)
+            }
             let addisAbaba = Airport(code: "ADD", city: "Addis Ababa", name: "Addis Ababa Bole International Airport", country: "Ethiopia")
             let dubai = Airport(code: "DXB", city: "Dubai", name: "Dubai International Airport", country: "United Arab Emirates")
             let origin = airports.first { $0.code == addisAbaba.code } ?? airports.first ?? addisAbaba

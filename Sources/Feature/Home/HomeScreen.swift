@@ -19,6 +19,7 @@ struct HomeRoute: View {
     @State private var airportQueryTask: Task<Void, Never>?
     @State private var searchTask: Task<Void, Never>?
     @State private var reloadTask: Task<Void, Never>?
+    @State private var eventTask: Task<Void, Never>?
     let router: Router
 
     init(viewModel: HomeViewModel, router: Router) {
@@ -40,6 +41,7 @@ struct HomeRoute: View {
                 viewModel.cancelAirportSearch()
                 searchTask?.cancel()
                 reloadTask?.cancel()
+                eventTask?.cancel()
             }
     }
 
@@ -62,7 +64,11 @@ struct HomeRoute: View {
                 searchTask = nil
             }
         } else {
-            Task { await perform(event) }
+            eventTask?.cancel()
+            eventTask = Task {
+                await perform(event)
+                eventTask = nil
+            }
         }
     }
 

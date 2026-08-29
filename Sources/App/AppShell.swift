@@ -3,7 +3,8 @@ import SwiftUI
 struct AppShell: View {
     @Bindable var router: Router
     let homeViewModel: HomeViewModel
-    let searchResultsRepository: RemoteSearchResultsRepository
+    let searchResultsRepository: any SearchResultsRepository
+    let flightDetailsRepository: any FlightDetailsRepository
 
     var body: some View {
         TabView(
@@ -14,28 +15,28 @@ struct AppShell: View {
         ) {
             NavigationStack(path: $router.homePath) {
                 HomeRoute(viewModel: homeViewModel, router: router)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 AppTabRoot(tab: .explore)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
             }
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 AppTabRoot(tab: .trips)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
             }
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
                 AppTabRoot(tab: .profile)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository)
             }
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
@@ -58,7 +59,8 @@ private struct AppTabRoot: View {
 
 private struct AppDestinations: ViewModifier {
     let router: Router
-    let searchResultsRepository: RemoteSearchResultsRepository
+    let searchResultsRepository: any SearchResultsRepository
+    let flightDetailsRepository: any FlightDetailsRepository
 
     func body(content: Content) -> some View {
         content.navigationDestination(for: AppRoute.self) { route in
@@ -66,6 +68,15 @@ private struct AppDestinations: ViewModifier {
             case let .searchResults(payload):
                 SearchResultsScreenRoute(
                     viewModel: SearchResultsViewModel(searchId: payload.searchId, repository: searchResultsRepository),
+                    router: router
+                )
+                .toolbar(.hidden, for: .tabBar)
+            case let .flightDetails(payload):
+                FlightDetailsScreenRoute(
+                    viewModel: FlightDetailsViewModel(
+                        reference: payload.reference,
+                        repository: flightDetailsRepository
+                    ),
                     router: router
                 )
                 .toolbar(.hidden, for: .tabBar)
@@ -120,7 +131,16 @@ private struct AppDestination: View {
 }
 
 private extension View {
-    func appDestinations(router: Router, searchResultsRepository: RemoteSearchResultsRepository) -> some View {
-        modifier(AppDestinations(router: router, searchResultsRepository: searchResultsRepository))
+    func appDestinations(
+        router: Router,
+        searchResultsRepository: any SearchResultsRepository,
+        flightDetailsRepository: any FlightDetailsRepository
+    ) -> some View {
+        modifier(AppDestinations(
+            router: router,
+            searchResultsRepository: searchResultsRepository,
+            flightDetailsRepository: flightDetailsRepository
+        ))
     }
 }
+

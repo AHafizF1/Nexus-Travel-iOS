@@ -23,7 +23,7 @@ The translation contract for every agent. If a rule proves wrong or incomplete, 
 | `class XViewModel : ViewModel()` | `@MainActor @Observable final class XViewModel` | No base class; see §2 |
 | `var state by mutableStateOf(v)` + `private set` | `private(set) var state: State = v` | `@Observable` tracks automatically |
 | `val uiState: StateFlow<UiState>` + `collectAsState()` | Plain property; views read directly | |
-| `viewModelScope.launch { }` | `Task { }` in `@MainActor` method; loads triggered by view `.task {}` | View owns cancellation |
+| `viewModelScope.launch { }` | Stored `Task { }` at a view lifecycle/event seam; loads triggered by view `.task {}` | View owns replacement and disappearance cancellation; never fire-and-forget |
 | `LaunchedEffect(key) { }` | `.task(id: key) { }` | |
 | `LaunchedEffect(Unit) { }` | `.task { }` | |
 | `Channel<Event>` + `receiveAsFlow()` | Closure parameter (`onAuthenticated: (AuthSession) -> Void`) | Event buses banned |
@@ -76,6 +76,7 @@ final class SearchResultsViewModel {
 - UiState mirrors Android sealed UiStates as enums: `.loading`, `.content(DisplayModel)`, `.empty`, `.error(UiError)`.
 - `*DisplayMapper.kt` → `*DisplayMapper.swift` 1:1. Presenters (`AuthErrorPresenter`) port as-is.
 - Views trigger loads with `.task { await viewModel.load() }`. No logic in `body`.
+- Before each load, define duplicate and stale-result behavior. Cancellation restores prior valid state and never maps to user-visible failure.
 
 ## 3. Navigation pattern
 

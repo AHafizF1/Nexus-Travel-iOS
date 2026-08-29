@@ -10,6 +10,7 @@ AGENTS.md is controlling policy. This file adds implementation-level defaults.
 
 ## Modules
 
+- `Sources/App` is the composition root and may depend on Core, Domain, Data, and Feature. Core must never import or name Feature/Data types.
 - Feature ViewModel owns presentation state and orchestration when it has real behavior.
 - Repository Interface represents domain outcomes. Fake and remote Adapters satisfy same seam.
 - Shared transport owns HTTP mechanics only. Domain mapping remains in repository Adapter.
@@ -35,6 +36,8 @@ Primary guidance: [Swift API Design Guidelines](https://www.swift.org/documentat
 - `@MainActor @Observable final class` for ViewModels and routers.
 - `struct`/`enum` plus `Sendable` for data crossing isolation domains.
 - View owns root observable model with `@State`; child receives explicit property.
+- Every async load defines duplicate-call and stale-response policy. Preserve last valid state on cancellation; cancellation never creates loading, empty, or error UI.
+- View-created unstructured tasks are stored, cancelled on replacement/disappearance, and limited to lifecycle or event seams.
 
 ## Errors
 
@@ -48,6 +51,8 @@ Primary guidance: [Swift API Design Guidelines](https://www.swift.org/documentat
 - XCTest only for UI automation and performance metrics.
 - Test name states one behavior. RED evidence recorded in task/PR.
 - Contract fixtures derive from backend DTO/controller/e2e truth.
+- Async tests use controllable adapters/continuations. Fixed delays are forbidden as synchronization.
+- Composed flows assert request counts and route construction, not only isolated repository results.
 
 ## Formatting
 

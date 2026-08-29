@@ -3,7 +3,7 @@
 ## Ownership and truth
 
 - Branch `codex/hm-2-home-screen`; requires HM-1, NV-1, HD-1, SR-2.
-- Own `Sources/Feature/Home/**`, smallest production dependency wiring under `Sources/App/**`, Home-root seam in `Sources/Core/Navigation/AppShell.swift`, and matching `Tests/Feature/Home/**` / app-wiring tests. Do not edit generated `NexusTravel.xcodeproj`.
+- Own `Sources/Feature/Home/**`, smallest production dependency wiring and `AppShell` under `Sources/App/**`, and matching `Tests/Feature/Home/**` / app-wiring tests. Do not edit generated `NexusTravel.xcodeproj`.
 - Read completely before Swift: Android `feature/home/{HomeUiState,HomeViewModel,HomeSearchValidator,HomeMultiCityState,HomeScreens}.kt`; every Android design-system token/component referenced by Home; existing Swift Home domain/data, Router/AppShell, auth/search repositories, `PORTING.md`, and `CONVENTIONS.md`.
 - Android code is sole visible design/behavior truth. Do not inspect or port legacy images. Replace Android hero drawable with code-defined page background; remote destination images may use native `AsyncImage` because URLs are backend data, not legacy design assets.
 - Use mandatory Swift, architecture/DRY, strict-concurrency, TDD, SwiftUI/Apple design, UX-copy/typography, and project frontend-design skills. No new dependency.

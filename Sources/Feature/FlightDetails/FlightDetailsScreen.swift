@@ -2,11 +2,23 @@ import SwiftUI
 
 struct FlightDetailsScreenRoute: View {
     @State private var viewModel: FlightDetailsViewModel
+    @State private var eventTask: Task<Void, Never>?
     let router: Router
     init(viewModel: FlightDetailsViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }
     var body: some View {
-        FlightDetailsScreen(state: viewModel.uiState) { event in Task { try? await viewModel.onEvent(event); route() } }
-            .task { try? await viewModel.load() }
+        FlightDetailsScreen(state: viewModel.uiState, onEvent: send)
+            .task {
+                do { try await viewModel.load() } catch is CancellationError { return } catch { return }
+            }
+            .onDisappear { eventTask?.cancel() }
+    }
+    private func send(_ event: FlightDetailsUiEvent) {
+        eventTask?.cancel()
+        eventTask = Task {
+            do { try await viewModel.onEvent(event) } catch is CancellationError { return } catch { return }
+            route()
+            eventTask = nil
+        }
     }
     private func route() { while let event = viewModel.consumeNavigationEvent() { switch event { case .back: router.pop(); case .toPassengerDetails: router.push(.passengerDetails(.init())) } } }
 }
@@ -30,6 +42,7 @@ struct FlightDetailsScreen: View {
             Text(state.display?.flightMeta ?? details.flightNumber).foregroundStyle(NexusSemanticColors.textSecondary)
             ForEach(Array(details.legs.enumerated()), id: \.offset) { _, leg in VStack(alignment: .leading) { Text(leg.label).nexusTextStyle(NexusText.styles.listTitle); Text("\(leg.departureAirportCode)  \(leg.departureTime.hhmm) → \(leg.arrivalAirportCode)  \(leg.arrivalTime.hhmm)") } }
             if let warning = state.warningMessage { NexusBanner(text: warning, status: .warning) }
+            disclosure("Seat selection", summary: details.seat.availabilityLabel, section: .seat)
             disclosure("Baggage Allowance", summary: "Cabin: \(details.baggage.cabin) · Checked: \(details.baggage.checked)", section: .baggage)
             disclosure("Fare Rules", summary: details.fareRules.refundableLabel, section: .fareRules)
             Text("Price details").nexusTextStyle(NexusText.styles.sectionTitle); row("Base fare", details.priceBreakdown.baseFare.formatted); row("Taxes & fees", details.priceBreakdown.taxesAndFees.formatted); row("Total", details.price.formatted)
