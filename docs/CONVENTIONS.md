@@ -38,7 +38,7 @@ Primary guidance: [Swift API Design Guidelines](https://www.swift.org/documentat
 
 ## Errors
 
-- Repository Interfaces return mirrored result enums; do not expose transport errors or throw across domain seam.
+- Repository interfaces return mirrored result enums for product/transport outcomes. They may throw only to preserve cancellation or local secure-storage failures that cannot be represented honestly by that result type.
 - Never collapse cancellation into error state.
 - Never expose ownership-hidden `404` distinction.
 

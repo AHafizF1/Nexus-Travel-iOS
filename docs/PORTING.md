@@ -6,7 +6,7 @@ The translation contract for every agent. If a rule proves wrong or incomplete, 
 
 - **Port behavior, not syntax.** Where Swift has a more idiomatic equivalent that preserves observable behavior, take it — and record it below.
 - **Names stay identical.** Types/functions/state keep Kotlin names.
-- **Sealed result types stay.** Kotlin returns sealed result/error types instead of throwing; Swift ports return the same enums. Do **not** convert repository seams to `throws`.
+- **Sealed result types stay.** Kotlin product/transport outcomes remain Swift result enums. Repository seams use `throws` only when needed to preserve cancellation or local secure-storage failures outside that result model.
 - **Design truth is Kotlin code only.** Legacy design images, mockups, boards, documents, and handbooks are not inputs to implementation or review.
 
 ## 1. Translation table
@@ -18,7 +18,7 @@ The translation contract for every agent. If a rule proves wrong or incomplete, 
 | `data object X` | enum `case x`, or `static let x` | |
 | `sealed interface R { data class Success(..); data object Empty }` | `enum R: Equatable, Sendable { case success(QuerySummary, [FlightOffer]); case empty }` | Associated values; case names lowerCamel |
 | `interface FooRepository` | `protocol FooRepository: Sendable` | Pre-justified seam: fake today, real API later |
-| `suspend fun get(): R` | `func get() async -> R` | No `throws` |
+| `suspend fun get(): R` | `func get() async -> R` | Add `throws` only for cancellation or local secure-storage failure; modeled outcomes stay in `R` |
 | `class FakeFooRepo : FooRepo` | `struct FakeFooRepo: FooRepo` | Stateful ones stay classes; `delay(850)` → `try? await Task.sleep(for: .milliseconds(850))` |
 | `class XViewModel : ViewModel()` | `@MainActor @Observable final class XViewModel` | No base class; see §2 |
 | `var state by mutableStateOf(v)` + `private set` | `private(set) var state: State = v` | `@Observable` tracks automatically |
