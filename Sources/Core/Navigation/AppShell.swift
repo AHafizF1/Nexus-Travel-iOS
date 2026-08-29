@@ -64,7 +64,7 @@ private struct AppDestinations: ViewModifier {
         content.navigationDestination(for: AppRoute.self) { route in
             switch route {
             case let .searchResults(payload):
-                SearchResultsRoute(
+                SearchResultsScreenRoute(
                     viewModel: SearchResultsViewModel(searchId: payload.searchId, repository: searchResultsRepository),
                     router: router
                 )

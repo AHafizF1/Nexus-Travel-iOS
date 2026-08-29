@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SearchResultsRoute: View {
+struct SearchResultsScreenRoute: View {
     @State private var viewModel: SearchResultsViewModel
     let router: Router
 
