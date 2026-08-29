@@ -51,14 +51,22 @@ final class HomeViewModel {
         } catch {
             airports = []
         }
-        let result = try await homeRepository.getHomeContent()
+        let result: HomeResult<HomeContent>
+        do {
+            result = try await homeRepository.getHomeContent()
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            result = .unknownError
+        }
         let departure = today().addingDays(7)
         switch result {
         case let .success(content):
             uiState = HomeUiState(
                 isLoading: false, userName: name, origin: content.origin, destination: content.destination,
                 departureDate: departure, returnDate: departure?.addingDays(7), trendingEscapes: content.trendingEscapes,
-                recentSearches: content.recentSearches, airports: airports, activeSheet: sheet, selectedService: service
+                recentSearches: content.recentSearches, airports: airports, activeSheet: sheet, selectedService: service,
+                loadPhase: content.trendingEscapes.isEmpty ? .empty : .content
             )
         case .networkUnavailable:
             uiState = fallbackState(airports: airports, name: name,
@@ -66,6 +74,16 @@ final class HomeViewModel {
         case .unknownError:
             uiState = fallbackState(airports: airports, name: name,
                 message: "We could not load your home page. Please try again.", service: service, sheet: sheet)
+        }
+    }
+
+    func retry() async {
+        do {
+            try await load()
+        } catch is CancellationError {
+            return
+        } catch {
+            return
         }
     }
 
@@ -157,7 +175,7 @@ final class HomeViewModel {
         let destination = airports.first { $0.code == "DXB" } ?? airports.first { $0.code != origin?.code }
         return HomeUiState(isLoading: false, userName: name, origin: origin, destination: destination,
                            departureDate: departure, returnDate: departure?.addingDays(7), airports: airports,
-                           activeSheet: sheet, message: message, selectedService: service)
+                           activeSheet: sheet, message: message, selectedService: service, loadPhase: .error)
     }
 
     private func open(_ sheet: HomeSheet) {

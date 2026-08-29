@@ -54,6 +54,8 @@ enum HomeSheet: Equatable, Hashable, Codable, Identifiable, Sendable {
 
 enum HomeService: Equatable, Hashable, Codable, Sendable { case flight }
 
+enum HomeLoadPhase: Equatable, Hashable, Codable, Sendable { case loading, content, empty, error }
+
 enum HomeUiEvent: Equatable, Sendable {
     case flightClicked, hotelClicked, packageClicked
     case tripTypeChanged(TripType)
@@ -97,6 +99,7 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
     var isSearching: Bool
     var message: String?
     var selectedService: HomeService?
+    var loadPhase: HomeLoadPhase
 
     /// Creates home state with Android-equivalent defaults.
     init(
@@ -120,7 +123,8 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
         validationError: HomeValidationError? = nil,
         isSearching: Bool = false,
         message: String? = nil,
-        selectedService: HomeService? = nil
+        selectedService: HomeService? = nil,
+        loadPhase: HomeLoadPhase? = nil
     ) {
         self.isLoading = isLoading
         self.userName = userName
@@ -143,6 +147,9 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
         self.isSearching = isSearching
         self.message = message
         self.selectedService = selectedService
+        self.loadPhase = loadPhase ?? (
+            isLoading ? .loading : message != nil ? .error : trendingEscapes.isEmpty ? .empty : .content
+        )
     }
 
     /// Returns state after Android-equivalent trip-type transition.
@@ -182,7 +189,8 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
             validationError: validationError,
             isSearching: isSearching,
             message: message,
-            selectedService: selectedService
+            selectedService: selectedService,
+            loadPhase: loadPhase
         )
     }
 }

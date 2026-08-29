@@ -12,6 +12,15 @@ struct HomeScreenStateTests {
         #expect(HomeScreenState(state: HomeUiState(isLoading: false, trendingEscapes: [escape])).kind == .content)
     }
 
+    @Test func transientSearchMessageDoesNotReplaceLoadedDiscovery() {
+        let state = HomeUiState(
+            isLoading: false,
+            message: "We lost the connection. Try again.",
+            loadPhase: .content
+        )
+        #expect(HomeScreenState(state: state).kind == .content)
+    }
+
     @Test func everySheetHasStableIdentity() {
         let sheets: [HomeSheet] = [.originAirport, .destinationAirport, .departureDate, .returnDate,
             .multiCityOrigin(index: 0), .multiCityDestination(index: 0), .multiCityDate(index: 0),

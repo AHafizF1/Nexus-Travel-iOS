@@ -5,15 +5,20 @@ enum HomeScreenKind: Equatable { case loading, content, empty, error }
 struct HomeScreenState: Equatable {
     let kind: HomeScreenKind
     init(state: HomeUiState) {
-        if state.isLoading { kind = .loading }
-        else if state.message != nil { kind = .error }
-        else if state.trendingEscapes.isEmpty { kind = .empty }
-        else { kind = .content }
+        kind = switch state.loadPhase {
+        case .loading: .loading
+        case .content: .content
+        case .empty: .empty
+        case .error: .error
+        }
     }
 }
 
 struct HomeRoute: View {
     @State private var viewModel: HomeViewModel
+    @State private var airportQueryTask: Task<Void, Never>?
+    @State private var searchTask: Task<Void, Never>?
+    @State private var reloadTask: Task<Void, Never>?
     let router: Router
 
     init(viewModel: HomeViewModel, router: Router) {
@@ -26,21 +31,47 @@ struct HomeRoute: View {
             state: viewModel.uiState,
             onEvent: send,
             onExplore: { router.select(.explore) },
-            onRetry: { Task { try? await viewModel.load() } }
+            onRetry: retry
         )
-            .task { try? await viewModel.load() }
+            .task { await viewModel.retry() }
+            .onDisappear {
+                airportQueryTask?.cancel()
+                searchTask?.cancel()
+                reloadTask?.cancel()
+            }
+    }
+
+    private func retry() {
+        reloadTask?.cancel()
+        reloadTask = Task {
+            await viewModel.retry()
+            reloadTask = nil
+        }
     }
 
     private func send(_ event: HomeUiEvent) {
-        Task {
-            await viewModel.onEvent(event)
-            while let navigation = viewModel.consumeNavigationEvent() {
-                switch navigation {
-                case let .toSearchResults(searchId): router.push(.searchResults(SearchResultsRoute(searchId: searchId)))
-                case .toPackages:
-                    router.select(.explore)
-                    router.push(.explore(ExploreRoute(filter: .packages)))
-                }
+        if case .airportQueryChanged = event {
+            airportQueryTask?.cancel()
+            airportQueryTask = Task { await perform(event) }
+        } else if event == .searchClicked || event.isSearchPrefill {
+            guard searchTask == nil else { return }
+            searchTask = Task {
+                await perform(event)
+                searchTask = nil
+            }
+        } else {
+            Task { await perform(event) }
+        }
+    }
+
+    private func perform(_ event: HomeUiEvent) async {
+        await viewModel.onEvent(event)
+        while let navigation = viewModel.consumeNavigationEvent() {
+            switch navigation {
+            case let .toSearchResults(searchId): router.push(.searchResults(SearchResultsRoute(searchId: searchId)))
+            case .toPackages:
+                router.select(.explore)
+                router.push(.explore(ExploreRoute(filter: .packages)))
             }
         }
     }
@@ -67,7 +98,7 @@ struct HomeScreen: View {
             .frame(maxWidth: NexusLayout.contentMaxWidth)
         }
         .background(NexusSemanticColors.backgroundPage)
-        .animation(reduceMotion ? .easeOut(duration: 0.12) : .spring(response: 0.35, dampingFraction: 1), value: state.selectedService)
+        .animation(reduceMotion ? .linear : .smooth, value: state.selectedService)
         .sheet(item: Binding(get: { state.activeSheet }, set: { if $0 == nil { onEvent(.dismissSheet) } })) { sheet in
             HomeSheetView(sheet: sheet, state: state, onEvent: onEvent)
                 .presentationDragIndicator(.visible)
@@ -124,7 +155,7 @@ struct HomeScreen: View {
                 Text("Multi-city").tag(TripType.multiCity)
             }.pickerStyle(.segmented)
             if let error = state.validationError { message(error.message, error: true) }
-            if let status = state.message { message(status, error: false) }
+            if let status = state.message, state.loadPhase != .error { message(status, error: false) }
             if state.tripType == .multiCity { multiCityFields } else { standardFields }
             HStack { field("Travelers", state.travelers.summary(), .profile, .travelersClicked); field("Cabin Class", state.cabinClass.label, .seat, .cabinClassClicked) }
             NexusPrimaryButton("Search Flights", isLoading: state.isSearching, fillsWidth: true) { onEvent(.searchClicked) }
@@ -159,6 +190,11 @@ struct HomeScreen: View {
                 }
             }
             if state.multiCityLegs.count < 3 { Button("+ Add flight") { onEvent(.addMultiCityLeg) }.frame(minHeight: NexusLayout.touchRecommended) }
+            if state.multiCityLegs.adjacentDatesContainSameDay {
+                Text("Same-day flights may need extra connection time.")
+                    .nexusTextStyle(NexusText.styles.bodySmall)
+                    .foregroundStyle(NexusSemanticColors.textSecondary)
+            }
         }
     }
 
@@ -168,13 +204,18 @@ struct HomeScreen: View {
                 Label { Text(label).nexusTextStyle(NexusText.styles.label) } icon: { NexusIcon(name: icon) }
                 Text(value).nexusTextStyle(NexusText.styles.formInput).lineLimit(2).multilineTextAlignment(.leading)
             }.frame(maxWidth: .infinity, minHeight: NexusLayout.inputHeight, alignment: .leading)
-        }.buttonStyle(.plain)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(label), \(value)")
+        .accessibilityHint(fieldError(for: label)?.message ?? "")
     }
 
     @ViewBuilder private var stateSection: some View {
         switch HomeScreenState(state: state).kind {
         case .loading:
-            HStack { ProgressView(); Text("Loading travel ideas…") }.accessibilityElement(children: .combine)
+            HStack { ProgressView(); Text("Loading travel ideas…") }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Loading travel ideas")
         case .error:
             VStack(alignment: .leading, spacing: NexusSpacing.space12) {
                 message(state.message ?? "We could not load your home page. Please try again.", error: false)
@@ -224,6 +265,16 @@ struct HomeScreen: View {
             .background(error ? NexusSemanticColors.errorBg : NexusSemanticColors.brandSoft)
             .clipShape(RoundedRectangle(cornerRadius: NexusRadius.md))
     }
+
+    private func fieldError(for label: String) -> HomeValidationError? {
+        switch (label, state.validationError) {
+        case ("From", .missingOrigin), ("From", .sameOriginDestination): state.validationError
+        case ("To", .missingDestination), ("To", .sameOriginDestination): state.validationError
+        case ("Departure", .missingDepartureDate), ("Departure", .departureDateInPast): state.validationError
+        case ("Return", .missingReturnDate), ("Return", .returnBeforeDeparture): state.validationError
+        default: nil
+        }
+    }
 }
 
 private struct HomeSheetView: View {
@@ -240,7 +291,11 @@ private struct HomeSheetView: View {
         case let .multiCityDate(index): DateSelectorSheet(title: "Select date for Flight \(index + 1)", selected: state.multiCityLegs[safe: index]?.departureDate, minimum: state.multiCityLegs[safe: index - 1]?.departureDate) { onEvent(.multiCityDateSelected(index: index, date: $0)) }
         case .travelers: TravelerSelectorSheet(state: state, onEvent: onEvent)
         case .cabinClass:
-            List(CabinClass.allCases, id: \.self) { cabin in Button(cabin.label) { onEvent(.cabinClassChanged(cabin)) } }.navigationTitle("Cabin class")
+            List(CabinClass.allCases, id: \.self) { cabin in
+                Button { onEvent(.cabinClassChanged(cabin)) } label: {
+                    HStack { Text(cabin.label); Spacer(); if cabin == state.cabinClass { NexusIcon(name: .check, accessibilityLabel: "Selected") } }
+                }
+            }.navigationTitle("Cabin class")
         case .hotelComingSoon:
             VStack(alignment: .leading, spacing: NexusSpacing.space16) { Text("Hotels are coming soon").nexusTextStyle(NexusText.styles.sectionTitle); Text("We’re working on hotel booking. For now, you can search flights and explore travel packages."); NexusPrimaryButton("Got it", fillsWidth: true) { onEvent(.dismissSheet) } }.padding(NexusSpacing.space24)
         }
@@ -254,10 +309,28 @@ private struct AirportSelectorSheet: View {
         NavigationStack {
             List {
                 if state.airports.isEmpty { ContentUnavailableView(state.airportQuery.isEmpty ? "No airports available." : "No airports found.", systemImage: NexusIconName.search.systemName, description: Text(state.airportQuery.isEmpty ? "Try again in a moment." : "Try city, country, or airport code.")) }
-                ForEach(state.airports, id: \.code) { airport in Button { onEvent(.airportSelected(airport)) } label: { VStack(alignment: .leading) { Text("\(airport.code)  \(airport.city)").nexusTextStyle(NexusText.styles.listTitle); Text("\(airport.name) · \(airport.country)").nexusTextStyle(NexusText.styles.bodySmall).foregroundStyle(NexusSemanticColors.textSecondary) } } }
+                ForEach(state.airports, id: \.code) { airport in
+                    Button { onEvent(.airportSelected(airport)) } label: {
+                        HStack {
+                            VStack(alignment: .leading) { Text("\(airport.code)  \(airport.city)").nexusTextStyle(NexusText.styles.listTitle); Text("\(airport.name) · \(airport.country)").nexusTextStyle(NexusText.styles.bodySmall).foregroundStyle(NexusSemanticColors.textSecondary) }
+                            Spacer()
+                            if selectedAirportCode == airport.code { NexusIcon(name: .check, accessibilityLabel: "Selected") }
+                        }
+                    }
+                }
             }
             .navigationTitle("Select airport")
             .searchable(text: Binding(get: { state.airportQuery }, set: { onEvent(.airportQueryChanged($0)) }), prompt: "Search city or airport")
+        }
+    }
+
+    private var selectedAirportCode: String? {
+        switch state.activeSheet {
+        case .originAirport: state.origin?.code
+        case .destinationAirport: state.destination?.code
+        case let .multiCityOrigin(index): state.multiCityLegs[safe: index]?.origin?.code
+        case let .multiCityDestination(index): state.multiCityLegs[safe: index]?.destination?.code
+        default: nil
         }
     }
 }
@@ -323,6 +396,23 @@ private struct TravelerSelectorSheet: View {
 
 private extension HomeValidationError {
     var message: String { switch self { case .missingOrigin: "Select where you are flying from."; case .missingDestination: "Select where you are flying to."; case .sameOriginDestination: "Origin and destination must be different."; case .missingDepartureDate: "Select a departure date."; case .missingReturnDate: "Select a return date."; case .returnBeforeDeparture: "Return date must be after departure date."; case .departureDateInPast: "Departure date must be today or later."; case .invalidMultiCityLegs: "Complete each flight with different airports and dates in order." } }
+}
+
+private extension HomeUiEvent {
+    var isSearchPrefill: Bool {
+        switch self {
+        case .trendingEscapeClicked, .recentSearchClicked: true
+        default: false
+        }
+    }
+}
+
+private extension Array where Element == MultiCityLegUiState {
+    var adjacentDatesContainSameDay: Bool {
+        zip(self, dropFirst()).contains { first, second in
+            first.departureDate != nil && first.departureDate == second.departureDate
+        }
+    }
 }
 
 private extension TripType { static var allCases: [TripType] { [.oneWay, .roundTrip, .multiCity] } }
