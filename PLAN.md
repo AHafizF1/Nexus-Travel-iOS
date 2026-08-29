@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 3 — transport and authentication**
+Current phase: **Phase 4 — app shell and navigation**
 
-Active wave: **Wave 7 — AU-3 remote email authentication**
+Active wave: **Wave 8 — NV-1 typed app shell**
 
 ## Phase 0 — Delivery foundation
 
@@ -49,13 +49,13 @@ Exit gate: Swift Testing suite green; no UI or network dependency in domain logi
 
 - [x] [NT-1 — App config and HTTP transport classification](docs/tasks/NT-1-http-transport.md) — requires Phase 2
 - [x] [AU-2 — Keychain session store](docs/tasks/AU-2-keychain-session.md) — requires AU-1
-- [ ] 🔄 [AU-3 — Remote email/password auth Adapter and contract fixtures](docs/tasks/AU-3-remote-auth.md) — requires NT-1, AU-2
+- [x] [AU-3 — Remote email/password auth Adapter and contract fixtures](docs/tasks/AU-3-remote-auth.md) — requires NT-1, AU-2
 
 Exit gate: backend contract fixtures green; demo email auth flow verified.
 
 ## Phase 4 — App shell and navigation
 
-- [ ] NV-1 — Typed routes, Router, per-tab NavigationStack shell — requires AU-3
+- [ ] 🔄 [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 

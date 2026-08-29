@@ -148,3 +148,14 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - TDD: commit `b0d85da` added missing-symbol Keychain contracts before production implementation.
 - Security review: full session/token payload lives only in one non-synchronizing `AfterFirstUnlockThisDeviceOnly` generic-password item; no token logging, UserDefaults, file storage, iCloud sync, or refresh behavior.
 - Boundary: storage preserves session data but does not decide expiry or contact backend; AU-3 owns lifecycle policy.
+
+## AU-3 — Remote email/password authentication
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/16
+- Merge commit: `9bc6250d3d59e09cf83272a2c412c30ec94a036e`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33231289455
+- Evidence: Xcode 26.6 compiled strict-concurrency remote auth and passed route, request, DTO, mapper, session lifecycle, cancellation, secure-storage, and sign-out tests on PR head `f3a03a1`.
+- TDD: commit `39dd9c8` added remote-auth contracts before production implementation; CI exposed one Swift 6 inference defect, fixed at source in `f3a03a1`, then latest-SHA CI passed.
+- Contract review: root Better Auth routes, `200 null` unauthenticated session, token precedence, bearer attachment, expiry boundaries, clearing policy, and full error/status matrix confirmed.
+- Backend blocker: password reset remains disabled server-side as `RESET_PASSWORD_DISABLED`; iOS reports unknown failure honestly and does not call obsolete Android `/forget-password`.
