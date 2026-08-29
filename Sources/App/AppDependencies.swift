@@ -2,18 +2,26 @@ import Foundation
 
 @MainActor
 struct AppDependencies {
+    let transport: HTTPTransport
+    let sessionStore: KeychainAuthSessionStore
+    let airportCache: AirportCache
+    let searchResultsCache: SearchResultsCache
     let homeViewModel: HomeViewModel
 
     init() {
-        let transport = HTTPTransport()
-        let sessionStore = KeychainAuthSessionStore()
-        let airportCache = AirportCache()
-        let searchResultsCache = SearchResultsCache()
+        let sharedTransport = HTTPTransport()
+        let sharedSessionStore = KeychainAuthSessionStore()
+        let sharedAirportCache = AirportCache()
+        let sharedSearchResultsCache = SearchResultsCache()
+        transport = sharedTransport
+        sessionStore = sharedSessionStore
+        airportCache = sharedAirportCache
+        searchResultsCache = sharedSearchResultsCache
         homeViewModel = HomeViewModel(
-            homeRepository: RemoteHomeRepository(transport: transport),
-            airportRepository: RemoteAirportRepository(transport: transport, cache: airportCache),
-            flightSearchRepository: RemoteFlightSearchRepository(transport: transport, cache: searchResultsCache),
-            authRepository: RemoteAuthRepository(transport: transport, sessionStore: sessionStore),
+            homeRepository: RemoteHomeRepository(transport: sharedTransport),
+            airportRepository: RemoteAirportRepository(transport: sharedTransport, cache: sharedAirportCache),
+            flightSearchRepository: RemoteFlightSearchRepository(transport: sharedTransport, cache: sharedSearchResultsCache),
+            authRepository: RemoteAuthRepository(transport: sharedTransport, sessionStore: sharedSessionStore),
             today: Self.currentLocalDate
         )
     }

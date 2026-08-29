@@ -22,7 +22,12 @@ struct HomeRoute: View {
     }
 
     var body: some View {
-        HomeScreen(state: viewModel.uiState, onEvent: send, onExplore: { router.select(.explore) })
+        HomeScreen(
+            state: viewModel.uiState,
+            onEvent: send,
+            onExplore: { router.select(.explore) },
+            onRetry: { Task { try? await viewModel.load() } }
+        )
             .task { try? await viewModel.load() }
     }
 
@@ -45,6 +50,7 @@ struct HomeScreen: View {
     let state: HomeUiState
     let onEvent: (HomeUiEvent) -> Void
     let onExplore: () -> Void
+    let onRetry: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -172,7 +178,7 @@ struct HomeScreen: View {
         case .error:
             VStack(alignment: .leading, spacing: NexusSpacing.space12) {
                 message(state.message ?? "We could not load your home page. Please try again.", error: false)
-                NexusSecondaryButton("Retry", fillsWidth: true) { onEvent(.clearValidationError) }
+                NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
             }
         case .empty:
             ContentUnavailableView("No trending escapes yet", systemImage: NexusIconName.map.systemName,
@@ -280,13 +286,36 @@ private struct TravelerSelectorSheet: View {
     @State private var adults: Int
     @State private var children: Int
     @State private var infants: Int
-    init(state: HomeUiState, onEvent: @escaping (HomeUiEvent) -> Void) { self.onEvent = onEvent; _adults = State(initialValue: state.travelers.adults); _children = State(initialValue: state.travelers.children); _infants = State(initialValue: state.travelers.infants) }
+    @State private var childAges: [Int]
+    @State private var infantAges: [Int]
+    init(state: HomeUiState, onEvent: @escaping (HomeUiEvent) -> Void) {
+        self.onEvent = onEvent
+        _adults = State(initialValue: state.travelers.adults)
+        _children = State(initialValue: state.travelers.children)
+        _infants = State(initialValue: state.travelers.infants)
+        _childAges = State(initialValue: (0..<state.travelers.children).map { state.childAges[safe: $0] ?? 2 })
+        _infantAges = State(initialValue: (0..<state.travelers.infants).map { state.infantAges[safe: $0] ?? 0 })
+    }
     var body: some View {
         Form {
             Stepper("Adults: \(adults)", value: $adults, in: 1...TravelerCounts.maxTravelers)
             Stepper("Children: \(children)", value: $children, in: 0...TravelerCounts.maxTravelers)
+                .onChange(of: children) { _, count in childAges = (0..<count).map { childAges[safe: $0] ?? 2 } }
             Stepper("Infants: \(infants)", value: $infants, in: 0...TravelerCounts.maxTravelers)
-            NexusPrimaryButton("Apply", fillsWidth: true) { onEvent(.travelersChanged(TravelerCounts(adults: adults, children: children, infants: infants), childAges: Array(repeating: 2, count: children), infantAges: Array(repeating: 0, count: infants))) }
+                .onChange(of: infants) { _, count in infantAges = (0..<count).map { infantAges[safe: $0] ?? 0 } }
+            ForEach(childAges.indices, id: \.self) { index in
+                Stepper("Child \(index + 1) age: \(childAges[index])", value: $childAges[index], in: 2...11)
+            }
+            ForEach(infantAges.indices, id: \.self) { index in
+                Stepper("Infant \(index + 1) age: \(infantAges[index])", value: $infantAges[index], in: 0...1)
+            }
+            NexusPrimaryButton("Apply", fillsWidth: true) {
+                onEvent(.travelersChanged(
+                    TravelerCounts(adults: adults, children: children, infants: infants),
+                    childAges: childAges,
+                    infantAges: infantAges
+                ))
+            }
         }
     }
 }

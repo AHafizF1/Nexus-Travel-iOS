@@ -43,7 +43,14 @@ final class HomeViewModel {
             name = "Traveler"
         }
         uiState = HomeUiState(isLoading: true, userName: name, activeSheet: sheet, selectedService: service)
-        let airports = try await airportRepository.searchAirports(query: "")
+        let airports: [Airport]
+        do {
+            airports = try await airportRepository.searchAirports(query: "")
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            airports = []
+        }
         let result = try await homeRepository.getHomeContent()
         let departure = today().addingDays(7)
         switch result {
