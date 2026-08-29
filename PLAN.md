@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 4 — authentication UI completion**
+Current phase: **Phase 6 — booking journey**
 
-Active wave: **Wave 15 — AU-4 Email authentication screens and session gate**
+Active wave: **Wave 16 — BJ-1 Booking journey state and transitions**
 
 ## Phase 0 — Delivery foundation
 
@@ -56,7 +56,7 @@ Exit gate: backend contract fixtures green; demo email auth flow verified.
 ## Phase 4 — App shell and navigation
 
 - [x] [NV-1 — Typed routes, Router, per-tab NavigationStack shell](docs/tasks/NV-1-app-shell-navigation.md) — requires AU-3
-- [ ] 🔄 [AU-4 — Email authentication screens and session gate](docs/tasks/AU-4-auth-screens-session-gate.md) — requires AU-3, NV-1
+- [x] [AU-4 — Email authentication screens and session gate](docs/tasks/AU-4-auth-screens-session-gate.md) — requires AU-3, NV-1
 
 Exit gate: independent tab-history and restoration tests green; simulator evidence archived.
 
@@ -73,7 +73,7 @@ Exit gate: Home → search → results → details passes parity, contract, mapp
 
 ## Phase 6 — Booking journey
 
-- [ ] BJ-1 — Booking journey Module and valid transitions — requires BK-1, NV-1, AU-4
+- [ ] 🔄 [BJ-1 — Booking journey Module and valid transitions](docs/tasks/BJ-1-booking-journey.md) — requires BK-1, NV-1, AU-4
 - [ ] PD-1 — Passenger details and passport signed upload — requires BJ-1, NT-1
 - [ ] ST-1 — Seat selection — requires PD-1
 - [ ] BR-1 — Booking review and stable hold idempotency — requires ST-1
