@@ -71,7 +71,7 @@ enum AuthMapper {
     }
 
     private static func firstNonblank(_ values: String?...) -> String? {
-        values.compactMap { value in
+        values.compactMap { value -> String? in
             guard let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 return nil
             }
