@@ -48,4 +48,18 @@ struct HTTPRequestTests {
             try HTTPRequest(target: .mobile("trips"), timeout: 0).urlRequest()
         }
     }
+
+    @Test func buildsPercentEncodedStructuredQueryWithoutChangingEmptyRequests() throws {
+        let queried = try HTTPRequest(
+            target: .mobile("airports/search"),
+            queryItems: [URLQueryItem(name: "q", value: " New York & JFK "), URLQueryItem(name: "limit", value: "30")]
+        ).urlRequest().url
+        let components = try #require(URLComponents(url: try #require(queried), resolvingAgainstBaseURL: false))
+        #expect(components.path == "/api/v1/mobile/airports/search")
+        #expect(components.queryItems == [URLQueryItem(name: "q", value: " New York & JFK "), URLQueryItem(name: "limit", value: "30")])
+        #expect(try HTTPRequest(target: .mobile("airports/popular")).urlRequest().url?.query == nil)
+        #expect(throws: HTTPTransportError.invalidRequest) {
+            try HTTPRequest(target: .mobile("../admin"), queryItems: [URLQueryItem(name: "q", value: "x")]).urlRequest()
+        }
+    }
 }
