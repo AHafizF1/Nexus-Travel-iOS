@@ -38,11 +38,12 @@ final class SeatSelectionViewModel {
         guard seat.status == .available || seat.status == .selected,
               state.segments.indices.contains(state.activeSegmentIndex) else { return }
         let segment = state.segments[state.activeSegmentIndex]
+        let passengerIndex = state.activePassengerIndex
         state.assignments.removeAll {
-            ($0.passengerIndex == state.activePassengerIndex && $0.segmentId == segment.id) ||
+            ($0.passengerIndex == passengerIndex && $0.segmentId == segment.id) ||
             ($0.segmentId == segment.id && $0.seatNumber.caseInsensitiveCompare(seat.number) == .orderedSame)
         }
-        state.assignments.append(.init(passengerIndex: state.activePassengerIndex, segmentId: segment.id,
+        state.assignments.append(.init(passengerIndex: passengerIndex, segmentId: segment.id,
                                        seatNumber: seat.number, price: seat.price))
         state.message = nil
     }
