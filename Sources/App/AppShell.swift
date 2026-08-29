@@ -6,6 +6,7 @@ struct AppShell: View {
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
     let authRepository: any AuthRepository
+    let bookingFlowState: BookingFlowState
 
     var body: some View {
         TabView(
@@ -16,28 +17,28 @@ struct AppShell: View {
         ) {
             NavigationStack(path: $router.homePath) {
                 HomeRoute(viewModel: homeViewModel, router: router)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 AppTabRoot(tab: .explore)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 AppTabRoot(tab: .trips)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
                 AppTabRoot(tab: .profile)
-                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository)
+                    .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, authRepository: authRepository, bookingFlowState: bookingFlowState)
             }
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
@@ -63,6 +64,7 @@ private struct AppDestinations: ViewModifier {
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
     let authRepository: any AuthRepository
+    let bookingFlowState: BookingFlowState
 
     func body(content: Content) -> some View {
         content.navigationDestination(for: AppRoute.self) { route in
@@ -79,18 +81,26 @@ private struct AppDestinations: ViewModifier {
                         reference: payload.reference,
                         repository: flightDetailsRepository
                     ),
-                    router: router
+                    router: router,
+                    bookingFlowState: bookingFlowState,
+                    reference: payload.reference
                 )
                 .toolbar(.hidden, for: .tabBar)
             case .mainAuth:
                 AuthRoute(
                     viewModel: AuthViewModel(repository: authRepository),
-                    onAuthenticated: router.completeMainAuth
+                    onAuthenticated: {
+                        _ = bookingFlowState.completeAuthentication()
+                        router.completeMainAuth()
+                    }
                 )
             case .bookingAuth:
                 AuthRoute(
                     viewModel: AuthViewModel(repository: authRepository),
-                    onAuthenticated: router.completeBookingAuth
+                    onAuthenticated: {
+                        _ = bookingFlowState.completeAuthentication()
+                        router.completeBookingAuth()
+                    }
                 )
             default:
                 AppDestination(route: route)
@@ -147,13 +157,15 @@ private extension View {
         router: Router,
         searchResultsRepository: any SearchResultsRepository,
         flightDetailsRepository: any FlightDetailsRepository,
-        authRepository: any AuthRepository
+        authRepository: any AuthRepository,
+        bookingFlowState: BookingFlowState
     ) -> some View {
         modifier(AppDestinations(
             router: router,
             searchResultsRepository: searchResultsRepository,
             flightDetailsRepository: flightDetailsRepository,
-            authRepository: authRepository
+            authRepository: authRepository,
+            bookingFlowState: bookingFlowState
         ))
     }
 }

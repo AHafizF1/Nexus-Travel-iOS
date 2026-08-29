@@ -52,11 +52,14 @@ struct BookingFlowStateTests {
         #expect(state.acceptPassengerDetails(details))
 
         #expect(state.beginPassengerSubmission() == .authenticate)
-        #expect(state.submitPassengerDetailsAfterAuth)
+        #expect(!state.submitPassengerDetailsAfterAuth)
         #expect(state.completeAuthentication())
         #expect(state.authenticated)
-        #expect(!state.submitPassengerDetailsAfterAuth)
+        #expect(state.submitPassengerDetailsAfterAuth)
         #expect(!state.completeAuthentication())
+        #expect(state.consumePassengerSubmissionAfterAuthentication())
+        #expect(!state.submitPassengerDetailsAfterAuth)
+        #expect(!state.consumePassengerSubmissionAfterAuthentication())
     }
 
     @Test func authenticatedSubmitContinuesWithoutAuth() throws {
