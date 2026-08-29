@@ -4,7 +4,12 @@ import Testing
 
 @MainActor
 struct HomeViewModelTests {
-    private let today = LocalDate(year: 2026, month: 8, day: 29)
+    private var today: LocalDate {
+        guard let date = LocalDate(year: 2026, month: 8, day: 29) else {
+            preconditionFailure("Fixture date must be valid.")
+        }
+        return date
+    }
     private let add = Airport(code: "ADD", city: "Addis Ababa", name: "Bole", country: "Ethiopia")
     private let dxb = Airport(code: "DXB", city: "Dubai", name: "Dubai International", country: "UAE")
 

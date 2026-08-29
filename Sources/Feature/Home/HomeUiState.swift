@@ -31,27 +31,72 @@ enum HomeValidationError: Equatable, Hashable, Codable, Sendable {
     case invalidMultiCityLegs
 }
 
+enum HomeSheet: Equatable, Hashable, Codable, Identifiable, Sendable {
+    case originAirport, destinationAirport, departureDate, returnDate
+    case multiCityOrigin(index: Int), multiCityDestination(index: Int), multiCityDate(index: Int)
+    case travelers, cabinClass, hotelComingSoon
+
+    var id: String {
+        switch self {
+        case .originAirport: "originAirport"
+        case .destinationAirport: "destinationAirport"
+        case .departureDate: "departureDate"
+        case .returnDate: "returnDate"
+        case let .multiCityOrigin(index): "multiCityOrigin-\(index)"
+        case let .multiCityDestination(index): "multiCityDestination-\(index)"
+        case let .multiCityDate(index): "multiCityDate-\(index)"
+        case .travelers: "travelers"
+        case .cabinClass: "cabinClass"
+        case .hotelComingSoon: "hotelComingSoon"
+        }
+    }
+}
+
+enum HomeService: Equatable, Hashable, Codable, Sendable { case flight }
+
+enum HomeUiEvent: Equatable, Sendable {
+    case flightClicked, hotelClicked, packageClicked
+    case tripTypeChanged(TripType)
+    case originClicked, destinationClicked, swapAirportsClicked
+    case departureDateClicked, returnDateClicked, travelersClicked, cabinClassClicked
+    case airportSelected(Airport), airportQueryChanged(String)
+    case departureDateSelected(LocalDate), returnDateSelected(LocalDate)
+    case multiCityOriginClicked(index: Int), multiCityDestinationClicked(index: Int), multiCityDateClicked(index: Int)
+    case multiCityDateSelected(index: Int, date: LocalDate), addMultiCityLeg, removeMultiCityLeg(index: Int)
+    case travelersChanged(TravelerCounts, childAges: [Int], infantAges: [Int])
+    case cabinClassChanged(CabinClass)
+    case trendingEscapeClicked(TrendingEscape), recentSearchClicked(RecentSearch)
+    case searchClicked, dismissSheet, clearValidationError
+}
+
+enum HomeNavigationEvent: Equatable, Sendable {
+    case toSearchResults(searchId: String)
+    case toPackages
+}
+
 /// Presentation-independent home fields needed by search validation and multi-city transitions.
 struct HomeUiState: Equatable, Hashable, Codable, Sendable {
-    let isLoading: Bool
-    let userName: String
-    let tripType: TripType
-    let origin: Airport?
-    let destination: Airport?
-    let departureDate: LocalDate?
-    let returnDate: LocalDate?
-    let travelers: TravelerCounts
-    let childAges: [Int]
-    let infantAges: [Int]
-    let cabinClass: CabinClass
-    let multiCityLegs: [MultiCityLegUiState]
-    let trendingEscapes: [TrendingEscape]
-    let recentSearches: [RecentSearch]
-    let airports: [Airport]
-    let airportQuery: String
-    let validationError: HomeValidationError?
-    let isSearching: Bool
-    let message: String?
+    var isLoading: Bool
+    var userName: String
+    var tripType: TripType
+    var origin: Airport?
+    var destination: Airport?
+    var departureDate: LocalDate?
+    var returnDate: LocalDate?
+    var travelers: TravelerCounts
+    var childAges: [Int]
+    var infantAges: [Int]
+    var cabinClass: CabinClass
+    var multiCityLegs: [MultiCityLegUiState]
+    var trendingEscapes: [TrendingEscape]
+    var recentSearches: [RecentSearch]
+    var airports: [Airport]
+    var airportQuery: String
+    var activeSheet: HomeSheet?
+    var validationError: HomeValidationError?
+    var isSearching: Bool
+    var message: String?
+    var selectedService: HomeService?
 
     /// Creates home state with Android-equivalent defaults.
     init(
@@ -71,9 +116,11 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
         recentSearches: [RecentSearch] = [],
         airports: [Airport] = [],
         airportQuery: String = "",
+        activeSheet: HomeSheet? = nil,
         validationError: HomeValidationError? = nil,
         isSearching: Bool = false,
-        message: String? = nil
+        message: String? = nil,
+        selectedService: HomeService? = nil
     ) {
         self.isLoading = isLoading
         self.userName = userName
@@ -91,9 +138,11 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
         self.recentSearches = recentSearches
         self.airports = airports
         self.airportQuery = airportQuery
+        self.activeSheet = activeSheet
         self.validationError = validationError
         self.isSearching = isSearching
         self.message = message
+        self.selectedService = selectedService
     }
 
     /// Returns state after Android-equivalent trip-type transition.
@@ -129,9 +178,11 @@ struct HomeUiState: Equatable, Hashable, Codable, Sendable {
             recentSearches: recentSearches,
             airports: airports,
             airportQuery: airportQuery,
+            activeSheet: activeSheet,
             validationError: validationError,
             isSearching: isSearching,
-            message: message
+            message: message,
+            selectedService: selectedService
         )
     }
 }
