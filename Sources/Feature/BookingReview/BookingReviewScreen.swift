@@ -75,7 +75,7 @@ struct BookingReviewScreen: View {
             LazyVStack(alignment: .leading, spacing: NexusSpacing.space16) {
                 if let flightDetails {
                     Text("\(flightDetails.originCode) → \(flightDetails.destinationCode)").font(.title2.bold())
-                    Text("\(flightDetails.departureDate.iso8601) · \(flightDetails.travelers.total) traveler(s) · \(flightDetails.cabinLabel)").foregroundStyle(.secondary)
+                    Text("\(flightDetails.departureDate.reviewLabel) · \(flightDetails.travelers.summary()) · \(flightDetails.cabinLabel)").foregroundStyle(.secondary)
                 }
                 if let details = viewModel.state.details {
                     notice(details.status.label, statusMessage(details.status))
@@ -142,5 +142,12 @@ struct BookingReviewScreen: View {
         case .unavailable: "This fare is no longer available."
         case .none: "No booking exists for this flight."
         }
+    }
+}
+
+private extension LocalDate {
+    var reviewLabel: String {
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        return "\(months[month - 1]) \(day), \(year)"
     }
 }
