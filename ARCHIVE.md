@@ -329,3 +329,12 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33300283703
 - Evidence: Xcode 26.6 build and tests passed on PR head `0c25210d4fe44e6af3ce8f183633400011461e16`; anonymous Explore routes, strict DTO mapping, exact cache windows, cold recreation, stale fallback, filters, state transitions, cancellation, and Home handoff covered.
 - Deferred evidence: device accessibility, Dynamic Type, motion, and full cold-launch verification remains Phase 8 QA scope.
+
+## QA-1 — Accessibility and Dynamic Type pass
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/34
+- Merge commit: `6ee2300ff56f11cbd0b3248d7294599019d0093c`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33301159045
+- Evidence: Xcode 26.6 build and tests passed on PR head `d19e44b2e9527b905dab1944ecb76d38dd19f455`; semantic headings, concise compound Explore cards, and native large-text reflow covered across confirmed dense layouts.
+- Deferred evidence: real-device VoiceOver and accessibility-size screenshots remain required before release.

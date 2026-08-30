@@ -107,7 +107,10 @@ struct HomeScreen: View {
             .frame(maxWidth: NexusLayout.contentMaxWidth)
         }
         .background(NexusSemanticColors.backgroundPage)
-        .animation(reduceMotion ? .linear : .smooth, value: state.selectedService)
+        .animation(
+            reduceMotion ? NexusMotion.reducedHomeServiceTransition : NexusMotion.homeServiceTransition,
+            value: state.selectedService
+        )
         .sheet(item: Binding(get: { state.activeSheet }, set: { if $0 == nil { onEvent(.dismissSheet) } })) { sheet in
             HomeSheetView(sheet: sheet, state: state, today: today, onEvent: onEvent)
                 .presentationDragIndicator(.visible)

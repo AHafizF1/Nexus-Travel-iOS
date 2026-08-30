@@ -1,4 +1,5 @@
 import CoreGraphics
+import SwiftUI
 
 /// Android-mirrored spacing tokens in points.
 enum NexusSpacing {
@@ -223,4 +224,7 @@ enum NexusMotion {
     static let durationSheetMillis = 250
     static let durationSuccessMillis = 300
     static let durationShimmerMillis = 1_400
+    static let durationFastSeconds = Double(durationFastMillis) / 1_000
+    static let homeServiceTransition = Animation.spring(response: 0.4, dampingFraction: 1)
+    static let reducedHomeServiceTransition = Animation.easeOut(duration: durationFastSeconds)
 }
