@@ -13,6 +13,7 @@ struct AppDependencies {
     let bookingRequestRepository: RemoteBookingRequestRepository
     let paymentProofRepository: RemotePaymentProofRepository
     let tripsRepository: RemoteTripsRepository
+    let exploreRepository: RemoteExploreRepository
     let profileRepository: RemoteProfileRepository
     let preferencesRepository: RemotePreferencesRepository
     let securityRepository: RemoteAccountSecurityRepository
@@ -69,6 +70,7 @@ struct AppDependencies {
             transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore),
             cache: TripCache(), ticketStore: TicketPdfStore()
         )
+        exploreRepository = RemoteExploreRepository(transport: sharedTransport, cache: ExploreCache())
         profileRepository = sharedProfileRepository
         preferencesRepository = sharedPreferencesRepository
         securityRepository = sharedSecurityRepository

@@ -29,6 +29,7 @@ struct NexusApp: App {
                          bookingRequestRepository: dependencies.bookingRequestRepository,
                          paymentProofRepository: dependencies.paymentProofRepository,
                          tripsRepository: dependencies.tripsRepository,
+                         exploreRepository: dependencies.exploreRepository,
                          profileRepository: dependencies.profileRepository,
                          securityRepository: dependencies.securityRepository,
                          airportRepository: dependencies.airportRepository,
