@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## TR-1 — Trips list, detail, and ticket
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/30
+- Merge commit: `d51276408b83e007823b6c7a3c021688b287e75e`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33294341800
+- Evidence: latest head `dc0d98fd72cb3e0b284351ae9a861471ffb03fcb` built with Xcode 26.6; 256 tests across 56 suites passed.
+- Contract: authenticated grouped list/detail, ownership-hidden `404`, persistent five-minute fresh/24-hour stale cache, offline fallback, authenticated signed ticket lookup, bearer-free PDF download, atomic local storage, and native Quick Look.
+- Adversarial review: replaced process-only cache with cold-launch persistence; corrected contact-support no-op parity and direct payment-receipt action before merge.
+- Known deviations: simulator/device screen and accessibility evidence deferred to Phase 8 by user direction.
+
 ## PP-1 — Payment-proof signed upload
 
 - Completed: 2026-08-29

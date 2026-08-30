@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 6 — booking journey**
 
-Active wave: **Wave 21 — TR-1 Trips list, detail, and ticket**
+Active wave: **Wave 22 — PR-1 Profile, preferences, and security**
 
 ## Phase 0 — Delivery foundation
 
@@ -83,8 +83,8 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 
 ## Phase 7 — Trips, profile, and explore
 
-- [ ] 🔄 [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
-- [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1, AU-4
+- [x] [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
+- [ ] 🔄 [PR-1 — Profile, preferences, and security](docs/tasks/PR-1-profile-preferences-security.md) — requires Phase 3, NV-1, AU-4
 - [ ] PR-2 — CRITICAL asynchronous account deletion — requires PR-1
 - [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
 
