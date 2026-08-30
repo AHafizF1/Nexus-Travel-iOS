@@ -8,7 +8,7 @@ struct ProfileScreenRoute: View {
 }
 private struct ProfileScreen: View {
     let state: ProfileUiState; let router: Router; let onLogout, onSignIn: () -> Void
-    var body: some View { List { Section { Text("Profile").nexusTextStyle(NexusText.styles.screenTitle) }; content }.listStyle(.insetGrouped).navigationBarHidden(true) }
+    var body: some View { List { Section { Text("Profile").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader) }; content }.listStyle(.insetGrouped).navigationBarHidden(true) }
     @ViewBuilder private var content: some View {
         switch state.access {
         case .loading: ProgressView().accessibilityLabel("Loading profile")
@@ -17,7 +17,9 @@ private struct ProfileScreen: View {
         case let .authenticated(profile): header(profile); Section("Account") { row("Saved travelers", "person.2") { router.push(.savedTravelers(.init())) }; LabeledContent("Payment methods", value: "Coming later") }; Section("Preferences") { row("Settings", "gearshape") { router.push(.settings(.init())) }; row("Notifications", "bell") { router.push(.notificationSettings(.init())) }; row("Security", "lock") { router.push(.security(.init())) } }; Section { Button("Log out", role: .destructive, action: onLogout) }
         }
     }
-    private func header(_ profile: CustomerProfile) -> some View { Section { HStack { Text(initials(profile.name)).font(.title.bold()).frame(width: 72, height: 72).foregroundStyle(.white).background(NexusSemanticColors.brandPrimary, in: Circle()); VStack(alignment: .leading) { Text(profile.name).nexusTextStyle(NexusText.styles.sectionTitle); Text(profile.email).nexusTextStyle(NexusText.styles.bodySmall); Text("\(profile.verifiedTravelerCount) verified travelers").nexusTextStyle(NexusText.styles.caption); Button("Edit profile") { router.push(.editProfile(.init())) } } } } }
+    private func header(_ profile: CustomerProfile) -> some View { Section { ViewThatFits(in: .horizontal) { HStack { avatar(profile); profileDetails(profile) }; VStack(alignment: .leading) { avatar(profile); profileDetails(profile) } } } }
+    private func avatar(_ profile: CustomerProfile) -> some View { Text(initials(profile.name)).font(.title.bold()).frame(width: 72, height: 72).foregroundStyle(.white).background(NexusSemanticColors.brandPrimary, in: Circle()).accessibilityHidden(true) }
+    private func profileDetails(_ profile: CustomerProfile) -> some View { VStack(alignment: .leading) { Text(profile.name).nexusTextStyle(NexusText.styles.sectionTitle).accessibilityAddTraits(.isHeader); Text(profile.email).nexusTextStyle(NexusText.styles.bodySmall); Text("\(profile.verifiedTravelerCount) verified travelers").nexusTextStyle(NexusText.styles.caption); Button("Edit profile") { router.push(.editProfile(.init())) } } }
     private func row(_ title: String, _ icon: String, subtitle: String? = nil, action: @escaping () -> Void) -> some View { Button(action: action) { Label { VStack(alignment: .leading) { Text(title); if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary) } } } icon: { Image(systemName: icon).accessibilityHidden(true) } } }
 }
 

@@ -14,7 +14,7 @@ private struct TripsScreen: View {
     let state: TripsUiState; let onSelect: (TripGroup) -> Void; let onOpen, onUpload: (String) -> Void; let onSignIn: () -> Void
     var body: some View {
         ScrollView { LazyVStack(alignment: .leading, spacing: NexusSpacing.space20) {
-            Text("Trips").nexusTextStyle(NexusText.styles.screenTitle)
+            Text("Trips").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader)
             switch state.access {
             case .guest: ContentUnavailableView("Keep every trip in one place", systemImage: "suitcase.rolling", description: Text("Sign in to view bookings, payment progress, seats, and issued tickets.")); NexusPrimaryButton("Sign in", fillsWidth: true, action: onSignIn)
             case .loading: ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips")
@@ -37,7 +37,10 @@ private struct TripCard: View {
         if !trip.seats.isEmpty { Text("Seat \(trip.seats.map(\.seatNumber).joined(separator: ", "))").nexusTextStyle(NexusText.styles.bodySmall) }
         HStack { Text(humanize(trip.status)); Spacer(); if let amount = trip.amountMinor { Text("\(trip.currency ?? "") \(amount / 100)").foregroundStyle(NexusSemanticColors.brandPrimary) } }
         .nexusTextStyle(NexusText.styles.label)
-        HStack { NexusSecondaryButton("View details", action: onOpen); Spacer(); NexusPrimaryButton(trip.nextAction == "UPLOAD_PAYMENT_PROOF" ? "Upload receipt" : "View action", action: onPrimary) }
+        ViewThatFits(in: .horizontal) {
+            HStack { NexusSecondaryButton("View details", action: onOpen); Spacer(); NexusPrimaryButton(trip.nextAction == "UPLOAD_PAYMENT_PROOF" ? "Upload receipt" : "View action", action: onPrimary) }
+            VStack { NexusSecondaryButton("View details", fillsWidth: true, action: onOpen); NexusPrimaryButton(trip.nextAction == "UPLOAD_PAYMENT_PROOF" ? "Upload receipt" : "View action", fillsWidth: true, action: onPrimary) }
+        }
     }.padding(NexusSpacing.space20).background(NexusSemanticColors.surfaceBase).clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl)).overlay(RoundedRectangle(cornerRadius: NexusRadius.xl).stroke(NexusSemanticColors.borderDefault)) }
 }
 

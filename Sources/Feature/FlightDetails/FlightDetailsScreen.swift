@@ -73,8 +73,8 @@ struct FlightDetailsScreen: View {
             Text("Aircraft").nexusTextStyle(NexusText.styles.sectionTitle); Text(details.aircraft.aircraftName); Text(details.aircraft.note).foregroundStyle(NexusSemanticColors.textSecondary)
             if let message = state.actionMessage { Text(message).foregroundStyle(NexusSemanticColors.textSecondary) }
         }.padding(NexusLayout.screenMargin) }
-        .safeAreaInset(edge: .bottom) { HStack { Text(details.price.formatted).nexusTextStyle(NexusText.styles.priceAmountSmall); Spacer(); NexusPrimaryButton(state.isRevalidating ? "Confirming fare..." : "Continue", isLoading: state.isRevalidating) { onEvent(.continueClicked) } }.padding().background(.regularMaterial) }
+        .safeAreaInset(edge: .bottom) { ViewThatFits(in: .horizontal) { HStack { Text(details.price.formatted).nexusTextStyle(NexusText.styles.priceAmountSmall); Spacer(); NexusPrimaryButton(state.isRevalidating ? "Confirming fare..." : "Continue", isLoading: state.isRevalidating) { onEvent(.continueClicked) } }; VStack(alignment: .leading) { Text(details.price.formatted).nexusTextStyle(NexusText.styles.priceAmountSmall); NexusPrimaryButton(state.isRevalidating ? "Confirming fare..." : "Continue", isLoading: state.isRevalidating, fillsWidth: true) { onEvent(.continueClicked) } } }.padding().background(.regularMaterial) }
     }
     private func disclosure(_ title: String, summary: String, section: FlightDetailsSection) -> some View { DisclosureGroup(isExpanded: .init(get: { state.expandedSections.contains(section) }, set: { _ in onEvent(.sectionToggled(section)) })) { Text(summary) } label: { VStack(alignment: .leading) { Text(title); Text(summary).foregroundStyle(NexusSemanticColors.textSecondary) } } }
-    private func row(_ label: String, _ value: String) -> some View { HStack { Text(label); Spacer(); Text(value) } }
+    private func row(_ label: String, _ value: String) -> some View { ViewThatFits(in: .horizontal) { HStack { Text(label); Spacer(); Text(value) }; VStack(alignment: .leading) { Text(label); Text(value) } } }
 }
