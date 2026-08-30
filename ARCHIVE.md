@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## PR-1 — Profile, preferences, and security
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/31
+- Merge commit: `83db9f96623077d89eaa39e45021c987008444a1`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33295383559
+- Evidence: latest head `70f01c55cacd4426e222569297a4fa855bc0f584` built with Xcode 26.6; 259 tests across 58 suites passed.
+- Contract: authenticated profile/edit/travelers, local-first preferences, theme, home airport, notification permission and settings, security session state, and honest unavailable password reset.
+- Adversarial review: fixed Xcode 26.6 IR-generation method-reference crashes and kept mutable `UserDefaults` wholly actor-owned under Swift 6 strict concurrency.
+- Known deviations: account deletion remains PR-2; simulator/device visual and accessibility evidence deferred to Phase 8 by user direction.
+
 ## TR-1 — Trips list, detail, and ticket
 
 - Completed: 2026-08-30

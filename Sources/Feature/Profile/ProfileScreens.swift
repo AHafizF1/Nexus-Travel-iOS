@@ -43,6 +43,34 @@ struct NotificationSettingsScreen: View {
     private func update(_ kind: NotificationKind, enabled: Bool) { Task { if enabled && kind == .push { let allowed = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])) == true; guard allowed else { return } }; var next = viewModel.state.value; next.notifications = kind.updated(next.notifications, enabled: enabled); try? await viewModel.save(next) } }
 }
 struct SecurityScreen: View { @State private var viewModel: AccountSecurityViewModel; let router: Router; init(viewModel: AccountSecurityViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }; var body: some View { Form { Section("Current session") { LabeledContent("Signed-in device", value: viewModel.state.value?.device ?? "Loading"); LabeledContent("Email verification", value: viewModel.state.value?.emailVerified == true ? "Verified" : "Not verified") }; Section("Password") { Text("Password reset is currently unavailable. Contact Nexus support if you cannot access your account.") }; Section("Account") { Button("Delete account", role: .destructive) { router.push(.deleteAccount(.init())) } }; if let error = viewModel.state.error { Text(error).foregroundStyle(NexusSemanticColors.errorText) } }.navigationTitle("Security").task { try? await viewModel.load() } } }
+struct DeleteAccountScreen: View {
+    @State private var viewModel: DeleteAccountViewModel
+    @State private var password = ""
+    @State private var confirmation = ""
+    let onDone: () -> Void
+    init(viewModel: DeleteAccountViewModel, onDone: @escaping () -> Void) { _viewModel = State(initialValue: viewModel); self.onDone = onDone }
+    var body: some View {
+        Group {
+            if case .pending = viewModel.state {
+                ContentUnavailableView {
+                    Label("Deletion requested", systemImage: "clock.badge.checkmark")
+                } description: {
+                    Text("Your account is signed out while deletion completes. Required booking and ticket records remain anonymized for legal purposes.")
+                } actions: {
+                    Button("Done", action: onDone)
+                }
+            } else {
+                Form {
+                    Section { Text("This action is permanent.").foregroundStyle(NexusSemanticColors.errorText); Text("Your sign-in, preferences, traveler profiles, and passport documents will be removed. Required booking and ticket records are retained in anonymized form.") }
+                    Section("Confirm deletion") { SecureField("Current password", text: $password); TextField("Type DELETE", text: $confirmation).textInputAutocapitalization(.characters).autocorrectionDisabled() }
+                    if case let .failure(message) = viewModel.state { Text(message).foregroundStyle(NexusSemanticColors.errorText) }
+                    Button("Delete account", role: .destructive) { Task { await viewModel.submit(password: password, confirmation: confirmation) } }.disabled(password.isEmpty || confirmation != "DELETE" || viewModel.state == .submitting)
+                }
+            }
+        }
+        .navigationTitle("Delete account")
+    }
+}
 struct HomeAirportScreen: View { let viewModel: PreferencesViewModel; let airports: any AirportRepository; @State private var query = ""; @State private var results: [Airport] = []; var body: some View { List { TextField("Search airport or city", text: $query); ForEach(results, id: \.code) { airport in Button { save(airport.code) } label: { HStack { VStack(alignment: .leading) { Text(airport.name); Text("\(airport.city), \(airport.country)").font(.caption) }; Spacer(); Text(airport.code) } } } }.navigationTitle("Home airport").task(id: query) { results = (try? await airports.searchAirports(query: query)) ?? [] } }; private func save(_ code: String) { var next = viewModel.state.value; next.homeAirportCode = code; Task { try? await viewModel.save(next) } } }
 private func initials(_ name: String) -> String { name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined().uppercased().isEmpty ? "N" : name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined().uppercased() }
 private func humanizeProfile(_ value: String) -> String { value.replacingOccurrences(of: "_", with: " ").lowercased().capitalized }

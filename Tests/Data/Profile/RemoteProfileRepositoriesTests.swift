@@ -3,6 +3,41 @@ import Testing
 @testable import NexusTravel
 
 struct RemoteProfileRepositoriesTests {
+    @Test func deletionUsesExactContractAndDecodesRequestedState() async throws {
+        let loader = ProfileLoader(responses: [Self.response(202, #"{"requestId":"delete-1","status":"REQUESTED"}"#)])
+        let repository = RemoteAccountSecurityRepository(
+            transport: HTTPTransport(loader: loader),
+            tokenProvider: AuthTokenProvider(sessionStore: ProfileSessionStore())
+        )
+
+        let result = try await repository.deleteAccount(
+            password: "correct horse battery staple",
+            confirmation: "DELETE",
+            idempotencyKey: "stable-delete-key"
+        )
+
+        #expect(result == .success(.init(requestId: "delete-1", status: .requested)))
+        let requests = await loader.requests
+        let request = try #require(requests.first)
+        #expect(request.url?.path == "/api/v1/mobile/profile/delete")
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
+        #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == "stable-delete-key")
+        let body = try #require(request.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json == ["password": "correct horse battery staple", "confirmation": "DELETE"])
+    }
+
+    @Test func deletionRejectsUnexpectedCompletionClaim() async throws {
+        let loader = ProfileLoader(responses: [Self.response(202, #"{"requestId":"delete-1","status":"COMPLETED"}"#)])
+        let repository = RemoteAccountSecurityRepository(
+            transport: HTTPTransport(loader: loader),
+            tokenProvider: AuthTokenProvider(sessionStore: ProfileSessionStore())
+        )
+
+        #expect(try await repository.deleteAccount(password: "password", confirmation: "DELETE", idempotencyKey: "key") == .failed)
+    }
+
     @Test func profileAndTravelersUseExactAuthenticatedRoutes() async throws {
         let loader = ProfileLoader(responses: [
             Self.response(200, #"{"user":{"id":"u1","name":"Ada Lovelace","email":"ada@example.com","image":null},"phone":"+251900000000","travelerSummary":{"total":1,"verified":1,"pending":0}}"#),

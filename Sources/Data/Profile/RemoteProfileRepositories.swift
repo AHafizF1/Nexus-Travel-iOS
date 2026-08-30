@@ -48,5 +48,19 @@ struct RemoteAccountSecurityRepository: AccountSecurityRepository {
     private let transport: HTTPTransport; private let tokenProvider: AuthTokenProvider
     init(transport: HTTPTransport, tokenProvider: AuthTokenProvider) { self.transport = transport; self.tokenProvider = tokenProvider }
     func security() async throws -> ProfileResult<AccountSecurity> { do { guard let token = try await tokenProvider.accessToken() else { return .authRequired }; let response = try await transport.send(HTTPRequest(target: .mobile("profile/security"), authorization: .bearer(token))); guard response.statusCode != 401 else { return .authRequired }; guard (200..<300).contains(response.statusCode), let dto = try? JSONDecoder().decode(SecurityDTO.self, from: response.data) else { return .failed }; return .success(.init(emailVerified: dto.emailVerified, device: dto.session.device, createdAt: dto.session.createdAt, expiresAt: dto.session.expiresAt)) } catch is CancellationError { throw CancellationError() } catch HTTPTransportError.networkUnavailable, HTTPTransportError.timedOut { return .networkUnavailable } catch { return .failed } }
+    func deleteAccount(password: String, confirmation: String, idempotencyKey: String) async throws -> ProfileResult<AccountDeletionRequest> {
+        do {
+            guard let token = try await tokenProvider.accessToken() else { return .authRequired }
+            let body = try JSONEncoder().encode(DeleteAccountDTO(password: password, confirmation: confirmation))
+            let response = try await transport.send(HTTPRequest(target: .mobile("profile/delete"), method: .post, headers: ["Idempotency-Key": idempotencyKey], body: body, authorization: .bearer(token)))
+            if response.statusCode == 401 { return .authRequired }
+            if response.statusCode == 400 || response.statusCode == 422 { return .invalidInput }
+            guard (200..<300).contains(response.statusCode), let request = try? JSONDecoder().decode(AccountDeletionRequest.self, from: response.data), request.status == .requested else { return .failed }
+            return .success(request)
+        } catch is CancellationError { throw CancellationError() }
+        catch HTTPTransportError.networkUnavailable, HTTPTransportError.timedOut { return .networkUnavailable }
+        catch { return .failed }
+    }
 }
 private struct SecurityDTO: Decodable { let emailVerified: Bool; let session: SessionDTO }; private struct SessionDTO: Decodable { let device, createdAt, expiresAt: String }
+private struct DeleteAccountDTO: Encodable { let password, confirmation: String }
