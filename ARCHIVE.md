@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## PR-2 — Asynchronous account deletion
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/32
+- Merge commit: `214b9e799069c6d214a2e8b5d7f4b4a8a569b18f`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33295964199
+- Evidence: latest head `c42283adbe7e9b0beae12e6a3ad834e80422124f` built with Xcode 26.6; 264 tests across 59 suites passed.
+- Contract: exact authenticated deletion request, stable operation idempotency, strict confirmation/password validation, duplicate prevention, actionable failures, session clearing, and honest asynchronous pending state.
+- Adversarial review: accepted backend request remains pending even when best-effort local sign-out cleanup fails; UI never claims immediate completion.
+- Known deviations: backend exposes no deletion-status polling endpoint; device/accessibility verification remains Phase 8 by user direction.
+
 ## PR-1 — Profile, preferences, and security
 
 - Completed: 2026-08-30

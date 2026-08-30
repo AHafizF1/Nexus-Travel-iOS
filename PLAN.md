@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 7 — trips, profile, and explore**
 
-Active wave: **Wave 23 — PR-2 Asynchronous account deletion**
+Active wave: **Wave 24 — EX-1 Explore list, details, and cache**
 
 ## Phase 0 — Delivery foundation
 
@@ -85,8 +85,8 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 
 - [x] [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
 - [x] [PR-1 — Profile, preferences, and security](docs/tasks/PR-1-profile-preferences-security.md) — requires Phase 3, NV-1, AU-4
-- [ ] 🔄 [PR-2 — CRITICAL asynchronous account deletion](docs/tasks/PR-2-account-deletion.md) — requires PR-1
-- [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
+- [x] [PR-2 — CRITICAL asynchronous account deletion](docs/tasks/PR-2-account-deletion.md) — requires PR-1
+- [ ] 🔄 [EX-1 — Explore list, details, and cache](docs/tasks/EX-1-explore.md) — requires Phase 3, NV-1
 
 Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion evidence pass.
 
