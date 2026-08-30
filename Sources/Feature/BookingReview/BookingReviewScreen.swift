@@ -62,7 +62,7 @@ struct BookingReviewScreen: View {
         .safeAreaInset(edge: .bottom) {
             if viewModel.state.screenState == .content, let details = viewModel.state.details {
                 VStack(spacing: NexusSpacing.space8) {
-                    HStack { Text("Total"); Spacer(); Text(details.fareTotal.formatted).fontWeight(.bold) }
+                    ViewThatFits(in: .horizontal) { HStack { Text("Total"); Spacer(); Text(details.fareTotal.formatted).fontWeight(.bold) }; VStack(alignment: .leading) { Text("Total"); Text(details.fareTotal.formatted).fontWeight(.bold) } }
                     Text("Held now, ticketed after verification").font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     NexusPrimaryButton("Book flight", isLoading: viewModel.state.isSubmitting, fillsWidth: true) { send(.submit) }
                 }.padding(NexusSpacing.space16).background(.regularMaterial)
@@ -98,7 +98,7 @@ struct BookingReviewScreen: View {
     private var submitted: some View {
         VStack(spacing: NexusSpacing.space16) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundStyle(.green).accessibilityHidden(true)
-            Text("Flight booked").font(.title2.bold())
+            Text("Flight booked").font(.title2.bold()).accessibilityAddTraits(.isHeader)
             Text("Your booking is held. Pay now and upload your receipt so we can verify payment and issue your ticket.")
                 .foregroundStyle(.secondary)
             if let reference = viewModel.state.details?.bookingReference { notice("Booking ref", reference) }
@@ -109,9 +109,9 @@ struct BookingReviewScreen: View {
 
     private func section(_ title: String, rows: [(String, String)]) -> some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-            Text(title).font(.headline)
+            Text(title).font(.headline).accessibilityAddTraits(.isHeader)
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                HStack(alignment: .firstTextBaseline) { Text(row.0).foregroundStyle(.secondary); Spacer(); Text(row.1).multilineTextAlignment(.trailing) }
+                ViewThatFits(in: .horizontal) { HStack(alignment: .firstTextBaseline) { Text(row.0).foregroundStyle(.secondary); Spacer(); Text(row.1).multilineTextAlignment(.trailing) }; VStack(alignment: .leading) { Text(row.0).foregroundStyle(.secondary); Text(row.1) } }
             }
         }.padding(NexusSpacing.space16).background(.background, in: .rect(cornerRadius: NexusRadius.lg))
     }

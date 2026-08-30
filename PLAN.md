@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 7 — trips, profile, and explore**
+Current phase: **Phase 8 — reliability and polish**
 
-Active wave: **Wave 24 — EX-1 Explore list, details, and cache**
+Active wave: **Wave 25 — QA-1 Accessibility and Dynamic Type**
 
 ## Phase 0 — Delivery foundation
 
@@ -86,13 +86,13 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 - [x] [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
 - [x] [PR-1 — Profile, preferences, and security](docs/tasks/PR-1-profile-preferences-security.md) — requires Phase 3, NV-1, AU-4
 - [x] [PR-2 — CRITICAL asynchronous account deletion](docs/tasks/PR-2-account-deletion.md) — requires PR-1
-- [ ] 🔄 [EX-1 — Explore list, details, and cache](docs/tasks/EX-1-explore.md) — requires Phase 3, NV-1
+- [x] [EX-1 — Explore list, details, and cache](docs/tasks/EX-1-explore.md) — requires Phase 3, NV-1
 
 Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion evidence pass.
 
 ## Phase 8 — Reliability and polish
 
-- [ ] QA-1 — Accessibility and Dynamic Type pass — requires all screens
+- [ ] 🔄 [QA-1 — Accessibility and Dynamic Type pass](docs/tasks/QA-1-accessibility-dynamic-type.md) — requires all screens
 - [ ] QA-2 — Motion audit, plans, and later execution — requires all screens
 - [ ] QA-3 — Offline, retry, cancellation, and performance validation — requires all async flows
 
