@@ -37,6 +37,13 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
           -resultBundlePath TestResults.xcresult
           CODE_SIGNING_ALLOWED=NO
+      - name: Validate bundled privacy manifest
+        run: |
+          manifest="$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Build/Products/Debug-iphonesimulator/NexusTravel.app/PrivacyInfo.xcprivacy' -print -quit)"
+          test -n "$manifest"
+          plutil -lint "$manifest"
+          /usr/libexec/PlistBuddy -c 'Print :NSPrivacyTracking' "$manifest" | grep -Fx false
+          /usr/libexec/PlistBuddy -c 'Print :NSPrivacyAccessedAPITypes:0:NSPrivacyAccessedAPITypeReasons:0' "$manifest" | grep -Fx CA92.1
       - name: Capture design-system gallery
         run: |
           evidence_dir="$RUNNER_TEMP/design-system-gallery"
