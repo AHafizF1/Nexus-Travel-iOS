@@ -338,3 +338,12 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33301159045
 - Evidence: Xcode 26.6 build and tests passed on PR head `d19e44b2e9527b905dab1944ecb76d38dd19f455`; semantic headings, concise compound Explore cards, and native large-text reflow covered across confirmed dense layouts.
 - Deferred evidence: real-device VoiceOver and accessibility-size screenshots remain required before release.
+
+## QA-2 — Motion audit, plans, and later execution
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/35
+- Merge commit: `d548053c74ac71994aa0bb43d861048e66d26515`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33301836534
+- Evidence: Xcode 26.6 build and tests passed on PR head `f6926505850eb2f3d2c16e29502ebaa8306d6e08`; complete motion-surface audit, shared critically damped Home transition, and 120 ms Reduce Motion opacity path delivered.
+- Deferred evidence: real-device slow-motion and interruption feel check remains release evidence.
