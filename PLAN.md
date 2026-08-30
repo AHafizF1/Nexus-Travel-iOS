@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 6 — booking journey**
+Current phase: **Phase 7 — trips, profile, and explore**
 
-Active wave: **Wave 22 — PR-1 Profile, preferences, and security**
+Active wave: **Wave 23 — PR-2 Asynchronous account deletion**
 
 ## Phase 0 — Delivery foundation
 
@@ -84,8 +84,8 @@ Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review g
 ## Phase 7 — Trips, profile, and explore
 
 - [x] [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
-- [ ] 🔄 [PR-1 — Profile, preferences, and security](docs/tasks/PR-1-profile-preferences-security.md) — requires Phase 3, NV-1, AU-4
-- [ ] PR-2 — CRITICAL asynchronous account deletion — requires PR-1
+- [x] [PR-1 — Profile, preferences, and security](docs/tasks/PR-1-profile-preferences-security.md) — requires Phase 3, NV-1, AU-4
+- [ ] 🔄 [PR-2 — CRITICAL asynchronous account deletion](docs/tasks/PR-2-account-deletion.md) — requires PR-1
 - [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
 
 Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion evidence pass.
