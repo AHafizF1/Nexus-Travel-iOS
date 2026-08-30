@@ -49,6 +49,9 @@ private actor TripsLoader: HTTPDataLoading {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) { requests.append(request); return responses.removeFirst() }
 }
 private struct TripsSessionStore: AuthSessionStore {
-    func read() async throws -> StoredAuthSession? { .init(session: .init(sessionId: "s", user: .init(id: "u", displayName: "A", email: "a@b.com", avatarUrl: nil), tokens: .init(accessToken: "secret", refreshToken: nil), expiresAt: .distantFuture) }
+    func read() async throws -> StoredAuthSession? {
+        .init(session: .init(sessionId: "s", user: .init(id: "u", displayName: "A", email: "a@b.com", avatarUrl: nil),
+                            tokens: .init(accessToken: "secret", refreshToken: nil), expiresAt: .distantFuture))
+    }
     func write(_ session: StoredAuthSession) async throws {}; func clear() async throws {}
 }
