@@ -11,9 +11,9 @@ Single source for roadmap, phases, milestones, dependencies, and live task statu
 
 Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID>-*.md` packets and never change task status themselves.
 
-Current phase: **Phase 8 — reliability and polish**
+Current phase: **Phase 9 — release**
 
-Active wave: **Wave 27 — QA-3 Reliability validation**
+Active wave: **Wave 28 — AS-1 App Store and TestFlight gate**
 
 ## Phase 0 — Delivery foundation
 
@@ -94,13 +94,13 @@ Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion
 
 - [x] [QA-1 — Accessibility and Dynamic Type pass](docs/tasks/QA-1-accessibility-dynamic-type.md) — requires all screens
 - [x] [QA-2 — Motion audit, plans, and later execution](docs/tasks/QA-2-motion.md) — requires all screens
-- [ ] 🔄 [QA-3 — Offline, retry, cancellation, and performance validation](docs/tasks/QA-3-reliability.md) — requires all async flows
+- [x] [QA-3 — Offline, retry, cancellation, and performance validation](docs/tasks/QA-3-reliability.md) — requires all async flows
 
 Exit gate: simulator and real-device evidence archived; no unresolved CRITICAL deviation.
 
 ## Phase 9 — Release
 
-- [ ] AS-1 — Privacy, App Store, archive, and TestFlight gate — requires Phase 8
+- [ ] 🔄 [AS-1 — Privacy, App Store, archive, and TestFlight gate](docs/tasks/AS-1-release.md) — requires Phase 8
 
 Exit gate: current Apple-policy audit, exact Release archive validation, privacy reconciliation, demo credentials, and TestFlight evidence pass.
 
