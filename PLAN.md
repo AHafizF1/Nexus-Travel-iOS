@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 8 — reliability and polish**
 
-Active wave: **Wave 26 — QA-2 Motion audit and execution**
+Active wave: **Wave 27 — QA-3 Reliability validation**
 
 ## Phase 0 — Delivery foundation
 
@@ -93,8 +93,8 @@ Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion
 ## Phase 8 — Reliability and polish
 
 - [x] [QA-1 — Accessibility and Dynamic Type pass](docs/tasks/QA-1-accessibility-dynamic-type.md) — requires all screens
-- [ ] 🔄 [QA-2 — Motion audit, plans, and later execution](docs/tasks/QA-2-motion.md) — requires all screens
-- [ ] QA-3 — Offline, retry, cancellation, and performance validation — requires all async flows
+- [x] [QA-2 — Motion audit, plans, and later execution](docs/tasks/QA-2-motion.md) — requires all screens
+- [ ] 🔄 [QA-3 — Offline, retry, cancellation, and performance validation](docs/tasks/QA-3-reliability.md) — requires all async flows
 
 Exit gate: simulator and real-device evidence archived; no unresolved CRITICAL deviation.
 
