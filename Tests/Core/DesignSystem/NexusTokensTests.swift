@@ -41,6 +41,7 @@ struct NexusTokensTests {
             NexusMotion.durationSheetMillis, NexusMotion.durationSuccessMillis,
             NexusMotion.durationShimmerMillis
         ] == [120, 180, 250, 300, 1_400])
+        #expect(NexusMotion.durationFastSeconds == 0.12)
     }
 
     @Test func adaptiveSpacingUsesExactAndroidProfiles() throws {
