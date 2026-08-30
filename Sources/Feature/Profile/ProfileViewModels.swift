@@ -6,7 +6,7 @@ struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .l
     private(set) var state = ProfileUiState(); private let repository: any ProfileRepository; private let authRepository: any AuthRepository
     init(repository: any ProfileRepository, authRepository: any AuthRepository) { self.repository = repository; self.authRepository = authRepository }
     func load() async throws {
-        let cached = if case let .authenticated(profile) = state.access { profile } else { nil }; let prior = state
+        let cached: CustomerProfile? = if case let .authenticated(profile) = state.access { profile } else { nil }; let prior = state
         state.access = cached == nil ? .loading : state.access; state.refreshing = cached != nil
         do { guard try await authRepository.getLocalSession() != nil else { state = ProfileUiState(access: .guest); return }; async let profile = repository.profile(); async let travelers = repository.travelers(); switch try await profile { case let .success(value): state = ProfileUiState(access: .authenticated(value), travelers: (try await travelers).value ?? []); default: state = ProfileUiState(access: .recoverableError(cached)) } }
         catch is CancellationError { state = prior; throw CancellationError() }
