@@ -1,6 +1,6 @@
 # 001 — Tokenize Home service transition
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: `6ee2300`
 - **Severity**: MEDIUM
 - **Category**: Easing, duration, accessibility, cohesion
@@ -51,4 +51,3 @@ static let reducedServiceTransition = Animation.easeOut(duration: 0.12)
 - **Mechanical**: run project macOS CI; build and tests must pass.
 - **Feel check**: toggle Flight/Hotel/Package repeatedly. Search panel must retarget without jumping, expand from top, settle without bounce. Enable Reduce Motion: position must not move; only short opacity change remains.
 - **Done when**: animations use shared tokens, normal motion is critically damped, Reduce Motion has no translation, latest PR-head CI is green.
-

@@ -2,7 +2,7 @@
 
 | Plan | Title | Severity | Status |
 |---|---|---|---|
-| [001](001-tokenize-home-service-transition.md) | Tokenize Home service transition | MEDIUM | TODO |
+| [001](001-tokenize-home-service-transition.md) | Tokenize Home service transition | MEDIUM | DONE |
 
 ## Execution order
 
