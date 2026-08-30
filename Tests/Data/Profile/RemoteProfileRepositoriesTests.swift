@@ -17,7 +17,8 @@ struct RemoteProfileRepositoriesTests {
         )
 
         #expect(result == .success(.init(requestId: "delete-1", status: .requested)))
-        let request = try #require(await loader.requests.first)
+        let requests = await loader.requests
+        let request = try #require(requests.first)
         #expect(request.url?.path == "/api/v1/mobile/profile/delete")
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer secret")

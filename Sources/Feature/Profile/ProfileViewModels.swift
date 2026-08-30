@@ -1,4 +1,5 @@
 import Observation
+import Foundation
 
 enum ProfileAccessState: Equatable, Sendable { case guest, loading, authenticated(CustomerProfile), recoverableError(CustomerProfile?) }
 struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .loading; var travelers: [SavedTraveler] = []; var refreshing = false; var signingOut = false; var showLogoutConfirmation = false }
@@ -38,6 +39,54 @@ struct SecurityState: Equatable, Sendable { var value: AccountSecurity?; var loa
     private(set) var state = SecurityState(); private let repository: any AccountSecurityRepository
     init(repository: any AccountSecurityRepository) { self.repository = repository }
     func load() async throws { switch try await repository.security() { case let .success(value): state = .init(value: value, loading: false); default: state = .init(loading: false, error: "Could not load security details.") } }
+}
+
+enum DeleteAccountState: Equatable, Sendable {
+    case idle
+    case submitting
+    case pending(requestId: String)
+    case failure(String)
+}
+
+@MainActor @Observable final class DeleteAccountViewModel {
+    private(set) var state: DeleteAccountState = .idle
+    private let repository: any AccountSecurityRepository
+    private let clearSession: () async throws -> Void
+    private let idempotencyKey: String
+
+    init(repository: any AccountSecurityRepository, clearSession: @escaping () async throws -> Void, idempotencyKey: String = "ios-\(UUID().uuidString)") {
+        self.repository = repository
+        self.clearSession = clearSession
+        self.idempotencyKey = idempotencyKey
+    }
+
+    func submit(password: String, confirmation: String) async {
+        guard state != .submitting else { return }
+        guard !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, password.count <= 128, confirmation == "DELETE" else {
+            state = .failure("Enter your password and type DELETE exactly.")
+            return
+        }
+        state = .submitting
+        do {
+            switch try await repository.deleteAccount(password: password, confirmation: confirmation, idempotencyKey: idempotencyKey) {
+            case let .success(request):
+                try? await clearSession()
+                state = .pending(requestId: request.requestId)
+            case .invalidInput:
+                state = .failure("Deletion could not be started. Check your password and try again.")
+            case .authRequired:
+                state = .failure("Your session expired. Sign in again to delete your account.")
+            case .networkUnavailable:
+                state = .failure("You appear to be offline. Check your connection and try again.")
+            case .notFound, .failed:
+                state = .failure("Deletion could not be started. Try again later or contact Nexus support.")
+            }
+        } catch is CancellationError {
+            state = .idle
+        } catch {
+            state = .failure("Deletion could not be started. Try again later or contact Nexus support.")
+        }
+    }
 }
 
 @MainActor @Observable final class AppTheme {

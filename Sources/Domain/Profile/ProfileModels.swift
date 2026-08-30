@@ -10,6 +10,8 @@ struct CustomerPreferences: Codable, Equatable, Sendable {
     var language = "en"; var currency = "INR"; var theme: ThemePreference = .system; var homeAirportCode = "ADD"; var notifications = NotificationPreferences()
 }
 struct AccountSecurity: Equatable, Sendable { let emailVerified: Bool; let device, createdAt, expiresAt: String }
+enum AccountDeletionStatus: String, Decodable, Equatable, Sendable { case requested = "REQUESTED" }
+struct AccountDeletionRequest: Decodable, Equatable, Sendable { let requestId: String; let status: AccountDeletionStatus }
 enum ProfileResult<Value: Equatable & Sendable>: Equatable, Sendable { case success(Value); case authRequired, networkUnavailable, notFound, invalidInput, failed }
 protocol ProfileRepository: Sendable {
     func profile() async throws -> ProfileResult<CustomerProfile>
@@ -21,7 +23,10 @@ protocol PreferencesRepository: Sendable {
     func refresh() async throws -> ProfileResult<CustomerPreferences>
     func save(_ preferences: CustomerPreferences) async throws -> ProfileResult<CustomerPreferences>
 }
-protocol AccountSecurityRepository: Sendable { func security() async throws -> ProfileResult<AccountSecurity> }
+protocol AccountSecurityRepository: Sendable {
+    func security() async throws -> ProfileResult<AccountSecurity>
+    func deleteAccount(password: String, confirmation: String, idempotencyKey: String) async throws -> ProfileResult<AccountDeletionRequest>
+}
 
 enum ProfileValidation: Equatable, Sendable {
     case valid(name: String, phone: String?); case invalidName, invalidPhone

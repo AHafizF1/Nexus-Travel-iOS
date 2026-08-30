@@ -177,6 +177,12 @@ private struct AppDestinations: ViewModifier {
                 NotificationSettingsScreen(viewModel: preferencesViewModel).toolbar(.hidden, for: .tabBar)
             case .security:
                 SecurityScreen(viewModel: AccountSecurityViewModel(repository: securityRepository), router: router).toolbar(.hidden, for: .tabBar)
+            case .deleteAccount:
+                DeleteAccountScreen(
+                    viewModel: DeleteAccountViewModel(repository: securityRepository, clearSession: { _ = try await authRepository.signOut() }),
+                    onDone: { router.popToRoot() }
+                )
+                .toolbar(.hidden, for: .tabBar)
             default:
                 AppDestination(route: route)
             }
