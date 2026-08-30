@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 enum TripsAccessState: Equatable, Sendable { case guest, loading, authenticated }
