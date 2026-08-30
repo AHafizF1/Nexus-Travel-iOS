@@ -321,3 +321,11 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - CI repair: replaced actor-isolated method references with explicit closures after Xcode 26.6 crashed during AuthScreens IR generation.
 - Deferred evidence: final device accessibility, keyboard, and cold-launch verification remains Phase 8 QA scope.
 - **BJ-1 — Booking journey Module and valid transitions** — merged PR #25 at `d241cb7`; PR head `ea22fd1`; CI run `33253338540` green (237 tests, 46 suites). Added typed booking state, auth-resume transition, stale-offer rejection, and composition-root ownership.
+## EX-1 — Explore list, details, and cache
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/33
+- Merge commit: `cfcd8a37be2a1d349ee088f60ba2b1506201a5e6`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33300283703
+- Evidence: Xcode 26.6 build and tests passed on PR head `0c25210d4fe44e6af3ce8f183633400011461e16`; anonymous Explore routes, strict DTO mapping, exact cache windows, cold recreation, stale fallback, filters, state transitions, cancellation, and Home handoff covered.
+- Deferred evidence: device accessibility, Dynamic Type, motion, and full cold-launch verification remains Phase 8 QA scope.
