@@ -5,13 +5,13 @@ struct TripsScreenRoute: View {
     @State private var viewModel: TripsViewModel; let router: Router
     init(viewModel: TripsViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }
     var body: some View {
-        TripsScreen(state: viewModel.state, onSelect: { group in Task { try? await viewModel.select(group) } }, onOpen: { router.push(.tripDetail(.init(tripId: $0))) }, onSignIn: { router.beginMainAuth(returningTo: .trips) })
+        TripsScreen(state: viewModel.state, onSelect: { group in Task { try? await viewModel.select(group) } }, onOpen: { router.push(.tripDetail(.init(tripId: $0))) }, onUpload: { router.push(.paymentProof(.init(bookingId: $0))) }, onSignIn: { router.beginMainAuth(returningTo: .trips) })
             .task { try? await viewModel.load() }.refreshable { try? await viewModel.load(forceRefresh: true) }
     }
 }
 
 private struct TripsScreen: View {
-    let state: TripsUiState; let onSelect: (TripGroup) -> Void; let onOpen: (String) -> Void; let onSignIn: () -> Void
+    let state: TripsUiState; let onSelect: (TripGroup) -> Void; let onOpen, onUpload: (String) -> Void; let onSignIn: () -> Void
     var body: some View {
         ScrollView { LazyVStack(alignment: .leading, spacing: NexusSpacing.space20) {
             Text("Trips").nexusTextStyle(NexusText.styles.screenTitle)
@@ -24,19 +24,20 @@ private struct TripsScreen: View {
                 if let error = state.error { NexusBanner(text: error, status: .error) }
                 if state.loading { ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips") }
                 else if state.visibleTrips.isEmpty { ContentUnavailableView("No trips in this section.", systemImage: "airplane") }
-                else { ForEach(state.visibleTrips, id: \.id) { trip in Button { onOpen(trip.id) } label: { TripCard(trip: trip) }.buttonStyle(.plain) } }
+                else { ForEach(state.visibleTrips, id: \.id) { trip in TripCard(trip: trip, onOpen: { onOpen(trip.id) }, onPrimary: { if trip.nextAction == "UPLOAD_PAYMENT_PROOF" { onUpload(trip.id) } else { onOpen(trip.id) } }) } }
             }
         }.padding(NexusSpacing.space24) }.background(NexusSemanticColors.backgroundPage).navigationBarHidden(true)
     }
 }
 private struct TripCard: View {
-    let trip: CustomerTrip
+    let trip: CustomerTrip; let onOpen, onPrimary: () -> Void
     var body: some View { VStack(alignment: .leading, spacing: NexusSpacing.space12) {
         HStack { NexusStatusChip(text: trip.group.label, status: trip.group == .actionRequired ? .warning : .success); Spacer(); Text("Ref \(trip.id.prefix(8).uppercased())").nexusTextStyle(NexusText.styles.caption) }
         Text(trip.itineraryLabel).nexusTextStyle(NexusText.styles.flightTime)
         if !trip.seats.isEmpty { Text("Seat \(trip.seats.map(\.seatNumber).joined(separator: ", "))").nexusTextStyle(NexusText.styles.bodySmall) }
         HStack { Text(humanize(trip.status)); Spacer(); if let amount = trip.amountMinor { Text("\(trip.currency ?? "") \(amount / 100)").foregroundStyle(NexusSemanticColors.brandPrimary) } }
         .nexusTextStyle(NexusText.styles.label)
+        HStack { NexusSecondaryButton("View details", action: onOpen); Spacer(); NexusPrimaryButton(trip.nextAction == "UPLOAD_PAYMENT_PROOF" ? "Upload receipt" : "View action", action: onPrimary) }
     }.padding(NexusSpacing.space20).background(NexusSemanticColors.surfaceBase).clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl)).overlay(RoundedRectangle(cornerRadius: NexusRadius.xl).stroke(NexusSemanticColors.borderDefault)) }
 }
 
@@ -45,14 +46,14 @@ struct TripDetailScreenRoute: View {
     @State private var previewURL: URL?
     init(viewModel: TripDetailViewModel, router: Router, onUploadPaymentProof: @escaping (String) -> Void) { _viewModel = State(initialValue: viewModel); self.router = router; self.onUploadPaymentProof = onUploadPaymentProof }
     var body: some View {
-        TripDetailScreen(state: viewModel.state, onRefresh: { Task { try? await viewModel.load(forceRefresh: true) } }, onTicket: { Task { try? await viewModel.downloadTicket() } }, onUpload: { onUploadPaymentProof(viewModel.state.trip?.id ?? "") })
+        TripDetailScreen(state: viewModel.state, onRefresh: { Task { try? await viewModel.load(forceRefresh: true) } }, onTicket: { Task { try? await viewModel.downloadTicket() } }, onUpload: { onUploadPaymentProof(viewModel.state.trip?.id ?? "") }, onSupport: {})
             .navigationTitle("Trip details").navigationBarTitleDisplayMode(.inline).task { try? await viewModel.load() }
             .onChange(of: viewModel.state.ticketToOpen) { _, value in previewURL = value; if value != nil { viewModel.ticketOpened() } }
             .quickLookPreview($previewURL)
     }
 }
 private struct TripDetailScreen: View {
-    let state: TripDetailUiState; let onRefresh, onTicket, onUpload: () -> Void
+    let state: TripDetailUiState; let onRefresh, onTicket, onUpload, onSupport: () -> Void
     var body: some View { Group {
         if state.loading { ProgressView().accessibilityLabel("Loading trip") }
         else if let trip = state.trip { ScrollView { VStack(alignment: .leading, spacing: NexusSpacing.space16) {
@@ -64,11 +65,11 @@ private struct TripDetailScreen: View {
             if !trip.seats.isEmpty { detailCard("Seats") { ForEach(Array(trip.seats.enumerated()), id: \.offset) { _, seat in Text("Seat \(seat.seatNumber)") } } }
             if !trip.tickets.isEmpty { detailCard("Tickets") { ForEach(Array(trip.tickets.enumerated()), id: \.offset) { _, ticket in Text(ticket.ticketNumber ?? "Ticket issued") } } }
             if let primary = state.primaryActionLabel { NexusPrimaryButton(primary, isLoading: state.downloadingTicket || state.refreshing, fillsWidth: true, action: action(primary)) }
-            if state.secondaryActionLabel != nil { NexusSecondaryButton(state.secondaryActionLabel ?? "", fillsWidth: true, action: onTicket) }
+            if let secondary = state.secondaryActionLabel { NexusSecondaryButton(secondary, fillsWidth: true, action: secondary == "Contact support" ? onSupport : onTicket) }
         }.padding(NexusSpacing.space24) } }
         else { ContentUnavailableView("Could not load trip.", systemImage: "exclamationmark.triangle", description: Text(state.error ?? "Retry to load this trip.")); NexusPrimaryButton("Retry", fillsWidth: true, action: onRefresh).padding() }
     }.background(NexusSemanticColors.backgroundPage) }
-    private func action(_ label: String) -> () -> Void { switch label { case "View ticket", "Download again": onTicket; case "Upload payment receipt": onUpload; default: onRefresh } }
+    private func action(_ label: String) -> () -> Void { switch label { case "View ticket", "Download again": onTicket; case "Upload payment receipt": onUpload; case "Contact support": onSupport; default: onRefresh } }
     private func detailCard<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View { VStack(alignment: .leading, spacing: NexusSpacing.space12) { Text(title).nexusTextStyle(NexusText.styles.sectionTitle); content() }.padding(NexusSpacing.space20).frame(maxWidth: .infinity, alignment: .leading).background(NexusSemanticColors.surfaceBase).clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl)) }
 }
 private func humanize(_ value: String) -> String { value.replacingOccurrences(of: "_", with: " ").lowercased().capitalized }
