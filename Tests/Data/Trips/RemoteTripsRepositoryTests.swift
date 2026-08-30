@@ -7,7 +7,7 @@ struct RemoteTripsRepositoryTests {
         let loader = TripsLoader(responses: [Self.response(200, Self.pageFixture)])
         let repository = RemoteTripsRepository(
             transport: HTTPTransport(loader: loader), tokenProvider: AuthTokenProvider(sessionStore: TripsSessionStore()),
-            cache: TripCache(clock: { Date(timeIntervalSince1970: 100) }), ticketStore: TicketPdfStore()
+            cache: TripCache(now: Date(timeIntervalSince1970: 100)), ticketStore: TicketPdfStore()
         )
         let result = try await repository.refreshTrips(group: .actionRequired)
         guard case let .content(page, offline, _) = result else { Issue.record("Expected content"); return }
