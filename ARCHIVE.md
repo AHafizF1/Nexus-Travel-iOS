@@ -2,6 +2,17 @@
 
 Append-only evidence for completed work. An entry is allowed only after PR merge and latest PR-head SHA CI success. Local tests, open PRs, and active work do not qualify.
 
+## PP-1 — Payment-proof signed upload
+
+- Completed: 2026-08-29
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/29
+- Merge commit: `36a1deb10da0ed8f1e6c241c3c64d93ed0d40355`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33259529233
+- Evidence: latest head `de722c139e491eb0097ddbbf20266f2a2bc9ebff` built with Xcode 26.6; 251 tests across 53 suites passed.
+- Contract: PDF/JPEG/PNG validation, authenticated create, bearer-free raw signed PUT with every required header, authenticated completion, duplicate-submit prevention, cancellation rollback, and trip routing.
+- Adversarial review: confirmed backend create endpoint has no idempotency contract, so client does not invent or claim one; native document importer requires no photo-library permission.
+- Known deviations: simulator/device visual and accessibility evidence deferred to Phase 8 by user direction.
+
 ## BR-1 — Booking review and stable hold idempotency
 
 - Completed: 2026-08-29
