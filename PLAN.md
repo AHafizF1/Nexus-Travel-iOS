@@ -13,7 +13,7 @@ Only coordinator edits this file. Feature agents follow assigned `docs/tasks/<ID
 
 Current phase: **Phase 6 — booking journey**
 
-Active wave: **Wave 20 — PP-1 Payment-proof signed upload**
+Active wave: **Wave 21 — TR-1 Trips list, detail, and ticket**
 
 ## Phase 0 — Delivery foundation
 
@@ -77,13 +77,13 @@ Exit gate: Home → search → results → details passes parity, contract, mapp
 - [x] [PD-1 — Passenger details and passport signed upload](docs/tasks/PD-1-passenger-details-passport-upload.md) — requires BJ-1, NT-1
 - [x] [ST-1 — Seat selection](docs/tasks/ST-1-seat-selection.md) — requires PD-1
 - [x] [BR-1 — Booking review and stable hold idempotency](docs/tasks/BR-1-booking-review-hold.md) — requires ST-1
-- [ ] 🔄 [PP-1 — Payment-proof signed upload](docs/tasks/PP-1-payment-proof-upload.md) — requires BR-1
+- [x] [PP-1 — Payment-proof signed upload](docs/tasks/PP-1-payment-proof-upload.md) — requires BR-1
 
 Exit gate: transition, idempotency, upload, accessibility, and CRITICAL review gates pass.
 
 ## Phase 7 — Trips, profile, and explore
 
-- [ ] TR-1 — Trips list, detail, and ticket — requires Phase 3, NV-1, AU-4
+- [ ] 🔄 [TR-1 — Trips list, detail, and ticket](docs/tasks/TR-1-trips-detail-ticket.md) — requires Phase 3, NV-1, AU-4
 - [ ] PR-1 — Profile, preferences, and security — requires Phase 3, NV-1, AU-4
 - [ ] PR-2 — CRITICAL asynchronous account deletion — requires PR-1
 - [ ] EX-1 — Explore list, details, and cache — requires Phase 3, NV-1
