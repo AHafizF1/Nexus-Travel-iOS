@@ -1,0 +1,46 @@
+import Observation
+
+enum ProfileAccessState: Equatable, Sendable { case guest, loading, authenticated(CustomerProfile), recoverableError(CustomerProfile?) }
+struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .loading; var travelers: [SavedTraveler] = []; var refreshing = false; var signingOut = false; var showLogoutConfirmation = false }
+@MainActor @Observable final class ProfileViewModel {
+    private(set) var state = ProfileUiState(); private let repository: any ProfileRepository; private let authRepository: any AuthRepository
+    init(repository: any ProfileRepository, authRepository: any AuthRepository) { self.repository = repository; self.authRepository = authRepository }
+    func load() async throws {
+        let cached = if case let .authenticated(profile) = state.access { profile } else { nil }; let prior = state
+        state.access = cached == nil ? .loading : state.access; state.refreshing = cached != nil
+        do { guard try await authRepository.getLocalSession() != nil else { state = ProfileUiState(access: .guest); return }; async let profile = repository.profile(); async let travelers = repository.travelers(); switch try await profile { case let .success(value): state = ProfileUiState(access: .authenticated(value), travelers: (try await travelers).value ?? []); default: state = ProfileUiState(access: .recoverableError(cached)) } }
+        catch is CancellationError { state = prior; throw CancellationError() }
+    }
+    func requestLogout() { state.showLogoutConfirmation = true }; func dismissLogout() { state.showLogoutConfirmation = false }
+    func signOut() async throws { guard !state.signingOut else { return }; state.signingOut = true; state.showLogoutConfirmation = false; _ = try await authRepository.signOut(); state = ProfileUiState(access: .guest) }
+}
+private extension ProfileResult { var value: Value? { if case let .success(value) = self { value } else { nil } } }
+
+struct EditProfileState: Equatable, Sendable { var name = ""; var email = ""; var phone = ""; var loading = true; var saving = false; var saved = false; var error: String? }
+@MainActor @Observable final class EditProfileViewModel {
+    private(set) var state = EditProfileState(); private let repository: any ProfileRepository
+    init(repository: any ProfileRepository) { self.repository = repository }
+    func load() async throws { guard case let .success(value) = try await repository.profile() else { state.loading = false; state.error = "Could not load profile."; return }; state = .init(name: value.name, email: value.email, phone: value.phone ?? "", loading: false) }
+    func name(_ value: String) { state.name = value; state.saved = false }; func phone(_ value: String) { state.phone = value; state.saved = false }
+    func save() async throws { guard !state.saving else { return }; switch ProfileValidation.validate(name: state.name, phone: state.phone) { case .invalidName: state.error = "Enter your full name."; case .invalidPhone: state.error = "Enter phone in international format, such as +251900000000."; case let .valid(name, phone): state.saving = true; state.error = nil; defer { state.saving = false }; guard case let .success(value) = try await repository.updateProfile(name: name, phone: phone) else { state.error = "Could not save changes."; return }; state.name = value.name; state.phone = value.phone ?? ""; state.saved = true } }
+}
+
+struct PreferencesState: Equatable, Sendable { var value = CustomerPreferences(); var refreshing = true; var saving = false; var error: String? }
+@MainActor @Observable final class PreferencesViewModel {
+    private(set) var state = PreferencesState(); private let repository: any PreferencesRepository; private let onTheme: (ThemePreference) -> Void
+    init(repository: any PreferencesRepository, onTheme: @escaping (ThemePreference) -> Void) { self.repository = repository; self.onTheme = onTheme }
+    func load() async throws { state.value = await repository.local(); onTheme(state.value.theme); switch try await repository.refresh() { case let .success(value): state = .init(value: value, refreshing: false); onTheme(value.theme); default: state.refreshing = false; state.error = "Using saved preferences." } }
+    func save(_ value: CustomerPreferences) async throws { guard !state.saving else { return }; let prior = state.value; state.value = value; state.saving = true; state.error = nil; onTheme(value.theme); do { guard case let .success(saved) = try await repository.save(value) else { state.saving = false; state.error = "Could not sync preferences."; return }; state = .init(value: saved, refreshing: false); onTheme(saved.theme) } catch is CancellationError { state.value = prior; state.saving = false; onTheme(prior.theme); throw CancellationError() } }
+}
+
+struct SecurityState: Equatable, Sendable { var value: AccountSecurity?; var loading = true; var error: String? }
+@MainActor @Observable final class AccountSecurityViewModel {
+    private(set) var state = SecurityState(); private let repository: any AccountSecurityRepository
+    init(repository: any AccountSecurityRepository) { self.repository = repository }
+    func load() async throws { switch try await repository.security() { case let .success(value): state = .init(value: value, loading: false); default: state = .init(loading: false, error: "Could not load security details.") } }
+}
+
+@MainActor @Observable final class AppTheme {
+    var preference: ThemePreference
+    init(preference: ThemePreference = .system) { self.preference = preference }
+}

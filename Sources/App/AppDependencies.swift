@@ -13,6 +13,13 @@ struct AppDependencies {
     let bookingRequestRepository: RemoteBookingRequestRepository
     let paymentProofRepository: RemotePaymentProofRepository
     let tripsRepository: RemoteTripsRepository
+    let profileRepository: RemoteProfileRepository
+    let preferencesRepository: RemotePreferencesRepository
+    let securityRepository: RemoteAccountSecurityRepository
+    let airportRepository: RemoteAirportRepository
+    let appTheme: AppTheme
+    let profileViewModel: ProfileViewModel
+    let preferencesViewModel: PreferencesViewModel
     let authRepository: RemoteAuthRepository
     let homeViewModel: HomeViewModel
 
@@ -29,9 +36,16 @@ struct AppDependencies {
             transport: sharedTransport,
             cache: sharedAirportCache
         )
+        let sharedTokenProvider = AuthTokenProvider(sessionStore: sharedSessionStore)
+        let sharedPreferencesStore = ProfilePreferencesStore()
+        let sharedAppTheme = AppTheme()
+        let sharedProfileRepository = RemoteProfileRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider)
+        let sharedPreferencesRepository = RemotePreferencesRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider, store: sharedPreferencesStore)
+        let sharedSecurityRepository = RemoteAccountSecurityRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider)
         transport = sharedTransport
         sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
+        airportRepository = sharedAirportRepository
         searchResultsCache = sharedSearchResultsCache
         searchResultsRepository = RemoteSearchResultsRepository(cache: sharedSearchResultsCache)
         flightDetailsRepository = RemoteFlightDetailsRepository(transport: sharedTransport)
@@ -55,6 +69,12 @@ struct AppDependencies {
             transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore),
             cache: TripCache(), ticketStore: TicketPdfStore()
         )
+        profileRepository = sharedProfileRepository
+        preferencesRepository = sharedPreferencesRepository
+        securityRepository = sharedSecurityRepository
+        appTheme = sharedAppTheme
+        profileViewModel = ProfileViewModel(repository: sharedProfileRepository, authRepository: sharedAuthRepository)
+        preferencesViewModel = PreferencesViewModel(repository: sharedPreferencesRepository, onTheme: { sharedAppTheme.preference = $0 })
         authRepository = sharedAuthRepository
         homeViewModel = HomeViewModel(
             homeRepository: RemoteHomeRepository(

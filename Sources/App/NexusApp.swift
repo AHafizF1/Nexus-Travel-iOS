@@ -29,8 +29,14 @@ struct NexusApp: App {
                          bookingRequestRepository: dependencies.bookingRequestRepository,
                          paymentProofRepository: dependencies.paymentProofRepository,
                          tripsRepository: dependencies.tripsRepository,
+                         profileRepository: dependencies.profileRepository,
+                         securityRepository: dependencies.securityRepository,
+                         airportRepository: dependencies.airportRepository,
+                         profileViewModel: dependencies.profileViewModel,
+                         preferencesViewModel: dependencies.preferencesViewModel,
                          authRepository: dependencies.authRepository,
                          bookingFlowState: bookingFlowState)
+                    .preferredColorScheme(dependencies.appTheme.preference == .system ? nil : dependencies.appTheme.preference == .dark ? .dark : .light)
             }
         }
     }
