@@ -4,10 +4,10 @@ import Testing
 
 struct ProfilePreferencesStoreTests {
     @Test func preferencesPersistAcrossStoreRecreation() async throws {
-        let suite = "profile-\(UUID())"; let defaults = try #require(UserDefaults(suiteName: suite)); defaults.removePersistentDomain(forName: suite)
-        let first = ProfilePreferencesStore(defaults: defaults)
+        let suite = "profile-\(UUID())"; try #require(UserDefaults(suiteName: suite)).removePersistentDomain(forName: suite)
+        let first = ProfilePreferencesStore(suiteName: suite)
         let expected = CustomerPreferences(theme: .dark, homeAirportCode: "DXB", notifications: .init(promotionalOffers: true))
         await first.save(expected)
-        #expect(await ProfilePreferencesStore(defaults: defaults).value() == expected)
+        #expect(await ProfilePreferencesStore(suiteName: suite).value() == expected)
     }
 }
