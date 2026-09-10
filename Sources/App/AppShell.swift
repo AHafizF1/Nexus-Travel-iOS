@@ -54,6 +54,8 @@ struct AppShell: View {
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
         }
+        .foregroundStyle(NexusSemanticColors.textPrimary)
+        .tint(NexusSemanticColors.brandPrimary)
     }
 }
 

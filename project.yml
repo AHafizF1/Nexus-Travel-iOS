@@ -30,7 +30,20 @@ targets:
   NexusTravelTests:
     type: bundle.unit-test
     platform: iOS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     sources:
       - Tests
+    dependencies:
+      - target: NexusTravel
+  NexusTravelUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    sources:
+      - TestsUI
     dependencies:
       - target: NexusTravel

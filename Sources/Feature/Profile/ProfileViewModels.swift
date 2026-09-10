@@ -4,16 +4,57 @@ import Foundation
 enum ProfileAccessState: Equatable, Sendable { case guest, loading, authenticated(CustomerProfile), recoverableError(CustomerProfile?) }
 struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .loading; var travelers: [SavedTraveler] = []; var refreshing = false; var signingOut = false; var showLogoutConfirmation = false }
 @MainActor @Observable final class ProfileViewModel {
-    private(set) var state = ProfileUiState(); private let repository: any ProfileRepository; private let authRepository: any AuthRepository
+    private(set) var state = ProfileUiState()
+    private let repository: any ProfileRepository
+    private let authRepository: any AuthRepository
+    private var loadGeneration = 0
+
     init(repository: any ProfileRepository, authRepository: any AuthRepository) { self.repository = repository; self.authRepository = authRepository }
+
     func load() async throws {
-        let cached: CustomerProfile? = if case let .authenticated(profile) = state.access { profile } else { nil }; let prior = state
-        state.access = cached == nil ? .loading : state.access; state.refreshing = cached != nil
-        do { guard try await authRepository.getLocalSession() != nil else { state = ProfileUiState(access: .guest); return }; async let profile = repository.profile(); async let travelers = repository.travelers(); switch try await profile { case let .success(value): state = ProfileUiState(access: .authenticated(value), travelers: (try await travelers).value ?? []); default: state = ProfileUiState(access: .recoverableError(cached)) } }
-        catch is CancellationError { state = prior; throw CancellationError() }
+        loadGeneration += 1
+        let request = loadGeneration
+        let cached = cachedProfile
+        let prior = state
+        state.access = cached == nil ? .loading : state.access
+        state.refreshing = cached != nil
+
+        do {
+            guard try await authRepository.getLocalSession() != nil else {
+                guard request == loadGeneration else { return }
+                state = ProfileUiState(access: .guest)
+                return
+            }
+
+            async let profileResult = repository.profile()
+            async let travelersResult = repository.travelers()
+            let (profile, travelers) = try await (profileResult, travelersResult)
+            guard request == loadGeneration else { return }
+
+            if case let .success(value) = profile {
+                state = ProfileUiState(access: .authenticated(value), travelers: travelers.value ?? [])
+            } else {
+                state = ProfileUiState(access: .recoverableError(cached))
+            }
+        } catch is CancellationError {
+            if request == loadGeneration { state = prior }
+            throw CancellationError()
+        } catch {
+            guard request == loadGeneration else { return }
+            state = ProfileUiState(access: .recoverableError(cached))
+        }
     }
+
     func requestLogout() { state.showLogoutConfirmation = true }; func dismissLogout() { state.showLogoutConfirmation = false }
     func signOut() async throws { guard !state.signingOut else { return }; state.signingOut = true; state.showLogoutConfirmation = false; _ = try await authRepository.signOut(); state = ProfileUiState(access: .guest) }
+
+    private var cachedProfile: CustomerProfile? {
+        switch state.access {
+        case let .authenticated(profile): profile
+        case let .recoverableError(profile): profile
+        case .guest, .loading: nil
+        }
+    }
 }
 private extension ProfileResult { var value: Value? { if case let .success(value) = self { value } else { nil } } }
 

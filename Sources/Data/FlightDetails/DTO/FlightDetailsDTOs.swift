@@ -44,6 +44,18 @@ struct BaggageSummaryDTO: Decodable, Sendable { let cabin: String; let checked: 
 struct FareRuleSectionDTO: Decodable, Sendable { let title: String; let items: [String] }
 struct FareRulesSummaryDTO: Decodable, Sendable {
     let refundableLabel: String; let changeLabel: String; let cancellationLabel: String; let sections: [FareRuleSectionDTO]
+
+    private enum CodingKeys: String, CodingKey {
+        case refundableLabel, changeLabel, cancellationLabel, sections
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        refundableLabel = try container.decode(String.self, forKey: .refundableLabel)
+        changeLabel = try container.decode(String.self, forKey: .changeLabel)
+        cancellationLabel = try container.decode(String.self, forKey: .cancellationLabel)
+        sections = try container.decodeIfPresent([FareRuleSectionDTO].self, forKey: .sections) ?? []
+    }
 }
 struct PriceBreakdownDTO: Decodable, Sendable { let baseFare: MoneyDTO; let taxesAndFees: MoneyDTO; let serviceFee: MoneyDTO?; let total: MoneyDTO }
 struct AircraftSummaryDTO: Decodable, Sendable { let aircraftName: String; let operatingAirline: String?; let note: String }

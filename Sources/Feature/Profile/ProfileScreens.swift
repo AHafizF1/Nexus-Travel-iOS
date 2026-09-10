@@ -2,18 +2,50 @@ import SwiftUI
 import UserNotifications
 
 struct ProfileScreenRoute: View {
-    @State private var viewModel: ProfileViewModel; let router: Router
-    init(viewModel: ProfileViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }
-    var body: some View { ProfileScreen(state: viewModel.state, router: router, onLogout: viewModel.requestLogout, onSignIn: { router.beginMainAuth(returningTo: .profile) }).task { try? await viewModel.load() }.refreshable { try? await viewModel.load() }.confirmationDialog("Log out?", isPresented: Binding(get: { viewModel.state.showLogoutConfirmation }, set: { if !$0 { viewModel.dismissLogout() } })) { Button("Log out", role: .destructive) { Task { try? await viewModel.signOut() } }; Button("Cancel", role: .cancel) {} } message: { Text("You will need to sign in again to access trips and saved details.") } }
+    @State private var viewModel: ProfileViewModel
+    let router: Router
+
+    init(viewModel: ProfileViewModel, router: Router) {
+        _viewModel = State(initialValue: viewModel)
+        self.router = router
+    }
+
+    var body: some View {
+        ProfileScreen(
+            state: viewModel.state,
+            router: router,
+            onLogout: viewModel.requestLogout,
+            onSignIn: { router.beginMainAuth(returningTo: .profile) },
+            onRetry: { Task { try? await viewModel.load() } }
+        )
+        .task { try? await viewModel.load() }
+        .refreshable { try? await viewModel.load() }
+        .confirmationDialog(
+            "Log out?",
+            isPresented: Binding(
+                get: { viewModel.state.showLogoutConfirmation },
+                set: { if !$0 { viewModel.dismissLogout() } }
+            )
+        ) {
+            Button("Log out", role: .destructive) { Task { try? await viewModel.signOut() } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You will need to sign in again to access trips and saved details.")
+        }
+    }
 }
 private struct ProfileScreen: View {
-    let state: ProfileUiState; let router: Router; let onLogout, onSignIn: () -> Void
+    let state: ProfileUiState
+    let router: Router
+    let onLogout: () -> Void
+    let onSignIn: () -> Void
+    let onRetry: () -> Void
     var body: some View { List { Section { Text("Profile").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader) }; content }.listStyle(.insetGrouped).navigationBarHidden(true) }
     @ViewBuilder private var content: some View {
         switch state.access {
         case .loading: ProgressView().accessibilityLabel("Loading profile")
         case .guest: ContentUnavailableView("Your travel account", systemImage: "person.crop.circle", description: Text("Sign in to manage trips, tickets, verified travelers, and preferences.")); Button("Sign in", action: onSignIn)
-        case let .recoverableError(profile): if let profile { header(profile) }; ContentUnavailableView("Profile could not refresh.", systemImage: "wifi.exclamationmark")
+        case let .recoverableError(profile): if let profile { header(profile) }; ContentUnavailableView("Profile could not refresh.", systemImage: "wifi.exclamationmark"); Button("Retry", action: onRetry)
         case let .authenticated(profile): header(profile); Section("Account") { row("Saved travelers", "person.2") { router.push(.savedTravelers(.init())) }; LabeledContent("Payment methods", value: "Coming later") }; Section("Preferences") { row("Settings", "gearshape") { router.push(.settings(.init())) }; row("Notifications", "bell") { router.push(.notificationSettings(.init())) }; row("Security", "lock") { router.push(.security(.init())) } }; Section { Button("Log out", role: .destructive, action: onLogout) }
         }
     }

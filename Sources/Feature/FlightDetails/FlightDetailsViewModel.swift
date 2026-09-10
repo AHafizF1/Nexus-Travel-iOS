@@ -22,17 +22,28 @@ struct FlightDetailsUiState: Equatable, Sendable {
     private let reference: FlightOfferReference
     private let repository: any FlightDetailsRepository
     private var navigation: [FlightDetailsNavigationEvent] = []
+    private var loadGeneration = 0
     init(reference: FlightOfferReference, repository: any FlightDetailsRepository) { self.reference = reference; self.repository = repository }
 
     func load() async throws {
+        loadGeneration += 1
+        let request = loadGeneration
         let previousState = uiState
         uiState.isLoading = true
         uiState.errorMessage = nil
         do {
-            try await apply(awaitResult())
+            let result = try await awaitResult()
+            guard request == loadGeneration else { return }
+            try apply(result)
         } catch is CancellationError {
-            uiState = previousState
+            if request == loadGeneration { uiState = previousState }
             throw CancellationError()
+        } catch {
+            guard request == loadGeneration else { return }
+            uiState.isLoading = false
+            uiState.details = nil
+            uiState.display = nil
+            uiState.errorMessage = "Could not load flight details. Please try again."
         }
     }
     func onEvent(_ event: FlightDetailsUiEvent) async throws {
@@ -45,7 +56,13 @@ struct FlightDetailsUiState: Equatable, Sendable {
             uiState.actionMessage = nil
             uiState.pendingPriceChange = nil
             defer { uiState.isRevalidating = false }
-            try await apply(awaitResult(), continuing: true)
+            do {
+                try await apply(awaitResult(), continuing: true)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                uiState.actionMessage = "Could not confirm this fare. Please try again."
+            }
         case .acceptPriceChangeClicked: uiState.pendingPriceChange = nil; navigation.append(.toPassengerDetails)
         case .dismissPriceChangeClicked: uiState.pendingPriceChange = nil
         case .chooseSeatClicked: uiState.actionMessage = "Seat selection will be available before checkout."

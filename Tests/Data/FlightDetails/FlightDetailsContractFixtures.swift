@@ -7,4 +7,10 @@ enum FlightDetailsContractFixtures {
 
     static let priceChanged = Data(String(decoding: confirmed, as: UTF8.self)
         .replacingOccurrences(of: #""status":"CONFIRMED""#, with: #""status":"PRICE_CHANGED","previousTotal":{"amount":15000,"currency":"USD","formatted":"USD 150.00"}"#).utf8)
+
+    static let withoutFareRuleSections = Data(String(decoding: confirmed, as: UTF8.self)
+        .replacingOccurrences(
+            of: ",\"sections\":[{\"title\":\"Changes\",\"items\":[\"Fee applies\"]}]",
+            with: ""
+        ).utf8)
 }

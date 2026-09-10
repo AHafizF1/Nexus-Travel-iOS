@@ -2,22 +2,44 @@ import QuickLook
 import SwiftUI
 
 struct TripsScreenRoute: View {
-    @State private var viewModel: TripsViewModel; let router: Router
-    init(viewModel: TripsViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }
+    @State private var viewModel: TripsViewModel
+    let router: Router
+
+    init(viewModel: TripsViewModel, router: Router) {
+        _viewModel = State(initialValue: viewModel)
+        self.router = router
+    }
+
     var body: some View {
-        TripsScreen(state: viewModel.state, onSelect: { group in Task { try? await viewModel.select(group) } }, onOpen: { router.push(.tripDetail(.init(tripId: $0))) }, onUpload: { router.push(.paymentProof(.init(bookingId: $0))) }, onSignIn: { router.beginMainAuth(returningTo: .trips) })
-            .task { try? await viewModel.load() }.refreshable { try? await viewModel.load(forceRefresh: true) }
+        TripsScreen(
+            state: viewModel.state,
+            onSelect: { group in Task { try? await viewModel.select(group) } },
+            onOpen: { router.push(.tripDetail(.init(tripId: $0))) },
+            onUpload: { router.push(.paymentProof(.init(bookingId: $0))) },
+            onSignIn: { router.beginMainAuth(returningTo: .trips) },
+            onRetry: { Task { try? await viewModel.load(forceRefresh: true) } }
+        )
+        .task { try? await viewModel.load() }
+        .refreshable { try? await viewModel.load(forceRefresh: true) }
     }
 }
 
 private struct TripsScreen: View {
-    let state: TripsUiState; let onSelect: (TripGroup) -> Void; let onOpen, onUpload: (String) -> Void; let onSignIn: () -> Void
+    let state: TripsUiState
+    let onSelect: (TripGroup) -> Void
+    let onOpen: (String) -> Void
+    let onUpload: (String) -> Void
+    let onSignIn: () -> Void
+    let onRetry: () -> Void
     var body: some View {
         ScrollView { LazyVStack(alignment: .leading, spacing: NexusSpacing.space20) {
             Text("Trips").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader)
             switch state.access {
             case .guest: ContentUnavailableView("Keep every trip in one place", systemImage: "suitcase.rolling", description: Text("Sign in to view bookings, payment progress, seats, and issued tickets.")); NexusPrimaryButton("Sign in", fillsWidth: true, action: onSignIn)
             case .loading: ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips")
+            case .recoverableError:
+                ContentUnavailableView("Trips are unavailable", systemImage: "exclamationmark.triangle", description: Text(state.error ?? "We could not access your saved session."))
+                NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
             case .authenticated:
                 Picker("Trip section", selection: Binding(get: { state.selectedGroup }, set: onSelect)) { ForEach(TripGroup.allCases, id: \.self) { Text($0.label).tag($0) } }.pickerStyle(.segmented)
                 if state.offline { NexusBanner(text: "Offline Mode: Showing saved tickets.", status: .offline) }

@@ -36,7 +36,7 @@ struct BetterAuthUserDTO: Codable, Sendable {
     let id: String
     let name: String
     let email: String
-    let emailVerified: Bool
+    let emailVerified: Bool?
     let image: String?
 }
 

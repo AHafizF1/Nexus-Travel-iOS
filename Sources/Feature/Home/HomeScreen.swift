@@ -96,7 +96,6 @@ struct HomeScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NexusSpacing.space24) {
-                header
                 serviceLauncher
                 if state.selectedService == .flight { searchPanel.transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity)) }
                 stateSection
@@ -107,6 +106,14 @@ struct HomeScreen: View {
             .frame(maxWidth: NexusLayout.contentMaxWidth)
         }
         .background(NexusSemanticColors.backgroundPage)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            header
+                .padding(.horizontal, NexusLayout.screenMargin)
+                .padding(.vertical, NexusSpacing.space16)
+                .frame(maxWidth: NexusLayout.contentMaxWidth)
+                .frame(maxWidth: .infinity)
+                .background(NexusSemanticColors.backgroundPage)
+        }
         .animation(
             reduceMotion ? NexusMotion.reducedHomeServiceTransition : NexusMotion.homeServiceTransition,
             value: state.selectedService

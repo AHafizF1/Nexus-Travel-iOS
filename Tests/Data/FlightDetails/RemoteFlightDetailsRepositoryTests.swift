@@ -13,6 +13,7 @@ struct RemoteFlightDetailsRepositoryTests {
         #expect(details.fareAvailability?.remainingSeats == 3)
         let request = try #require(await loader.request)
         #expect(request.url?.path == "/api/v1/mobile/flights/details")
+        #expect(request.timeoutInterval == 30)
         #expect(request.httpMethod == "POST" && request.value(forHTTPHeaderField: "Authorization") == nil)
         let body = try #require(request.httpBody)
         #expect(String(decoding: body, as: UTF8.self).contains(#""searchSessionId":"session-1""#))
@@ -23,6 +24,21 @@ struct RemoteFlightDetailsRepositoryTests {
         let repo = RemoteFlightDetailsRepository(transport: HTTPTransport(loader: FlightDetailsStubLoader(.response(201, FlightDetailsContractFixtures.priceChanged))))
         guard case let .priceChanged(previous, details) = try await repo.priceOffer(reference: reference()) else { Issue.record("Expected price change"); return }
         #expect(previous.amount == 15_000 && details.price.amount == 15_875)
+    }
+
+    @Test func mapsFareRulesWhenBackendOmitsOptionalSections() async throws {
+        let repository = RemoteFlightDetailsRepository(
+            transport: HTTPTransport(
+                loader: FlightDetailsStubLoader(.response(201, FlightDetailsContractFixtures.withoutFareRuleSections))
+            )
+        )
+
+        guard case let .success(details) = try await repository.priceOffer(reference: reference()) else {
+            Issue.record("Expected success")
+            return
+        }
+
+        #expect(details.fareRules.sections.isEmpty)
     }
 
     @Test(arguments: [(401, FlightDetailsResult.authRequired), (404, .offerUnavailable), (410, .offerExpired), (503, .offerUnavailable), (500, .unknownError)])

@@ -37,6 +37,10 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
           -resultBundlePath TestResults.xcresult
           CODE_SIGNING_ALLOWED=NO
+        env:
+          NEXUS_TEST_EMAIL: ${{ secrets.NEXUS_TEST_EMAIL }}
+          NEXUS_TEST_PASSWORD: ${{ secrets.NEXUS_TEST_PASSWORD }}
+          NEXUS_TEST_INVALID_PASSWORD: ${{ secrets.NEXUS_TEST_INVALID_PASSWORD }}
       - name: Validate bundled privacy manifest
         run: |
           manifest="$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Build/Products/Debug-iphonesimulator/NexusTravel.app/PrivacyInfo.xcprivacy' -print -quit)"

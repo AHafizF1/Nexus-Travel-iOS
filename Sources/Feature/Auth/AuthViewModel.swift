@@ -31,6 +31,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             gateState = previous
             throw CancellationError()
+        } catch {
+            gateState = .unauthenticated
+            throw error
         }
     }
 
@@ -101,6 +104,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             loginState = previous
             throw CancellationError()
+        } catch {
+            loginState = AuthErrorPresenter.loginState(from: previous, error: .unknown)
+            throw error
         }
     }
 
@@ -128,6 +134,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             signupState = previous
             throw CancellationError()
+        } catch {
+            signupState = AuthErrorPresenter.signupState(from: previous, error: .unknown)
+            throw error
         }
     }
 
