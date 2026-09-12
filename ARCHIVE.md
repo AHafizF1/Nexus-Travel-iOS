@@ -347,3 +347,12 @@ Append-only evidence for completed work. An entry is allowed only after PR merge
 - Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33301836534
 - Evidence: Xcode 26.6 build and tests passed on PR head `f6926505850eb2f3d2c16e29502ebaa8306d6e08`; complete motion-surface audit, shared critically damped Home transition, and 120 ms Reduce Motion opacity path delivered.
 - Deferred evidence: real-device slow-motion and interruption feel check remains release evidence.
+
+## QA-3 — Offline, retry, cancellation, and performance validation
+
+- Completed: 2026-08-30
+- PR: https://github.com/AHafizF1/Nexus-Travel-iOS/pull/36
+- Merge commit: `5cd21ee71a037e4655cd5c29dd14c6bbee1a86c9`
+- Latest task-branch CI: https://github.com/AHafizF1/Nexus-Travel-iOS/actions/runs/33302494738
+- Evidence: Xcode 26.6 build and tests passed on PR head `3c9c5b54b9f12f0f613225a9f5903f5c30743b1a`; deterministic continuation test proves canceled older Explore requests cannot overwrite newer content.
+- Deferred evidence: Release/device Instruments traces remain AS-1 gate evidence; no performance claim made from Windows.

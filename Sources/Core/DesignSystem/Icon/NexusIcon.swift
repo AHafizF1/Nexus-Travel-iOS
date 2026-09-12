@@ -1,4 +1,64 @@
 import SwiftUI
+import TablerIcons
+
+/// Icon families supported by the centralized product catalog.
+enum NexusIconSource: Equatable {
+    case system(String)
+    case tabler(NexusTablerIconName)
+    case custom(String)
+}
+
+/// Tabler names approved for Nexus travel objects.
+enum NexusTablerIconName: Equatable {
+    case home
+    case user
+    case wallet
+    case calendar
+    case plane
+    case planeDeparture
+    case planeArrival
+    case buildings
+    case car
+    case map
+    case mapPin
+    case armchair
+    case briefcase
+    case ticket
+    case qrCode
+    case airport
+    case creditCard
+}
+
+/// SF Symbols used only for Apple controls or states without Android catalog equivalents.
+enum NexusPlatformIconName: String {
+    case concealedPassword = "eye"
+    case deletionRequested = "clock.badge.checkmark"
+    case documentAdd = "doc.badge.plus"
+    case guestProfile = "person.crop.circle"
+    case passengerError = "person.crop.circle.badge.exclamationmark"
+    case password = "lock"
+    case revealedPassword = "eye.slash"
+    case savedTravelers = "person.2"
+    case settings = "gearshape"
+    case success = "checkmark.circle.fill"
+    case unavailableNetwork = "wifi.exclamationmark"
+    case warningFilled = "exclamationmark.triangle.fill"
+}
+
+/// A centrally mapped Apple-only symbol.
+struct NexusPlatformIcon: View {
+    private let name: NexusPlatformIconName
+
+    /// Creates a decorative Apple-only symbol.
+    init(_ name: NexusPlatformIconName) {
+        self.name = name
+    }
+
+    var body: some View {
+        Image(systemName: name.rawValue)
+            .accessibilityHidden(true)
+    }
+}
 
 /// Product icon names mirrored from Android.
 enum NexusIconName: String, CaseIterable, Equatable, Hashable {
@@ -53,12 +113,38 @@ enum NexusIconName: String, CaseIterable, Equatable, Hashable {
     case `continue`
     case arrowsExchange
 
+    /// Approved visual source for this semantic icon.
+    var source: NexusIconSource {
+        switch self {
+        case .home: .tabler(.home)
+        case .trips: .tabler(.ticket)
+        case .profile: .tabler(.user)
+        case .wallet: .tabler(.wallet)
+        case .calendar: .tabler(.calendar)
+        case .flight: .tabler(.plane)
+        case .flightDeparture: .tabler(.planeDeparture)
+        case .flightArrival: .tabler(.planeArrival)
+        case .hotel: .tabler(.buildings)
+        case .car: .tabler(.car)
+        case .map: .tabler(.map)
+        case .location: .tabler(.mapPin)
+        case .seat: .custom("airline-seat-outline")
+        case .armchair: .tabler(.armchair)
+        case .baggage: .tabler(.briefcase)
+        case .ticket: .tabler(.ticket)
+        case .qr: .tabler(.qrCode)
+        case .gate: .tabler(.airport)
+        case .payment: .tabler(.creditCard)
+        default: .system(systemName)
+        }
+    }
+
     /// Closest native SF Symbol preserving this icon's product meaning.
     var systemName: String {
         switch self {
         case .home: "house"
         case .search: "magnifyingglass"
-        case .trips: "calendar"
+        case .trips: "ticket"
         case .profile: "person"
         case .more: "ellipsis"
         case .back: "chevron.left"
@@ -115,26 +201,85 @@ enum NexusIconName: String, CaseIterable, Equatable, Hashable {
     }
 }
 
-/// A native SF Symbol with optional VoiceOver labeling.
+/// A centrally sourced Nexus icon with optional VoiceOver labeling.
 struct NexusIcon: View {
     private let name: NexusIconName
+    private let size: CGFloat
     private let accessibilityLabel: String?
 
     /// Creates a decorative or explicitly labeled product icon.
-    init(name: NexusIconName, accessibilityLabel: String? = nil) {
+    init(
+        name: NexusIconName,
+        size: CGFloat = NexusIconSize.md,
+        accessibilityLabel: String? = nil
+    ) {
         self.name = name
+        self.size = size
         self.accessibilityLabel = accessibilityLabel
     }
 
-    /// Native symbol content.
+    /// Catalog icon content.
     @ViewBuilder
     var body: some View {
         if let accessibilityLabel {
-            Image(systemName: name.systemName)
+            icon
                 .accessibilityLabel(Text(accessibilityLabel))
         } else {
-            Image(systemName: name.systemName)
+            icon
                 .accessibilityHidden(true)
+        }
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        switch name.source {
+        case let .system(systemName):
+            Image(systemName: systemName)
+                .font(.system(size: size))
+                .frame(width: size, height: size)
+        case let .tabler(tablerName):
+            Image(uiImage: tablerName.image.withRenderingMode(.alwaysTemplate))
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
+        case let .custom(assetName):
+            if let url = Bundle.main.url(forResource: assetName, withExtension: "svg"),
+               let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image.withRenderingMode(.alwaysTemplate))
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+            } else {
+                Image(systemName: name.systemName)
+                    .font(.system(size: size))
+                    .frame(width: size, height: size)
+            }
+        }
+    }
+}
+
+private extension NexusTablerIconName {
+    var image: UIImage {
+        switch self {
+        case .home: TablerIcons.homeOutlined
+        case .user: TablerIcons.userOutlined
+        case .wallet: TablerIcons.walletOutlined
+        case .calendar: TablerIcons.calendarOutlined
+        case .plane: TablerIcons.planeOutlined
+        case .planeDeparture: TablerIcons.planeDepartureOutlined
+        case .planeArrival: TablerIcons.planeArrivalOutlined
+        case .buildings: TablerIcons.buildingsOutlined
+        case .car: TablerIcons.carOutlined
+        case .map: TablerIcons.mapOutlined
+        case .mapPin: TablerIcons.mapPinOutlined
+        case .armchair: TablerIcons.armchairOutlined
+        case .briefcase: TablerIcons.briefcaseOutlined
+        case .ticket: TablerIcons.ticketOutlined
+        case .qrCode: TablerIcons.qrcodeOutlined
+        case .airport: TablerIcons.buildingAirportOutlined
+        case .creditCard: TablerIcons.creditCardOutlined
         }
     }
 }

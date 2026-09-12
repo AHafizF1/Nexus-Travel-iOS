@@ -56,7 +56,7 @@ struct SeatSelectionScreen: View {
         }
         .navigationTitle("Choose seats")
         .navigationBarBackButtonHidden()
-        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: "chevron.left") { send(.back) } } }
+        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: NexusIconName.back.systemName) { send(.back) } } }
         .safeAreaInset(edge: .bottom) { actions }
     }
 
@@ -96,7 +96,7 @@ struct SeatSelectionScreen: View {
 
     private func aircraft(_ segment: SeatMapSegment) -> some View {
         VStack {
-            Image(systemName: "airplane").font(.largeTitle).accessibilityHidden(true)
+            NexusIcon(name: .flight, size: NexusIconSize.lg).accessibilityHidden(true)
             if !segment.airlineName.isEmpty { Text(segment.airlineName).font(.headline) }
             Text(segment.aircraftName).font(.subheadline).foregroundStyle(.secondary)
         }.frame(maxWidth: .infinity)

@@ -77,13 +77,11 @@ struct DesignSystemGalleryScreen: View {
     private var buttons: some View {
         VStack(spacing: NexusSpacing.space12) {
             NexusPrimaryButton("Continue booking", fillsWidth: true, action: {}) {
-                NexusIcon(name: .flight)
-                    .frame(width: NexusIconSize.sm, height: NexusIconSize.sm)
+                NexusIcon(name: .flight, size: NexusIconSize.sm)
             }
 
             NexusSecondaryButton("Download ticket", fillsWidth: true, action: {}) {
-                NexusIcon(name: .download)
-                    .frame(width: NexusIconSize.sm, height: NexusIconSize.sm)
+                NexusIcon(name: .download, size: NexusIconSize.sm)
             }
 
             NexusTextButton("View fare rules", action: {})
@@ -94,8 +92,7 @@ struct DesignSystemGalleryScreen: View {
         VStack(alignment: .leading, spacing: NexusSpacing.space24) {
             ForEach(GalleryStatus.allCases, id: \.self) { item in
                 NexusBanner(text: item.banner, status: item.status, leadingContent: {
-                    NexusIcon(name: item.icon)
-                        .frame(width: NexusIconSize.sm, height: NexusIconSize.sm)
+                    NexusIcon(name: item.icon, size: NexusIconSize.sm)
                 })
             }
 
@@ -103,8 +100,7 @@ struct DesignSystemGalleryScreen: View {
                 HStack(spacing: NexusSpacing.space8) {
                     ForEach(GalleryStatus.allCases, id: \.self) { item in
                         NexusStatusChip(text: item.label, status: item.status) {
-                            NexusIcon(name: item.icon)
-                                .frame(width: NexusIconSize.xs, height: NexusIconSize.xs)
+                            NexusIcon(name: item.icon, size: NexusIconSize.xs)
                         }
                     }
                 }

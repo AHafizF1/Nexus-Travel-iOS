@@ -8,12 +8,20 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     SWIFT_APPROACHABLE_CONCURRENCY: YES
+packages:
+  TablerIcons:
+    url: https://github.com/YazeedAlKhalaf/tabler-icons-swift.git
+    revision: 41cfb5218c63420fea0d729a843b1dadd404ae63
 targets:
   NexusTravel:
     type: application
     platform: iOS
     sources:
       - Sources
+    resources:
+      - path: Sources/Core/DesignSystem/Resources/Icons
+    dependencies:
+      - package: TablerIcons
     info:
       path: Sources/App/Info.plist
       properties:
@@ -30,7 +38,20 @@ targets:
   NexusTravelTests:
     type: bundle.unit-test
     platform: iOS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     sources:
       - Tests
+    dependencies:
+      - target: NexusTravel
+  NexusTravelUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    sources:
+      - TestsUI
     dependencies:
       - target: NexusTravel

@@ -60,6 +60,17 @@ struct NexusTextStyle: Sendable {
     var baseLineSpacing: CGFloat {
         baseLineHeight - baseSize
     }
+
+    /// Returns this semantic style using another bundled font face.
+    func withFontWeight(_ fontWeight: NexusFontWeight) -> NexusTextStyle {
+        NexusTextStyle(
+            fontWeight: fontWeight,
+            baseSize: baseSize,
+            baseLineHeight: baseLineHeight,
+            relativeTo: relativeTo,
+            usesTabularNumbers: usesTabularNumbers
+        )
+    }
 }
 
 /// The complete semantic text-style catalog from Android `NexusText.styles`.

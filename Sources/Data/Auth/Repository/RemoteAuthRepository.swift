@@ -1,10 +1,12 @@
 import Foundation
+import OSLog
 
 /// Better Auth email repository backed by shared HTTP transport and Keychain storage.
 struct RemoteAuthRepository: AuthRepository {
     private let transport: HTTPTransport
     private let sessionStore: any AuthSessionStore
     private let clock: @Sendable () -> Date
+    private let logger = Logger(subsystem: "com.nexustravel.NexusTravel", category: "Auth")
 
     /// Creates remote authentication with explicit transport, storage, and time dependencies.
     init(
@@ -136,10 +138,22 @@ struct RemoteAuthRepository: AuthRepository {
             return .failure(.unauthenticated)
         } catch is CancellationError {
             throw CancellationError()
+        } catch let error as DecodingError {
+            logger.error("Auth success response decode failed: \(Self.decodeSummary(error), privacy: .public)")
+            return .failure(.unknown)
         } catch {
+            logger.error("Auth success response mapping failed: \(String(describing: type(of: error)), privacy: .public)")
             return .failure(.unknown)
         }
-        try await sessionStore.write(StoredAuthSession(session: session))
+        do {
+            try await sessionStore.write(StoredAuthSession(session: session))
+        } catch let error as KeychainError {
+            logger.error("Auth session Keychain write failed status=\(error.status, privacy: .public)")
+            throw error
+        } catch {
+            logger.error("Auth session write failed: \(String(describing: type(of: error)), privacy: .public)")
+            throw error
+        }
         return .success(session)
     }
 
@@ -195,6 +209,21 @@ struct RemoteAuthRepository: AuthRepository {
     private func isUsable(_ session: AuthSession) -> Bool {
         session.expiresAt > clock()
             && !(session.tokens?.accessToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+    }
+
+    private static func decodeSummary(_ error: DecodingError) -> String {
+        switch error {
+        case let .keyNotFound(key, context):
+            "missing \((context.codingPath + [key]).map(\.stringValue).joined(separator: "."))"
+        case let .typeMismatch(_, context):
+            "type mismatch at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        case let .valueNotFound(_, context):
+            "missing value at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        case let .dataCorrupted(context):
+            "invalid JSON at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        @unknown default:
+            "unknown decoding error"
+        }
     }
 
     private func mappedFailure<Value: Sendable>(from result: AuthHTTPResult) async throws -> AuthResult<Value> {

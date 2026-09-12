@@ -49,7 +49,7 @@ struct PaymentProofScreen: View {
             }
         }
         .padding(NexusSpacing.space20).navigationTitle("Payment receipt").navigationBarBackButtonHidden()
-        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: "chevron.left", action: onBack) } }
+        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: NexusIconName.back.systemName, action: onBack) } }
         .fileImporter(isPresented: $importsDocument, allowedContentTypes: [.pdf, .jpeg, .png]) { result in
             guard case let .success(url) = result else { return }
             viewModel.select(.init(uriString: url.absoluteString, displayName: url.lastPathComponent,

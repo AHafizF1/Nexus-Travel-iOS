@@ -11,6 +11,7 @@ struct RemoteFlightSearchRepositoryTests {
         let sent = try #require(await loader.requests.first)
         #expect(sent.url?.path == "/api/v1/mobile/flights/search")
         #expect(sent.httpMethod == "POST" && sent.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(sent.timeoutInterval == 60)
         #expect(await cache.result(for: "session-1") != nil)
     }
 

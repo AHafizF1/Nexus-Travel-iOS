@@ -21,13 +21,63 @@ struct NexusIconTests {
         #expect(Set(NexusIconName.allCases.map(\.rawValue)).count == 50)
     }
 
-    @Test("Every icon has one nonempty native symbol mapping")
-    func everyIconHasOneNativeMapping() {
-        let mappings = NexusIconName.allCases.map(\.systemName)
-        let everyMappingIsNonempty = mappings.allSatisfy { !$0.isEmpty }
+    @Test("Travel objects use approved Tabler icons")
+    func travelObjectsUseTablerIcons() {
+        let expected: [NexusIconName: NexusTablerIconName] = [
+            .home: .home,
+            .trips: .ticket,
+            .profile: .user,
+            .wallet: .wallet,
+            .calendar: .calendar,
+            .flight: .plane,
+            .flightDeparture: .planeDeparture,
+            .flightArrival: .planeArrival,
+            .hotel: .buildings,
+            .car: .car,
+            .map: .map,
+            .location: .mapPin,
+            .armchair: .armchair,
+            .baggage: .briefcase,
+            .ticket: .ticket,
+            .qr: .qrCode,
+            .gate: .airport,
+            .payment: .creditCard
+        ]
 
-        #expect(everyMappingIsNonempty)
-        #expect(mappings.count == 50)
+        for (name, tablerName) in expected {
+            #expect(name.source == .tabler(tablerName))
+        }
+    }
+
+    @Test("Navigation and platform actions remain native")
+    func platformActionsRemainNative() {
+        let nativeNames: [NexusIconName] = [
+            .search, .more, .back, .close,
+            .chevronDown, .chevronRight, .share, .download, .filter, .sort,
+            .shield, .chat, .phone, .email, .help, .check, .info, .warning,
+            .error, .clock, .offline, .loading, .bell
+        ]
+
+        for name in nativeNames {
+            guard case let .system(systemName) = name.source else {
+                Issue.record("Expected SF Symbol for \(name.rawValue)")
+                continue
+            }
+            #expect(!systemName.isEmpty)
+        }
+    }
+
+    @Test("Bottom navigation uses Tabler icons")
+    func bottomNavigationUsesTablerIcons() {
+        #expect(NexusIconName.home.source == .tabler(.home))
+        #expect(NexusIconName.map.source == .tabler(.map))
+        #expect(NexusIconName.trips.source == .tabler(.ticket))
+        #expect(NexusIconName.profile.source == .tabler(.user))
+    }
+
+    @Test("Airline seat uses copied Nexus artwork")
+    func airlineSeatUsesCustomArtwork() {
+        #expect(NexusIconName.seat.source == .custom("airline-seat-outline"))
     }
 
     @Test("Icons construct decorative and labeled forms")
@@ -35,5 +85,6 @@ struct NexusIconTests {
     func iconsConstructDecorativeAndLabeledForms() {
         _ = NexusIcon(name: .flight)
         _ = NexusIcon(name: .flight, accessibilityLabel: "Flight")
+        _ = NexusIcon(name: .home, size: NexusIconSize.lg, accessibilityLabel: "Home")
     }
 }

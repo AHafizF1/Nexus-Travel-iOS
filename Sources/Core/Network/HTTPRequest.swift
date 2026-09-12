@@ -49,6 +49,7 @@ struct HTTPRequest: Equatable, Sendable {
     func urlRequest() throws -> URLRequest {
         guard timeout > 0 else { throw HTTPTransportError.invalidRequest }
         var request = URLRequest(url: try AppConfiguration.url(for: target, queryItems: queryItems), timeoutInterval: timeout)
+        request.httpShouldHandleCookies = false
         request.httpMethod = method.rawValue
         request.httpBody = body
         for (name, value) in headers where name.caseInsensitiveCompare("Authorization") != .orderedSame {

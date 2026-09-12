@@ -28,6 +28,15 @@ struct RemoteAuthRepositoryTests {
         #expect(await store.current?.session.tokens?.accessToken == "body-token")
     }
 
+    @Test func successfulAuthDoesNotRequireVerificationField() async throws {
+        let loader = AuthStubLoader(responses: [.response(200, AuthContractFixtures.tokenEnvelopeWithoutVerificationField, [:])])
+
+        let result = try await makeRepository(loader: loader)
+            .signInEmail(request: .init(email: "selam@example.com", password: "password123"))
+
+        #expect(successSession(result)?.tokens?.accessToken == "body-token")
+    }
+
     @Test func signUpTrimsNameAndEmailWithoutSerializingTerms() async throws {
         let loader = AuthStubLoader(responses: [.response(200, AuthContractFixtures.tokenEnvelope, [:])])
         let repository = makeRepository(loader: loader)

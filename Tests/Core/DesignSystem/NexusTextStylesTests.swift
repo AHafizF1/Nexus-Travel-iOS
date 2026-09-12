@@ -74,6 +74,15 @@ struct NexusTextStylesTests {
         }
     }
 
+    @Test func statusBadgeCanUseExplicitMediumFace() {
+        let medium = NexusText.styles.statusBadge.withFontWeight(.medium)
+
+        #expect(medium.fontWeight == .medium)
+        #expect(medium.baseSize == 12)
+        #expect(medium.baseLineHeight == 16)
+        #expect(medium.relativeTo == .caption)
+    }
+
     @Test func onlyAndroidTabularRolesUseTabularNumbers() {
         let tabularRoles = [
             NamedStyle("priceAmount", NexusText.styles.priceAmount),

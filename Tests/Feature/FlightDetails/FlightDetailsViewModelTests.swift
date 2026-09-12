@@ -118,12 +118,35 @@ struct FlightDetailsViewModelTests {
         }
         #expect(model.uiState == FlightDetailsUiState())
     }
+
+    @Test func unexpectedLoadFailureStopsLoading() async {
+        let details = try? makeDetails()
+        guard let details else {
+            Issue.record("Could not create flight details fixture")
+            return
+        }
+        let model = FlightDetailsViewModel(
+            reference: details.reference,
+            repository: ThrowingFlightDetailsRepository()
+        )
+
+        try? await model.load()
+
+        #expect(!model.uiState.isLoading)
+        #expect(model.uiState.errorMessage != nil)
+    }
 }
 
 private struct StubFlightDetailsRepository: FlightDetailsRepository {
     let result: FlightDetailsResult
     func priceOffer(reference: FlightOfferReference) async throws -> FlightDetailsResult { result }
 }
+
+private struct ThrowingFlightDetailsRepository: FlightDetailsRepository {
+    func priceOffer(reference: FlightOfferReference) async throws -> FlightDetailsResult { throw FlightDetailsLoadError.failed }
+}
+
+private enum FlightDetailsLoadError: Error { case failed }
 
 private actor SequencedFlightDetailsRepository: FlightDetailsRepository {
     private var results: [FlightDetailsResult]

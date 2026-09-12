@@ -192,11 +192,22 @@ enum NexusLayout {
     static let touchMin: CGFloat = 44
     static let touchRecommended: CGFloat = 48
     static let bottomCtaMinHeight: CGFloat = 88
+    static let mainBottomBarHeight: CGFloat = 78
     static let iconDefault: CGFloat = 24
     static let iconSmall: CGFloat = 20
     static let iconLarge: CGFloat = 32
     static let contentMaxWidth: CGFloat = 480
     static let formMaxWidth: CGFloat = 360
+}
+
+/// iOS shadow values approximating Android surface elevation.
+enum NexusElevation {
+    static let mainBottomBarAmbientOpacity: Double = 0.08
+    static let mainBottomBarAmbientRadius: CGFloat = 12
+    static let mainBottomBarAmbientY: CGFloat = 2
+    static let mainBottomBarContactOpacity: Double = 0.06
+    static let mainBottomBarContactRadius: CGFloat = 3
+    static let mainBottomBarContactY: CGFloat = 1
 }
 
 /// Android-mirrored border tokens in points.
@@ -226,5 +237,6 @@ enum NexusMotion {
     static let durationShimmerMillis = 1_400
     static let durationFastSeconds = Double(durationFastMillis) / 1_000
     static let homeServiceTransition = Animation.spring(response: 0.4, dampingFraction: 1)
+    static let authModeTransition = Animation.spring(response: 0.4, dampingFraction: 1)
     static let reducedHomeServiceTransition = Animation.easeOut(duration: durationFastSeconds)
 }

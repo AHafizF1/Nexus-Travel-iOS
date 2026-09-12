@@ -42,6 +42,17 @@ struct NexusTokensTests {
             NexusMotion.durationShimmerMillis
         ] == [120, 180, 250, 300, 1_400])
         #expect(NexusMotion.durationFastSeconds == 0.12)
+
+        #expect([
+            NexusElevation.mainBottomBarAmbientOpacity,
+            NexusElevation.mainBottomBarContactOpacity
+        ] == [0.08, 0.06])
+        #expect([
+            NexusElevation.mainBottomBarAmbientRadius,
+            NexusElevation.mainBottomBarAmbientY,
+            NexusElevation.mainBottomBarContactRadius,
+            NexusElevation.mainBottomBarContactY
+        ] == [12, 2, 3, 1])
     }
 
     @Test func adaptiveSpacingUsesExactAndroidProfiles() throws {

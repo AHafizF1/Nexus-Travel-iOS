@@ -7,7 +7,7 @@ struct RemoteFlightDetailsRepository: FlightDetailsRepository {
     func priceOffer(reference: FlightOfferReference) async throws -> FlightDetailsResult {
         do {
             let body = try JSONEncoder().encode(PriceOfferRequestDTO(searchSessionId: reference.searchId, offerId: reference.offerId))
-            let response = try await transport.send(HTTPRequest(target: .mobile(FlightDetailsEndpoints.details), method: .post, body: body, timeout: 90))
+            let response = try await transport.send(HTTPRequest(target: .mobile(FlightDetailsEndpoints.details), method: .post, body: body))
             switch response.statusCode {
             case 200..<300:
                 return try FlightDetailsResponseMapper.map(JSONDecoder().decode(PriceOfferResponseDTO.self, from: response.data), reference: reference)

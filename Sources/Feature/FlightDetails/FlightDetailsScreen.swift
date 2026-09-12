@@ -53,11 +53,11 @@ struct FlightDetailsScreen: View {
     var body: some View {
         Group {
             if state.isLoading { ProgressView("Loading flight details...").frame(maxWidth: .infinity, maxHeight: .infinity) }
-            else if let error = state.errorMessage { ContentUnavailableView("Could not load flight details", systemImage: "exclamationmark.triangle", description: Text(error)).overlay(alignment: .bottom) { NexusPrimaryButton("Retry") { onEvent(.retryClicked) }.padding() } }
+            else if let error = state.errorMessage { ContentUnavailableView("Could not load flight details", systemImage: NexusIconName.warning.systemName, description: Text(error)).overlay(alignment: .bottom) { NexusPrimaryButton("Retry") { onEvent(.retryClicked) }.padding() } }
             else if let details = state.details { content(details) }
-            else { ContentUnavailableView("Flight details unavailable", systemImage: "airplane", description: Text("Choose another flight and try again.")) }
+            else { ContentUnavailableView("Flight details unavailable", systemImage: NexusIconName.flight.systemName, description: Text("Choose another flight and try again.")) }
         }
-        .navigationTitle("Flight Details").navigationBarBackButtonHidden().toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: "chevron.left") { onEvent(.backClicked) } } }
+        .navigationTitle("Flight Details").navigationBarBackButtonHidden().toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: NexusIconName.back.systemName) { onEvent(.backClicked) } } }
         .alert("Fare changed", isPresented: .constant(state.pendingPriceChange != nil)) { Button("Review", role: .cancel) { onEvent(.dismissPriceChangeClicked) }; Button("Continue") { onEvent(.acceptPriceChangeClicked) } } message: { if let change = state.pendingPriceChange { Text("Price changed from \(change.previousPrice) to \(change.updatedPrice).") } }
     }
     private func content(_ details: FlightDetails) -> some View {

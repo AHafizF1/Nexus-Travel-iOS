@@ -10,8 +10,13 @@ struct NexusApp: App {
     @State private var bookingFlowState: BookingFlowState
 
     init() {
-        launchDestination = AppLaunchDestination(arguments: ProcessInfo.processInfo.arguments)
-        dependencies = launchDestination.gallerySection == nil ? AppDependencies() : nil
+        let arguments = ProcessInfo.processInfo.arguments
+        launchDestination = AppLaunchDestination(arguments: arguments)
+        dependencies = launchDestination.gallerySection == nil
+            ? AppDependencies(sessionStore: arguments.contains("--reset-auth-session")
+                ? VolatileAuthSessionStore()
+                : KeychainAuthSessionStore())
+            : nil
         _router = State(initialValue: Router())
         _bookingFlowState = State(initialValue: BookingFlowState())
     }

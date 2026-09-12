@@ -20,6 +20,8 @@ final class AuthViewModel {
         self.repository = repository
     }
 
+    var isSubmitting: Bool { loginState.isSubmitting || signupState.isSubmitting }
+
     func checkExistingSession() async throws {
         let previous = gateState
         gateState = .checking
@@ -31,6 +33,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             gateState = previous
             throw CancellationError()
+        } catch {
+            gateState = .unauthenticated
+            throw error
         }
     }
 
@@ -101,6 +106,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             loginState = previous
             throw CancellationError()
+        } catch {
+            loginState = AuthErrorPresenter.loginState(from: previous, error: .unknown)
+            throw error
         }
     }
 
@@ -128,6 +136,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             signupState = previous
             throw CancellationError()
+        } catch {
+            signupState = AuthErrorPresenter.signupState(from: previous, error: .unknown)
+            throw error
         }
     }
 
@@ -155,6 +166,9 @@ final class AuthViewModel {
         } catch is CancellationError {
             loginState = previous
             throw CancellationError()
+        } catch {
+            loginState = AuthErrorPresenter.loginState(from: previous, error: .unknown)
+            throw error
         }
     }
 
@@ -179,10 +193,13 @@ final class AuthViewModel {
             loginState.isSubmitting = false
             loginState.isSuccess = true
             loginState.message = "Welcome back, \(session.user.displayName)."
+            loginState.password = ""
         case .signup:
             signupState.isSubmitting = false
             signupState.isSuccess = true
             signupState.message = "Account ready for \(session.user.displayName)."
+            signupState.password = ""
+            signupState.confirmPassword = ""
         }
         events.append(.authenticated(session))
     }

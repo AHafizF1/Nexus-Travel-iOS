@@ -5,6 +5,8 @@ enum AuthContractFixtures {
 
     static let tokenEnvelope = Data(#"{"redirect":false,"token":"body-token","future":true,"user":{"id":"user-1","name":"Selam","email":"selam@example.com","emailVerified":true,"image":null,"createdAt":"2026-05-03T12:00:00.000Z","updatedAt":"2026-05-03T12:00:00.000Z","future":"ignored"}}"#.utf8)
 
+    static let tokenEnvelopeWithoutVerificationField = Data(#"{"token":"body-token","user":{"id":"user-1","name":"Selam","email":"selam@example.com","image":null}}"#.utf8)
+
     static let tokenEnvelopeWithoutToken = Data(#"{"user":{"id":"user-1","name":"Selam","email":"selam@example.com","emailVerified":true,"image":null}}"#.utf8)
 
     static let tokenEnvelopeMissingUser = Data(#"{"token":"body-token"}"#.utf8)
