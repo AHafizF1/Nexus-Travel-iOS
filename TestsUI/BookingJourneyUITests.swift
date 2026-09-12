@@ -8,7 +8,7 @@ final class BookingJourneyUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        app.buttons["Profile"].tap()
+        app.buttons["main-tab-profile"].tap()
         XCTAssertTrue(app.buttons["Sign in"].waitForExistence(timeout: 15))
         app.buttons["Sign in"].tap()
         XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
@@ -52,13 +52,13 @@ final class BookingJourneyUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["Flight"].waitForExistence(timeout: 30))
-        let tripsTab = app.buttons["Trips"]
+        let tripsTab = app.buttons["main-tab-trips"]
         XCTAssertTrue(tripsTab.waitForExistence(timeout: 15))
         tripsTab.tap()
         XCTAssertTrue(app.staticTexts["Keep every trip in one place"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["Sign in"].exists)
 
-        app.buttons["Profile"].tap()
+        app.buttons["main-tab-profile"].tap()
         XCTAssertTrue(app.staticTexts["Your travel account"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["Sign in"].exists)
     }
@@ -70,7 +70,7 @@ final class BookingJourneyUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        app.buttons["Profile"].tap()
+        app.buttons["main-tab-profile"].tap()
         let profileSignIn = app.buttons["Sign in"]
         XCTAssertTrue(profileSignIn.waitForExistence(timeout: 15))
         profileSignIn.tap()
@@ -93,7 +93,7 @@ final class BookingJourneyUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        app.buttons["Profile"].tap()
+        app.buttons["main-tab-profile"].tap()
         let profileSignIn = app.buttons["Sign in"]
         XCTAssertTrue(profileSignIn.waitForExistence(timeout: 15))
         profileSignIn.tap()

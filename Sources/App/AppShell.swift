@@ -139,6 +139,7 @@ private struct MainBottomBar: View {
         }
         .buttonStyle(MainBottomBarItemStyle())
         .accessibilityLabel(tab.label)
+        .accessibilityIdentifier("main-tab-\(tab.label.lowercased())")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
