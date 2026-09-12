@@ -51,7 +51,10 @@ final class BookingJourneyUITests: XCTestCase {
         app.launchArguments.append("--reset-auth-session")
         app.launch()
 
-        app.buttons["Trips"].tap()
+        XCTAssertTrue(app.buttons["Flight"].waitForExistence(timeout: 30))
+        let tripsTab = app.buttons["Trips"]
+        XCTAssertTrue(tripsTab.waitForExistence(timeout: 15))
+        tripsTab.tap()
         XCTAssertTrue(app.staticTexts["Keep every trip in one place"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["Sign in"].exists)
 
