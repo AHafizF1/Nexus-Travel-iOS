@@ -126,13 +126,8 @@ struct HomeScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         header.padding(.top, metrics.headerTopPadding)
-                        serviceLauncher
+                        searchPanel(cardPadding: metrics.cardPadding)
                             .padding(.top, metrics.greetingToLauncherGap)
-                        if state.selectedService == .flight {
-                            searchPanel(cardPadding: metrics.cardPadding)
-                                .padding(.top, metrics.launcherToSearchGap)
-                                .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
-                        }
                         stateSection.padding(.top, metrics.launcherToSearchGap)
                         if !state.recentSearches.isEmpty { recentSearches.padding(.top, NexusSpacing.space24) }
                     }
@@ -192,44 +187,6 @@ struct HomeScreen: View {
                 .foregroundStyle(NexusSemanticColors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var serviceLauncher: some View {
-        HStack(spacing: NexusSpacing.space8) {
-            serviceButton("Flight", icon: .flight, selected: state.selectedService == .flight) { onEvent(.flightClicked) }
-            serviceButton("Hotel", icon: .hotel) { onEvent(.hotelClicked) }
-            serviceButton("Package", icon: .baggage) { onEvent(.packageClicked) }
-        }
-        .padding(NexusSpacing.space16)
-        .background(NexusSemanticColors.surfaceBase)
-        .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xxl))
-        .overlay { RoundedRectangle(cornerRadius: NexusRadius.xxl).stroke(NexusSemanticColors.borderSubtle) }
-    }
-
-    private func serviceButton(_ label: String, icon: NexusIconName, selected: Bool = false, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: NexusSpacing.space8) {
-                NexusIcon(name: icon)
-                Text(label).nexusTextStyle(NexusText.styles.label)
-            }
-            .padding(.horizontal, NexusSpacing.space8)
-            .padding(.vertical, NexusSpacing.space12)
-            .foregroundStyle(selected ? NexusSemanticColors.brandPrimary : NexusSemanticColors.textPrimary)
-            .frame(
-                maxWidth: .infinity,
-                minHeight: NexusLayout.touchRecommended + NexusSpacing.space24,
-                maxHeight: NexusLayout.touchRecommended + NexusSpacing.space24
-            )
-            .background(selected ? NexusSemanticColors.surfaceActive : NexusSemanticColors.surfaceBase)
-            .clipShape(RoundedRectangle(cornerRadius: NexusRadius.md))
-            .overlay {
-                RoundedRectangle(cornerRadius: NexusRadius.md)
-                    .stroke(selected ? NexusSemanticColors.borderFocus : NexusSemanticColors.borderSubtle,
-                            lineWidth: NexusBorder.hairline)
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
     }
 
     private func searchPanel(cardPadding: CGFloat) -> some View {
@@ -376,18 +333,27 @@ struct HomeScreen: View {
                 NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
             }
         case .empty:
-            ContentUnavailableView("No trending escapes yet", systemImage: NexusIconName.map.systemName,
-                                   description: Text("Search for a flight or check again later."))
+            featuredDestinations
         case .content:
-            trending
+            featuredDestinations
         }
     }
 
-    private var trending: some View {
+    private var featuredDestinations: some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-            HStack { Text("Trending Escapes").nexusTextStyle(NexusText.styles.screenTitle); Spacer(); Button("View all", action: onExplore) }
+            HStack { Text("Featured destinations").nexusTextStyle(NexusText.styles.screenTitle); Spacer(); Button("View all", action: onExplore) }
             ScrollView(.horizontal) {
                 HStack(spacing: NexusSpacing.space16) {
+                    Button { onEvent(.packageClicked) } label: {
+                        VStack(alignment: .leading, spacing: NexusSpacing.space8) {
+                            NexusIcon(name: .baggage, size: NexusIconSize.lg)
+                                .frame(maxWidth: .infinity, minHeight: NexusLayout.buttonHeight * 2)
+                                .background(NexusSemanticColors.brandSoft)
+                            Text("Travel packages").nexusTextStyle(NexusText.styles.listTitle)
+                            Text("Flights, stays & experiences").nexusTextStyle(NexusText.styles.caption)
+                                .foregroundStyle(NexusSemanticColors.textSecondary)
+                        }.frame(width: NexusLayout.contentMaxWidth / 3)
+                    }.buttonStyle(.plain)
                     ForEach(state.trendingEscapes, id: \.id) { escape in
                         Button { onEvent(.trendingEscapeClicked(escape)) } label: {
                             VStack(alignment: .leading, spacing: NexusSpacing.space8) {
