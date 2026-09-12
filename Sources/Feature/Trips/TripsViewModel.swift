@@ -25,13 +25,27 @@ struct TripsUiState: Equatable, Sendable {
                 state = TripsUiState(loading: false, access: .guest)
                 return
             }
-
+        } catch is CancellationError {
+            if request == generation { state = prior }
+            throw CancellationError()
+        } catch {
             guard request == generation else { return }
-            state.loading = state.trips.isEmpty
-            state.refreshing = !state.trips.isEmpty
-            state.error = nil
-            state.access = .authenticated
+            state = TripsUiState(
+                selectedGroup: prior.selectedGroup,
+                loading: false,
+                error: "We could not access your saved session. Try again.",
+                access: .recoverableError
+            )
+            return
+        }
 
+        guard request == generation else { return }
+        state.loading = state.trips.isEmpty
+        state.refreshing = !state.trips.isEmpty
+        state.error = nil
+        state.access = .authenticated
+
+        do {
             let group = state.selectedGroup
             let result = try await repository.trips(group: group, forceRefresh: forceRefresh)
             guard request == generation, group == state.selectedGroup else { return }
@@ -46,19 +60,11 @@ struct TripsUiState: Equatable, Sendable {
             throw CancellationError()
         } catch {
             guard request == generation else { return }
-            if prior.access == .authenticated {
-                state = prior
-                state.loading = false
-                state.refreshing = false
-                state.error = "Trips could not refresh. Try again."
-            } else {
-                state = TripsUiState(
-                    selectedGroup: prior.selectedGroup,
-                    loading: false,
-                    error: "We could not access your saved session. Try again.",
-                    access: .recoverableError
-                )
-            }
+            state = prior
+            state.access = .authenticated
+            state.loading = false
+            state.refreshing = false
+            state.error = "Trips could not refresh. Try again."
         }
     }
 }

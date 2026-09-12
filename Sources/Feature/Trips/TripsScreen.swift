@@ -16,11 +16,15 @@ struct TripsScreenRoute: View {
             onSelect: { group in Task { try? await viewModel.select(group) } },
             onOpen: { router.push(.tripDetail(.init(tripId: $0))) },
             onUpload: { router.push(.paymentProof(.init(bookingId: $0))) },
-            onSignIn: { router.beginMainAuth(returningTo: .trips) },
+            onSignIn: { router.presentAuthentication(for: .trips) },
             onRetry: { Task { try? await viewModel.load(forceRefresh: true) } }
         )
         .task { try? await viewModel.load() }
         .refreshable { try? await viewModel.load(forceRefresh: true) }
+        .onChange(of: router.authPresentation) { previous, current in
+            guard previous == .trips, current == nil else { return }
+            Task { try? await viewModel.load(forceRefresh: true) }
+        }
     }
 }
 
@@ -35,17 +39,17 @@ private struct TripsScreen: View {
         ScrollView { LazyVStack(alignment: .leading, spacing: NexusSpacing.space20) {
             Text("Trips").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader)
             switch state.access {
-            case .guest: ContentUnavailableView("Keep every trip in one place", systemImage: "suitcase.rolling", description: Text("Sign in to view bookings, payment progress, seats, and issued tickets.")); NexusPrimaryButton("Sign in", fillsWidth: true, action: onSignIn)
+            case .guest: ContentUnavailableView("Keep every trip in one place", systemImage: NexusIconName.trips.systemName, description: Text("Sign in to view bookings, payment progress, seats, and issued tickets.")); NexusPrimaryButton("Sign in", fillsWidth: true, action: onSignIn)
             case .loading: ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips")
             case .recoverableError:
-                ContentUnavailableView("Trips are unavailable", systemImage: "exclamationmark.triangle", description: Text(state.error ?? "We could not access your saved session."))
+                ContentUnavailableView("Trips are unavailable", systemImage: NexusIconName.warning.systemName, description: Text(state.error ?? "We could not access your saved session."))
                 NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
             case .authenticated:
                 Picker("Trip section", selection: Binding(get: { state.selectedGroup }, set: onSelect)) { ForEach(TripGroup.allCases, id: \.self) { Text($0.label).tag($0) } }.pickerStyle(.segmented)
                 if state.offline { NexusBanner(text: "Offline Mode: Showing saved tickets.", status: .offline) }
                 if let error = state.error { NexusBanner(text: error, status: .error) }
                 if state.loading { ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips") }
-                else if state.visibleTrips.isEmpty { ContentUnavailableView("No trips in this section.", systemImage: "airplane") }
+                else if state.visibleTrips.isEmpty { ContentUnavailableView("No trips in this section.", systemImage: NexusIconName.flight.systemName) }
                 else { ForEach(state.visibleTrips, id: \.id) { trip in TripCard(trip: trip, onOpen: { onOpen(trip.id) }, onPrimary: { if trip.nextAction == "UPLOAD_PAYMENT_PROOF" { onUpload(trip.id) } else { onOpen(trip.id) } }) } }
             }
         }.padding(NexusSpacing.space24) }.background(NexusSemanticColors.backgroundPage).navigationBarHidden(true)
@@ -92,7 +96,7 @@ private struct TripDetailScreen: View {
             if let primary = state.primaryActionLabel { NexusPrimaryButton(primary, isLoading: state.downloadingTicket || state.refreshing, fillsWidth: true, action: action(primary)) }
             if let secondary = state.secondaryActionLabel { NexusSecondaryButton(secondary, fillsWidth: true, action: secondary == "Contact support" ? onSupport : onTicket) }
         }.padding(NexusSpacing.space24) } }
-        else { ContentUnavailableView("Could not load trip.", systemImage: "exclamationmark.triangle", description: Text(state.error ?? "Retry to load this trip.")); NexusPrimaryButton("Retry", fillsWidth: true, action: onRefresh).padding() }
+        else { ContentUnavailableView("Could not load trip.", systemImage: NexusIconName.warning.systemName, description: Text(state.error ?? "Retry to load this trip.")); NexusPrimaryButton("Retry", fillsWidth: true, action: onRefresh).padding() }
     }.background(NexusSemanticColors.backgroundPage) }
     private func action(_ label: String) -> () -> Void { switch label { case "View ticket", "Download again": onTicket; case "Upload payment receipt": onUpload; case "Contact support": onSupport; default: onRefresh } }
     private func detailCard<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View { VStack(alignment: .leading, spacing: NexusSpacing.space12) { Text(title).nexusTextStyle(NexusText.styles.sectionTitle); content() }.padding(NexusSpacing.space20).frame(maxWidth: .infinity, alignment: .leading).background(NexusSemanticColors.surfaceBase).clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl)) }

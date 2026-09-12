@@ -2,6 +2,22 @@ import Testing
 @testable import NexusTravel
 
 struct HomeScreenStateTests {
+    @Test func heroMetricsMatchAndroidWithSafeIOSHeaderAdjustment() throws {
+        let compact = try #require(HomeHeroMetrics(spacing: NexusAdaptiveSpacing(screenWidth: 360, screenHeight: 720)))
+        let regular = try #require(HomeHeroMetrics(spacing: NexusAdaptiveSpacing(screenWidth: 390, screenHeight: 844)))
+        let spacious = try #require(HomeHeroMetrics(spacing: NexusAdaptiveSpacing(screenWidth: 430, screenHeight: 840)))
+
+        #expect(compact.heroHeight == 220)
+        #expect(regular.heroHeight == 248)
+        #expect(spacious.heroHeight == 272)
+        #expect(compact.headerTopPadding == 12)
+        #expect(regular.headerTopPadding == 12)
+        #expect(spacious.headerTopPadding == 12)
+        #expect(compact.cardPadding == 16)
+        #expect(regular.cardPadding == 20)
+        #expect(spacious.cardPadding == 24)
+    }
+
     @Test func presentationKindsCoverFourRequiredStates() {
         #expect(HomeScreenState(state: HomeUiState()).kind == .loading)
         #expect(HomeScreenState(state: HomeUiState(isLoading: false)).kind == .empty)

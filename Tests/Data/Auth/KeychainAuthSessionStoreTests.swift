@@ -144,6 +144,25 @@ struct KeychainAuthSessionStoreTests {
         #expect(try await provider.accessToken() == "access-token")
     }
 
+    @Test func tokenProviderRejectsAndClearsExpiredSession() async throws {
+        let client = FakeKeychainClient()
+        let store = KeychainAuthSessionStore(client: client)
+        let expired = AuthSession(
+            sessionId: "expired",
+            user: richSession.user,
+            tokens: richSession.tokens,
+            expiresAt: Date(timeIntervalSince1970: 100)
+        )
+        try await store.write(StoredAuthSession(session: expired))
+        let provider = AuthTokenProvider(
+            sessionStore: store,
+            clock: { Date(timeIntervalSince1970: 200) }
+        )
+
+        #expect(try await provider.accessToken() == nil)
+        #expect(try await store.read() == nil)
+    }
+
     private var richSession: AuthSession {
         session(
             avatarURL: "https://example.com/avatar.png",

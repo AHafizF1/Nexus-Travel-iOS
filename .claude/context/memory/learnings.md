@@ -8,3 +8,10 @@
 - Launch auth is email/password only; backend has no Google or Apple provider.
 - Booking hold, passport upload, and account deletion require stable operation-scoped idempotency keys.
 - Do not extract shared cache mechanics before third same-domain instance; keep different cache semantics separate.
+
+## 2026-09-10
+
+- Bitrise RDE browser access works through SSH local forwarding to session VNC host, then local websockify/noVNC; session hosts and passwords must remain runtime env values.
+
+- XcodeGen: adding a standalone `.xcassets` catalog makes Xcode require configured `AppIcon`. For one custom SVG, declare its folder under target `resources` and load through `Bundle` with a native fallback.
+- Bitrise RDE Windows directory upload preserves backslashes as literal remote filenames. Zip with POSIX archive paths, upload zip, then unzip remotely.

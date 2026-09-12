@@ -10,6 +10,9 @@ struct NexusApp: App {
     @State private var bookingFlowState: BookingFlowState
 
     init() {
+        if ProcessInfo.processInfo.arguments.contains("--reset-auth-session") {
+            KeychainAuthSessionStore.clearForUITesting()
+        }
         launchDestination = AppLaunchDestination(arguments: ProcessInfo.processInfo.arguments)
         dependencies = launchDestination.gallerySection == nil ? AppDependencies() : nil
         _router = State(initialValue: Router())

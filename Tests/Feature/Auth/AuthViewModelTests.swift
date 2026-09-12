@@ -94,6 +94,7 @@ struct AuthViewModelTests {
         login.updateLoginPassword("password123")
         try await login.submitLogin()
         #expect(login.loginState.message == "Welcome back, Selam.")
+        #expect(login.loginState.password.isEmpty)
         #expect(login.consumeEvent() == .authenticated(session))
 
         let signup = AuthViewModel(repository: StubAuthRepository(signUpResult: .success(session)))
@@ -104,6 +105,8 @@ struct AuthViewModelTests {
         signup.updateTerms(true)
         try await signup.submitSignup()
         #expect(signup.signupState.message == "Account ready for Selam.")
+        #expect(signup.signupState.password.isEmpty)
+        #expect(signup.signupState.confirmPassword.isEmpty)
         #expect(signup.consumeEvent() == .authenticated(session))
     }
 
@@ -116,6 +119,19 @@ struct AuthViewModelTests {
         try await model.requestPasswordReset()
         #expect(model.loginState.message == "Something went wrong. Please try again.")
         #expect(!model.loginState.isSuccess)
+    }
+
+    @Test func passwordResetUnexpectedErrorStopsLoading() async {
+        let model = AuthViewModel(repository: ThrowingPasswordResetRepository())
+        model.updateLoginEmail("selam@example.com")
+
+        do {
+            try await model.requestPasswordReset()
+            Issue.record("Expected password reset to throw")
+        } catch {}
+
+        #expect(!model.loginState.isSubmitting)
+        #expect(model.loginState.message == "Something went wrong. Please try again.")
     }
 }
 
@@ -144,6 +160,15 @@ private struct StubAuthRepository: AuthRepository {
 }
 
 private enum StubAuthError: Error { case sessionCheckFailed, submissionFailed }
+
+private struct ThrowingPasswordResetRepository: AuthRepository {
+    func signInEmail(request: SignInRequest) async throws -> AuthResult<AuthSession> { .failure(.unknown) }
+    func signUpEmail(request: SignUpRequest) async throws -> AuthResult<AuthSession> { .failure(.unknown) }
+    func getSession() async throws -> AuthResult<AuthSession> { .failure(.unauthenticated) }
+    func getLocalSession() async throws -> AuthSession? { nil }
+    func requestPasswordReset(email: String) async throws -> AuthResult<Void> { throw StubAuthError.submissionFailed }
+    func signOut() async throws -> AuthResult<Void> { .success(()) }
+}
 
 private actor AuthRepositorySpy: AuthRepository {
     private(set) var signUpCallCount = 0

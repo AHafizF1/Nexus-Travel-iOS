@@ -2,8 +2,53 @@ import XCTest
 
 final class BookingJourneyUITests: XCTestCase {
     @MainActor
+    func testSignupThenProfileSignIn() throws {
+        let email = try requiredEnvironmentValue("NEXUS_TEST_EMAIL")
+        let password = try requiredEnvironmentValue("NEXUS_TEST_PASSWORD")
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["Profile"].tap()
+        XCTAssertTrue(app.buttons["Sign in"].waitForExistence(timeout: 15))
+        app.buttons["Sign in"].tap()
+        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        app.buttons["Sign up"].tap()
+        XCTAssertTrue(app.staticTexts["Create your account"].waitForExistence(timeout: 10))
+
+        app.textFields["Full name"].tap()
+        app.textFields["Full name"].typeText("Nexus QA Traveler")
+        app.textFields["Email"].tap()
+        app.textFields["Email"].typeText(email)
+        app.secureTextFields["Password"].tap()
+        app.secureTextFields["Password"].typeText(password)
+        app.secureTextFields["Confirm password"].tap()
+        app.secureTextFields["Confirm password"].typeText(password)
+        app.switches["I agree to the terms and privacy policy."].tap()
+        app.buttons["Create account"].tap()
+
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["Nexus QA Traveler"].waitForExistence(timeout: 30))
+        app.buttons["Log out"].tap()
+        XCTAssertTrue(app.sheets.buttons["Log out"].waitForExistence(timeout: 10))
+        app.sheets.buttons["Log out"].tap()
+        XCTAssertTrue(app.staticTexts["Your travel account"].waitForExistence(timeout: 20))
+
+        app.buttons["Sign in"].tap()
+        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        app.textFields["Email"].tap()
+        app.textFields["Email"].typeText(email)
+        app.secureTextFields["Password"].tap()
+        app.secureTextFields["Password"].typeText(password)
+        app.buttons["Sign in"].tap()
+
+        XCTAssertTrue(app.staticTexts["Nexus QA Traveler"].waitForExistence(timeout: 30))
+        XCTAssertFalse(app.staticTexts["Welcome back"].exists)
+    }
+
+    @MainActor
     func testGuestTabsExposeSignInActions() {
         let app = XCUIApplication()
+        app.launchArguments.append("--reset-auth-session")
         app.launch()
 
         app.buttons["Trips"].tap()

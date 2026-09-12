@@ -92,4 +92,17 @@ struct BookingFlowStateTests {
         #expect(state.passengerDetails == nil)
         #expect(!state.submitPassengerDetailsAfterAuth)
     }
+
+    @Test func logoutRequiresAuthenticationAgainWithoutDiscardingBookingData() throws {
+        let details = try makeDetails()
+        let state = BookingFlowState(authenticated: true)
+        state.selectOffer(details.reference)
+        #expect(state.acceptPassengerDetails(details))
+
+        state.completeLogout()
+
+        #expect(!state.authenticated)
+        #expect(state.passengerDetails == details)
+        #expect(state.beginPassengerSubmission() == .authenticate)
+    }
 }

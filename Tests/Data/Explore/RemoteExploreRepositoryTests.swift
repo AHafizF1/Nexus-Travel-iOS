@@ -9,7 +9,12 @@ struct RemoteExploreRepositoryTests {
             Self.response(200, #"{"id":"d1","title":"Dubai","city":"Dubai","country":"UAE","summary":"Sunny","airportCode":"DXB","imageUrl":null,"imageCacheKey":null,"gallery":[],"highlights":[],"bestTravelPeriod":null,"cheapestFlight":null,"packages":[],"relatedDeals":[]}"#),
             Self.response(200, #"{"id":"p1","destinationId":"d1","title":"Dubai week","summary":"Seven nights","imageUrl":null,"imageCacheKey":null,"priceFromMinor":120000,"currency":"INR","destination":{"id":"d1","title":"Dubai","city":"Dubai","country":"UAE","summary":"Sunny","airportCode":"DXB","imageUrl":null,"imageCacheKey":null,"gallery":[],"highlights":[],"bestTravelPeriod":null,"cheapestFlight":null}}"#)
         ])
-        let repository = RemoteExploreRepository(transport: HTTPTransport(loader: loader), cache: ExploreCache())
+        let cacheDirectory = FileManager.default.temporaryDirectory
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let repository = RemoteExploreRepository(
+            transport: HTTPTransport(loader: loader),
+            cache: ExploreCache(directory: cacheDirectory)
+        )
 
         _ = try await repository.content(forceRefresh: true)
         _ = try await repository.destination(id: "d1")

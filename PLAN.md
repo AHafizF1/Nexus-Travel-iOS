@@ -95,6 +95,7 @@ Exit gate: offline/cache behavior, ownership-hiding errors, and account-deletion
 - [x] [QA-1 — Accessibility and Dynamic Type pass](docs/tasks/QA-1-accessibility-dynamic-type.md) — requires all screens
 - [x] [QA-2 — Motion audit, plans, and later execution](docs/tasks/QA-2-motion.md) — requires all screens
 - [x] [QA-3 — Offline, retry, cancellation, and performance validation](docs/tasks/QA-3-reliability.md) — requires all async flows
+- [ ] 🔄 [AU-5 — Contextual authentication sheet and session reliability](docs/tasks/AU-5-auth-sheet-session-reliability.md) — requires AU-4, BJ-1, PR-1
 
 Exit gate: simulator and real-device evidence archived; no unresolved CRITICAL deviation.
 

@@ -1,5 +1,14 @@
 import Observation
 
+enum AuthPresentation: String, Identifiable, Equatable, Sendable {
+    case booking
+    case profile
+    case trips
+    case sessionExpired
+
+    var id: String { rawValue }
+}
+
 enum MainTab: CaseIterable, Hashable, Sendable {
     case home
     case explore
@@ -19,7 +28,7 @@ enum MainTab: CaseIterable, Hashable, Sendable {
         switch self {
         case .home: .home
         case .explore: .map
-        case .trips: .baggage
+        case .trips: .trips
         case .profile: .profile
         }
     }
@@ -34,6 +43,11 @@ final class Router {
     var tripsPath: [AppRoute] = []
     var profilePath: [AppRoute] = []
     private(set) var pendingTab: MainTab?
+    private(set) var authPresentation: AuthPresentation?
+
+    var showsMainBottomBar: Bool {
+        selectedPath.isEmpty
+    }
 
     func select(_ tab: MainTab) {
         if tab == selectedTab {
@@ -73,6 +87,14 @@ final class Router {
         if selectedPath.last == .bookingAuth(BookingAuthRoute()) {
             pop()
         }
+    }
+
+    func presentAuthentication(for purpose: AuthPresentation) {
+        authPresentation = purpose
+    }
+
+    func dismissAuthentication() {
+        authPresentation = nil
     }
 
     private var selectedPath: [AppRoute] {

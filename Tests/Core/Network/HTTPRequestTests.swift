@@ -30,6 +30,12 @@ struct HTTPRequestTests {
         #expect(request.timeoutInterval == 12)
     }
 
+    @Test func disablesCookiesForBearerOnlyAPIRequests() throws {
+        let request = try HTTPRequest(target: .root("api/auth/sign-up/email"), method: .post).urlRequest()
+
+        #expect(!request.httpShouldHandleCookies)
+    }
+
     @Test func absoluteUploadPreservesRequiredHeadersWithoutBearer() throws {
         let url = try #require(URL(string: "https://uploads.example.com/object"))
         let request = try HTTPRequest(target: .absolute(url), method: .put,

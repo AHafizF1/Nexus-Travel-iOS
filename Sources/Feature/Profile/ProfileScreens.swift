@@ -4,10 +4,12 @@ import UserNotifications
 struct ProfileScreenRoute: View {
     @State private var viewModel: ProfileViewModel
     let router: Router
+    let onSignedOut: () -> Void
 
-    init(viewModel: ProfileViewModel, router: Router) {
+    init(viewModel: ProfileViewModel, router: Router, onSignedOut: @escaping () -> Void) {
         _viewModel = State(initialValue: viewModel)
         self.router = router
+        self.onSignedOut = onSignedOut
     }
 
     var body: some View {
@@ -15,11 +17,15 @@ struct ProfileScreenRoute: View {
             state: viewModel.state,
             router: router,
             onLogout: viewModel.requestLogout,
-            onSignIn: { router.beginMainAuth(returningTo: .profile) },
+            onSignIn: { router.presentAuthentication(for: .profile) },
             onRetry: { Task { try? await viewModel.load() } }
         )
         .task { try? await viewModel.load() }
         .refreshable { try? await viewModel.load() }
+        .onChange(of: router.authPresentation) { previous, current in
+            guard previous == .profile, current == nil else { return }
+            Task { try? await viewModel.load() }
+        }
         .confirmationDialog(
             "Log out?",
             isPresented: Binding(
@@ -27,7 +33,14 @@ struct ProfileScreenRoute: View {
                 set: { if !$0 { viewModel.dismissLogout() } }
             )
         ) {
-            Button("Log out", role: .destructive) { Task { try? await viewModel.signOut() } }
+            Button("Log out", role: .destructive) {
+                Task {
+                    do {
+                        try await viewModel.signOut()
+                        onSignedOut()
+                    } catch {}
+                }
+            }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("You will need to sign in again to access trips and saved details.")
@@ -44,15 +57,23 @@ private struct ProfileScreen: View {
     @ViewBuilder private var content: some View {
         switch state.access {
         case .loading: ProgressView().accessibilityLabel("Loading profile")
-        case .guest: ContentUnavailableView("Your travel account", systemImage: "person.crop.circle", description: Text("Sign in to manage trips, tickets, verified travelers, and preferences.")); Button("Sign in", action: onSignIn)
-        case let .recoverableError(profile): if let profile { header(profile) }; ContentUnavailableView("Profile could not refresh.", systemImage: "wifi.exclamationmark"); Button("Retry", action: onRetry)
-        case let .authenticated(profile): header(profile); Section("Account") { row("Saved travelers", "person.2") { router.push(.savedTravelers(.init())) }; LabeledContent("Payment methods", value: "Coming later") }; Section("Preferences") { row("Settings", "gearshape") { router.push(.settings(.init())) }; row("Notifications", "bell") { router.push(.notificationSettings(.init())) }; row("Security", "lock") { router.push(.security(.init())) } }; Section { Button("Log out", role: .destructive, action: onLogout) }
+        case .guest: ContentUnavailableView("Your travel account", systemImage: NexusPlatformIconName.guestProfile.rawValue, description: Text("Sign in to manage trips, tickets, verified travelers, and preferences.")); Button("Sign in", action: onSignIn)
+        case let .recoverableError(profile):
+            if let profile { header(profile) }
+            ContentUnavailableView(state.errorMessage ?? "Profile could not refresh.", systemImage: NexusPlatformIconName.unavailableNetwork.rawValue)
+            Button("Retry", action: onRetry)
+            Button(role: .destructive, action: onLogout) {
+                if state.signingOut { HStack { ProgressView(); Text("Signing out…") } }
+                else { Text("Log out") }
+            }
+            .disabled(state.signingOut)
+        case let .authenticated(profile): header(profile); Section("Account") { row("Saved travelers", icon: { NexusPlatformIcon(.savedTravelers) }) { router.push(.savedTravelers(.init())) }; LabeledContent("Payment methods", value: "Coming later") }; Section("Preferences") { row("Settings", icon: { NexusPlatformIcon(.settings) }) { router.push(.settings(.init())) }; row("Notifications", icon: { NexusIcon(name: .bell) }) { router.push(.notificationSettings(.init())) }; row("Security", icon: { NexusPlatformIcon(.password) }) { router.push(.security(.init())) } }; Section { Button(role: .destructive, action: onLogout) { if state.signingOut { HStack { ProgressView(); Text("Signing out…") } } else { Text("Log out") } }.disabled(state.signingOut) }
         }
     }
     private func header(_ profile: CustomerProfile) -> some View { Section { ViewThatFits(in: .horizontal) { HStack { avatar(profile); profileDetails(profile) }; VStack(alignment: .leading) { avatar(profile); profileDetails(profile) } } } }
     private func avatar(_ profile: CustomerProfile) -> some View { Text(initials(profile.name)).font(.title.bold()).frame(width: 72, height: 72).foregroundStyle(.white).background(NexusSemanticColors.brandPrimary, in: Circle()).accessibilityHidden(true) }
     private func profileDetails(_ profile: CustomerProfile) -> some View { VStack(alignment: .leading) { Text(profile.name).nexusTextStyle(NexusText.styles.sectionTitle).accessibilityAddTraits(.isHeader); Text(profile.email).nexusTextStyle(NexusText.styles.bodySmall); Text("\(profile.verifiedTravelerCount) verified travelers").nexusTextStyle(NexusText.styles.caption); Button("Edit profile") { router.push(.editProfile(.init())) } } }
-    private func row(_ title: String, _ icon: String, subtitle: String? = nil, action: @escaping () -> Void) -> some View { Button(action: action) { Label { VStack(alignment: .leading) { Text(title); if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary) } } } icon: { Image(systemName: icon).accessibilityHidden(true) } } }
+    private func row<Icon: View>(_ title: String, @ViewBuilder icon: () -> Icon, action: @escaping () -> Void) -> some View { Button(action: action) { Label { Text(title) } icon: { icon() } } }
 }
 
 struct EditProfileScreen: View {
@@ -61,7 +82,7 @@ struct EditProfileScreen: View {
     var body: some View { Form { TextField("Full name", text: Binding(get: { viewModel.state.name }, set: { name in viewModel.name(name) })); TextField("Email", text: .constant(viewModel.state.email)).disabled(true); TextField("Phone", text: Binding(get: { viewModel.state.phone }, set: { phone in viewModel.phone(phone) })).keyboardType(.phonePad); if let error = viewModel.state.error { Text(error).foregroundStyle(NexusSemanticColors.errorText) }; Button(viewModel.state.saved ? "Saved" : "Save changes") { Task { try? await viewModel.save() } }.disabled(viewModel.state.loading || viewModel.state.saving) }.navigationTitle("Edit profile").task { try? await viewModel.load() } }
 }
 
-struct SavedTravelersScreen: View { let travelers: [SavedTraveler]; var body: some View { List { if travelers.isEmpty { ContentUnavailableView("No saved travelers yet.", systemImage: "person.2") } else { ForEach(travelers, id: \.id) { traveler in VStack(alignment: .leading) { Text("\(traveler.firstName) \(traveler.lastName)"); Text("\(traveler.nationality) · \(traveler.passportNumber)").font(.subheadline).foregroundStyle(.secondary); Text(humanizeProfile(traveler.status)).font(.caption).foregroundStyle(NexusSemanticColors.brandPrimary) } } } }.navigationTitle("Saved travelers") } }
+struct SavedTravelersScreen: View { let travelers: [SavedTraveler]; var body: some View { List { if travelers.isEmpty { ContentUnavailableView("No saved travelers yet.", systemImage: NexusPlatformIconName.savedTravelers.rawValue) } else { ForEach(travelers, id: \.id) { traveler in VStack(alignment: .leading) { Text("\(traveler.firstName) \(traveler.lastName)"); Text("\(traveler.nationality) · \(traveler.passportNumber)").font(.subheadline).foregroundStyle(.secondary); Text(humanizeProfile(traveler.status)).font(.caption).foregroundStyle(NexusSemanticColors.brandPrimary) } } } }.navigationTitle("Saved travelers") } }
 
 struct SettingsScreen: View {
     let viewModel: PreferencesViewModel; let router: Router
@@ -87,7 +108,7 @@ struct DeleteAccountScreen: View {
         Group {
             if case .pending = viewModel.state {
                 ContentUnavailableView {
-                    Label("Deletion requested", systemImage: "clock.badge.checkmark")
+                    Label("Deletion requested", systemImage: NexusPlatformIconName.deletionRequested.rawValue)
                 } description: {
                     Text("Your account is signed out while deletion completes. Required booking and ticket records remain anonymized for legal purposes.")
                 } actions: {

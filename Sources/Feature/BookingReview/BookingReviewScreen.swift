@@ -51,14 +51,14 @@ struct BookingReviewScreen: View {
         Group {
             switch viewModel.state.screenState {
             case .loading: ProgressView("Loading booking review").frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .error: ContentUnavailableView("Could not load booking review", systemImage: "exclamationmark.triangle", description: Text(viewModel.state.message ?? "Please retry."))
+            case .error: ContentUnavailableView("Could not load booking review", systemImage: NexusIconName.warning.systemName, description: Text(viewModel.state.message ?? "Please retry."))
                     .overlay(alignment: .bottom) { NexusPrimaryButton("Retry", fillsWidth: true) { send(.retry) }.padding() }
             case .content: review
             case .submitted: submitted
             }
         }
         .navigationTitle("Review booking").navigationBarBackButtonHidden()
-        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: "chevron.left") { send(.back) } } }
+        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Back", systemImage: NexusIconName.back.systemName) { send(.back) } } }
         .safeAreaInset(edge: .bottom) {
             if viewModel.state.screenState == .content, let details = viewModel.state.details {
                 VStack(spacing: NexusSpacing.space8) {
@@ -97,7 +97,7 @@ struct BookingReviewScreen: View {
 
     private var submitted: some View {
         VStack(spacing: NexusSpacing.space16) {
-            Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundStyle(.green).accessibilityHidden(true)
+            NexusIcon(name: .check, size: 64).foregroundStyle(.green).accessibilityHidden(true)
             Text("Flight booked").font(.title2.bold()).accessibilityAddTraits(.isHeader)
             Text("Your booking is held. Pay now and upload your receipt so we can verify payment and issue your ticket.")
                 .foregroundStyle(.secondary)

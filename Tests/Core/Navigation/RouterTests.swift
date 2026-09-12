@@ -112,4 +112,38 @@ struct RouterTests {
         #expect(router.selectedTab == .home)
         #expect(router.homePath == [.passengerDetails(PassengerDetailsRoute())])
     }
+
+    @Test
+    func tripsTabUsesTicketIcon() {
+        #expect(MainTab.trips.icon == .trips)
+        #expect(MainTab.trips.icon.systemName == "ticket")
+    }
+
+    @Test
+    func bottomBarIsVisibleOnlyAtTabRoots() {
+        let router = Router()
+        #expect(router.showsMainBottomBar)
+
+        router.push(.searchResults(SearchResultsRoute(searchId: "search-1")))
+        #expect(!router.showsMainBottomBar)
+
+        router.select(.profile)
+        #expect(router.showsMainBottomBar)
+    }
+
+    @Test
+    func authPresentationKeepsCurrentNavigationContext() {
+        let router = Router()
+        router.push(.passengerDetails(PassengerDetailsRoute()))
+
+        router.presentAuthentication(for: .booking)
+
+        #expect(router.authPresentation == .booking)
+        #expect(router.homePath == [.passengerDetails(PassengerDetailsRoute())])
+
+        router.dismissAuthentication()
+
+        #expect(router.authPresentation == nil)
+        #expect(router.homePath == [.passengerDetails(PassengerDetailsRoute())])
+    }
 }

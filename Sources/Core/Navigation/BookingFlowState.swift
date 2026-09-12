@@ -53,6 +53,12 @@ final class BookingFlowState {
         return true
     }
 
+    func completeLogout() {
+        authenticated = false
+        submitPassengerDetailsAfterAuth = false
+        awaitsAuthenticationForPassengerSubmission = false
+    }
+
     func consumePassengerSubmissionAfterAuthentication() -> Bool {
         guard submitPassengerDetailsAfterAuth else { return false }
         submitPassengerDetailsAfterAuth = false

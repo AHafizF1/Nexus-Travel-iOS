@@ -8,7 +8,9 @@ struct RemoteFlightSearchRepository: FlightSearchRepository {
     func createSearch(request: FlightSearchRequest) async throws -> FlightSearchResult {
         do {
             let body = try JSONEncoder().encode(SearchRequestDTO(request))
-            let response = try await transport.send(HTTPRequest(target: .mobile(SearchEndpoints.search), method: .post, body: body))
+            let response = try await transport.send(HTTPRequest(
+                target: .mobile(SearchEndpoints.search), method: .post, body: body, timeout: 60
+            ))
             guard (200..<300).contains(response.statusCode) else { return .unknownError }
             let dto = try JSONDecoder().decode(SearchResponseDTO.self, from: response.data)
             let mapped = try SearchResponseMapper.map(dto, request: request)

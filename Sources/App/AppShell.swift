@@ -30,32 +30,130 @@ struct AppShell: View {
                 HomeRoute(viewModel: homeViewModel, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
-            .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 ExploreScreenRoute(viewModel: ExploreViewModel(repository: exploreRepository), filter: .all, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
-            .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 TripsScreenRoute(viewModel: TripsViewModel(repository: tripsRepository, authRepository: authRepository), router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
-            .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
-                ProfileScreenRoute(viewModel: profileViewModel, router: router)
+                ProfileScreenRoute(
+                    viewModel: profileViewModel,
+                    router: router,
+                    onSignedOut: bookingFlowState.completeLogout
+                )
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
-            .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
+        }
+        .toolbar(.hidden, for: .tabBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if router.showsMainBottomBar {
+                MainBottomBar(selected: router.selectedTab, onSelected: router.select)
+            }
         }
         .foregroundStyle(NexusSemanticColors.textPrimary)
         .tint(NexusSemanticColors.brandPrimary)
+        .sheet(
+            item: Binding(
+                get: { router.authPresentation },
+                set: { if $0 == nil { router.dismissAuthentication() } }
+            )
+        ) { purpose in
+            NavigationStack {
+                AuthRoute(
+                    viewModel: AuthViewModel(repository: authRepository),
+                    purpose: purpose,
+                    onAuthenticated: {
+                        _ = bookingFlowState.completeAuthentication()
+                        router.dismissAuthentication()
+                    }
+                )
+            }
+            .presentationDragIndicator(.visible)
+            .presentationDetents([.large])
+        }
+    }
+}
+
+private struct MainBottomBar: View {
+    let selected: MainTab
+    let onSelected: (MainTab) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(MainTab.allCases, id: \.self) { tab in
+                item(tab)
+            }
+        }
+        .frame(height: NexusLayout.mainBottomBarHeight)
+        .padding(.horizontal, NexusSpacing.space12)
+        .background(NexusSemanticColors.surfaceBase)
+        .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xxxl))
+        .overlay {
+            RoundedRectangle(cornerRadius: NexusRadius.xxxl)
+                .stroke(NexusSemanticColors.borderDefault.opacity(0.2), lineWidth: NexusBorder.hairline)
+        }
+        .shadow(
+            color: Color.black.opacity(NexusElevation.mainBottomBarAmbientOpacity),
+            radius: NexusElevation.mainBottomBarAmbientRadius,
+            y: NexusElevation.mainBottomBarAmbientY
+        )
+        .shadow(
+            color: Color.black.opacity(NexusElevation.mainBottomBarContactOpacity),
+            radius: NexusElevation.mainBottomBarContactRadius,
+            y: NexusElevation.mainBottomBarContactY
+        )
+        .padding(.horizontal, NexusSpacing.space16)
+        .padding(.vertical, NexusSpacing.space12)
+    }
+
+    private func item(_ tab: MainTab) -> some View {
+        let isSelected = selected == tab
+        return Button { onSelected(tab) } label: {
+            VStack(spacing: 0) {
+                NexusIcon(
+                    name: tab.icon,
+                    size: isSelected ? NexusIconSize.lg : NexusIconSize.md
+                )
+                Text(tab.label)
+                    .nexusTextStyle(
+                        NexusText.styles.statusBadge.withFontWeight(isSelected ? .semibold : .medium)
+                    )
+            }
+            .foregroundStyle(isSelected ? NexusSemanticColors.brandPrimary : NexusColors.slate500)
+            .frame(maxWidth: .infinity, minHeight: NexusLayout.touchRecommended)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(MainBottomBarItemStyle())
+        .accessibilityLabel(tab.label)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct MainBottomBarItemStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: NexusRadius.lg)
+                    .fill(configuration.isPressed ? NexusSemanticColors.surfaceHover : Color.clear)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: NexusRadius.lg))
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+            .animation(
+                reduceMotion ? nil : .easeOut(duration: NexusMotion.durationFastSeconds),
+                value: configuration.isPressed
+            )
     }
 }
 
@@ -137,7 +235,7 @@ private struct AppDestinations: ViewModifier {
                     )
                     .toolbar(.hidden, for: .tabBar)
                 } else {
-                    ContentUnavailableView("Passenger details unavailable", systemImage: "person.crop.circle.badge.exclamationmark")
+                    ContentUnavailableView("Passenger details unavailable", systemImage: NexusPlatformIconName.passengerError.rawValue)
                 }
             case let .seatSelection(route):
                 SeatSelectionScreenRoute(
@@ -191,7 +289,10 @@ private struct AppDestinations: ViewModifier {
             case .deleteAccount:
                 DeleteAccountScreen(
                     viewModel: DeleteAccountViewModel(repository: securityRepository, clearSession: { _ = try await authRepository.signOut() }),
-                    onDone: { router.popToRoot() }
+                    onDone: {
+                        bookingFlowState.completeLogout()
+                        router.popToRoot()
+                    }
                 )
                 .toolbar(.hidden, for: .tabBar)
             default:

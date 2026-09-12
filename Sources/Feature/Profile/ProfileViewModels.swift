@@ -2,7 +2,7 @@ import Observation
 import Foundation
 
 enum ProfileAccessState: Equatable, Sendable { case guest, loading, authenticated(CustomerProfile), recoverableError(CustomerProfile?) }
-struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .loading; var travelers: [SavedTraveler] = []; var refreshing = false; var signingOut = false; var showLogoutConfirmation = false }
+struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .loading; var travelers: [SavedTraveler] = []; var refreshing = false; var signingOut = false; var showLogoutConfirmation = false; var errorMessage: String? }
 @MainActor @Observable final class ProfileViewModel {
     private(set) var state = ProfileUiState()
     private let repository: any ProfileRepository
@@ -46,7 +46,26 @@ struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .l
     }
 
     func requestLogout() { state.showLogoutConfirmation = true }; func dismissLogout() { state.showLogoutConfirmation = false }
-    func signOut() async throws { guard !state.signingOut else { return }; state.signingOut = true; state.showLogoutConfirmation = false; _ = try await authRepository.signOut(); state = ProfileUiState(access: .guest) }
+    func signOut() async throws {
+        guard !state.signingOut else { return }
+        loadGeneration += 1
+        let prior = state
+        state.signingOut = true
+        state.showLogoutConfirmation = false
+        do {
+            _ = try await authRepository.signOut()
+            state = ProfileUiState(access: .guest)
+        } catch is CancellationError {
+            state = prior
+            throw CancellationError()
+        } catch {
+            state = ProfileUiState(
+                access: .recoverableError(cachedProfile),
+                errorMessage: "We couldn’t securely sign you out. Try again."
+            )
+            throw error
+        }
+    }
 
     private var cachedProfile: CustomerProfile? {
         switch state.access {

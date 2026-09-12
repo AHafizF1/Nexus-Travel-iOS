@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 /// Persists complete authentication sessions in one device-only Keychain item.
 struct KeychainAuthSessionStore: AuthSessionStore {
@@ -37,6 +38,14 @@ struct KeychainAuthSessionStore: AuthSessionStore {
 
     func clear() async throws {
         try await client.delete(service: Self.service, account: Self.account)
+    }
+
+    static func clearForUITesting() {
+        SecItemDelete([
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account
+        ] as CFDictionary)
     }
 }
 

@@ -43,7 +43,9 @@ final class PassengerDetailsViewModel {
         )
         switch try await repository.submitPassengerDetails(request) {
         case let .success(reviewId, _): navigationEvents.append(.seats(reviewId))
-        case .authRequired: errorMessage = "Please sign in again to continue."
+        case .authRequired:
+            errorMessage = "Your session expired. Sign in again to continue. Your passenger details are saved."
+            navigationEvents.append(.authenticate)
         case .networkUnavailable: errorMessage = "Connection lost. Check your internet and try again."
         case .offerExpired: errorMessage = "This fare expired. Please choose the flight again."
         case .offerUnavailable: errorMessage = "This fare is no longer available."

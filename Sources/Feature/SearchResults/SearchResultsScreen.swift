@@ -52,7 +52,7 @@ struct SearchResultsScreen: View {
     private var header: some View {
         VStack(spacing: NexusSpacing.space8) {
             HStack {
-                NexusIconButton("Back") { onEvent(.backClicked) } icon: { Image(systemName: "chevron.left") }
+                NexusIconButton("Back") { onEvent(.backClicked) } icon: { NexusIcon(name: .back) }
                 Text("Search Results").nexusTextStyle(NexusText.styles.sectionTitle)
                 Spacer()
             }
@@ -145,7 +145,7 @@ struct SearchResultsScreen: View {
 
     private var empty: some View {
         ContentUnavailableView {
-            Label("No flights found", systemImage: "magnifyingglass")
+            Label("No flights found", systemImage: NexusIconName.search.systemName)
         } description: {
             Text(state.selectedFilters.isEmpty
                  ? "We couldn't find available flights for these dates. Try adjusting your search to see more options."
@@ -158,7 +158,7 @@ struct SearchResultsScreen: View {
 
     private var error: some View {
         ContentUnavailableView {
-            Label("Connection Lost", systemImage: "wifi.slash")
+            Label("Connection Lost", systemImage: NexusIconName.offline.systemName)
         } description: { Text(state.errorMessage ?? "Could not load flights. Please retry.") }
         actions: {
             NexusPrimaryButton("Retry Search", fillsWidth: true) { onEvent(.retryClicked) }

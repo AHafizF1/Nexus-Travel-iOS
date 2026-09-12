@@ -16,6 +16,9 @@ struct PassengerDetailsScreenRoute: View {
             .task {
                 if bookingFlowState.consumePassengerSubmissionAfterAuthentication() { submit() }
             }
+            .onChange(of: bookingFlowState.submitPassengerDetailsAfterAuth) {
+                if bookingFlowState.consumePassengerSubmissionAfterAuthentication() { submit() }
+            }
             .onDisappear { task?.cancel() }
     }
 
@@ -41,7 +44,9 @@ struct PassengerDetailsScreenRoute: View {
         while let event = viewModel.consumeNavigationEvent() {
             switch event {
             case .back: router.pop()
-            case .authenticate: router.push(.bookingAuth(.init()))
+            case .authenticate:
+                bookingFlowState.completeLogout()
+                router.presentAuthentication(for: .booking)
             case let .seats(id): router.push(.seatSelection(.init(bookingId: id)))
             case .editSearch: router.popToRoot()
             }
@@ -57,7 +62,7 @@ struct PassengerDetailsScreen: View {
     var body: some View {
         Form {
             if let message = viewModel.errorMessage {
-                Section { Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red) }
+                Section { Label(message, systemImage: NexusPlatformIconName.warningFilled.rawValue).foregroundStyle(.red) }
             }
             Section("Passenger 1 · Adult") {
                 Picker("Title", selection: $viewModel.form.title) {
@@ -84,7 +89,7 @@ struct PassengerDetailsScreen: View {
                         viewModel.form.passportExpiryDate = viewModel.form.passportExpiryInput().parsed
                     }
                 countryPicker("Issuing country", selection: $viewModel.form.passportIssuingCountryCode)
-                Button(viewModel.form.passportDocument?.displayName ?? "Choose passport document", systemImage: "doc.badge.plus") {
+                Button(viewModel.form.passportDocument?.displayName ?? "Choose passport document", systemImage: NexusPlatformIconName.documentAdd.rawValue) {
                     importsDocument = true
                 }
                 .accessibilityHint("Choose a JPEG, PNG, or PDF up to 10 MB")
