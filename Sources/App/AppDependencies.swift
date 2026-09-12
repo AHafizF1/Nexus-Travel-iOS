@@ -3,7 +3,7 @@ import Foundation
 @MainActor
 struct AppDependencies {
     let transport: HTTPTransport
-    let sessionStore: KeychainAuthSessionStore
+    let sessionStore: any AuthSessionStore
     let airportCache: AirportCache
     let searchResultsCache: SearchResultsCache
     let searchResultsRepository: RemoteSearchResultsRepository
@@ -24,9 +24,9 @@ struct AppDependencies {
     let authRepository: RemoteAuthRepository
     let homeViewModel: HomeViewModel
 
-    init() {
+    init(sessionStore: any AuthSessionStore = KeychainAuthSessionStore()) {
         let sharedTransport = HTTPTransport()
-        let sharedSessionStore = KeychainAuthSessionStore()
+        let sharedSessionStore = sessionStore
         let sharedAirportCache = AirportCache()
         let sharedSearchResultsCache = SearchResultsCache()
         let sharedAuthRepository = RemoteAuthRepository(
@@ -44,7 +44,7 @@ struct AppDependencies {
         let sharedPreferencesRepository = RemotePreferencesRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider, store: sharedPreferencesStore)
         let sharedSecurityRepository = RemoteAccountSecurityRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider)
         transport = sharedTransport
-        sessionStore = sharedSessionStore
+        self.sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
         airportRepository = sharedAirportRepository
         searchResultsCache = sharedSearchResultsCache
@@ -98,4 +98,13 @@ struct AppDependencies {
         }
         return date
     }
+}
+
+/// Process-local auth storage used by isolated UI tests.
+actor VolatileAuthSessionStore: AuthSessionStore {
+    private var session: StoredAuthSession?
+
+    func read() -> StoredAuthSession? { session }
+    func write(_ session: StoredAuthSession) { self.session = session }
+    func clear() { session = nil }
 }
