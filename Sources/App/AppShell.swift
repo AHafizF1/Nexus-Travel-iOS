@@ -30,18 +30,21 @@ struct AppShell: View {
                 HomeRoute(viewModel: homeViewModel, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
             NavigationStack(path: $router.explorePath) {
                 ExploreScreenRoute(viewModel: ExploreViewModel(repository: exploreRepository), filter: .all, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
             NavigationStack(path: $router.tripsPath) {
                 TripsScreenRoute(viewModel: TripsViewModel(repository: tripsRepository, authRepository: authRepository), router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
             NavigationStack(path: $router.profilePath) {
@@ -52,6 +55,7 @@ struct AppShell: View {
                 )
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
         }
         .toolbar(.hidden, for: .tabBar)
