@@ -36,6 +36,16 @@ struct HomeHeroMetrics: Equatable {
     }
 }
 
+struct HomeLayoutMetrics: Equatable {
+    let contentMaxWidth: CGFloat
+
+    init(screenWidth: CGFloat) {
+        contentMaxWidth = screenWidth >= NexusLayout.homeWideLayoutMinimumWidth
+            ? NexusLayout.homeContentMaxWidthWide
+            : NexusLayout.contentMaxWidth
+    }
+}
+
 struct HomeRoute: View {
     @State private var viewModel: HomeViewModel
     @State private var airportQueryTask: Task<Void, Never>?
@@ -114,11 +124,13 @@ struct HomeScreen: View {
     let onExplore: () -> Void
     let onRetry: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GeometryReader { geometry in
             let spacing = NexusAdaptiveSpacing(screenWidth: geometry.size.width, screenHeight: geometry.size.height)
             let metrics = HomeHeroMetrics(spacing: spacing)
+            let layoutMetrics = HomeLayoutMetrics(screenWidth: geometry.size.width)
             let screenMargin = spacing?.screenMargin ?? NexusLayout.screenMargin
             ZStack(alignment: .top) {
                 NexusSemanticColors.backgroundPage.ignoresSafeArea()
@@ -133,7 +145,7 @@ struct HomeScreen: View {
                     }
                     .padding(.horizontal, screenMargin)
                     .padding(.bottom, NexusSpacing.space32)
-                    .frame(maxWidth: NexusLayout.contentMaxWidth)
+                    .frame(maxWidth: layoutMetrics.contentMaxWidth)
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -195,27 +207,31 @@ struct HomeScreen: View {
             if let error = state.validationError { message(error.message, error: true) }
             if let status = state.message, state.loadPhase != .error { message(status, error: false) }
             if state.tripType == .multiCity { multiCityFields } else { standardFields }
-            HStack(spacing: NexusSpacing.space12) {
+            adaptiveFieldLayout {
                 field("Travelers", state.travelers.summary(), .profile, .travelersClicked, showsChevron: true)
-                verticalDivider
+                Divider().overlay(NexusSemanticColors.borderDefault)
                 field("Cabin Class", state.cabinClass.label, .seat, .cabinClassClicked, showsChevron: true)
             }
             NexusPrimaryButton("Search Flights", isLoading: state.isSearching, fillsWidth: true) { onEvent(.searchClicked) }
         }
         .padding(cardPadding)
+        .frame(maxWidth: .infinity)
         .background(NexusSemanticColors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xxxl))
         .shadow(color: NexusSemanticColors.textPrimary.opacity(0.14), radius: NexusSpacing.space8, y: NexusSpacing.space4)
     }
 
     private var tripTypeSelector: some View {
-        HStack(spacing: 0) {
+        let layout = usesAccessibilityLayout
+            ? AnyLayout(VStackLayout(spacing: NexusSpacing.space4))
+            : AnyLayout(HStackLayout(spacing: 0))
+        return layout {
             tripTypeButton("One Way", type: .oneWay)
             tripTypeButton("Round Trip", type: .roundTrip)
             tripTypeButton("Multi-city", type: .multiCity)
         }
         .padding(NexusSpacing.space4)
-        .frame(height: NexusLayout.touchRecommended)
+        .frame(height: usesAccessibilityLayout ? nil : NexusLayout.touchRecommended)
         .background(NexusSemanticColors.surfaceBase)
         .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl))
         .overlay { RoundedRectangle(cornerRadius: NexusRadius.xl).stroke(NexusSemanticColors.borderDefault) }
@@ -227,7 +243,11 @@ struct HomeScreen: View {
             Text(title)
                 .nexusTextStyle(NexusText.styles.label)
                 .foregroundStyle(state.tripType == type ? NexusSemanticColors.actionPrimaryText : NexusSemanticColors.textSecondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: usesAccessibilityLayout ? NexusLayout.touchRecommended : nil,
+                    maxHeight: .infinity
+                )
                 .background {
                     if state.tripType == type {
                         LinearGradient(
@@ -245,9 +265,12 @@ struct HomeScreen: View {
 
     private var standardFields: some View {
         VStack(spacing: NexusSpacing.space16) {
-            HStack {
+            adaptiveFieldLayout {
                 field("From", state.origin?.displayName ?? "Select origin", .flightDeparture, .originClicked)
-                Button { onEvent(.swapAirportsClicked) } label: { NexusIcon(name: .arrowsExchange, accessibilityLabel: "Swap origin and destination") }
+                Button { onEvent(.swapAirportsClicked) } label: {
+                    NexusIcon(name: .arrowsExchange, accessibilityLabel: "Swap origin and destination")
+                        .foregroundStyle(NexusSemanticColors.brandPrimary)
+                }
                     .frame(width: NexusLayout.touchRecommended, height: NexusLayout.touchRecommended)
                     .background(NexusSemanticColors.surfaceBase)
                     .clipShape(Circle())
@@ -256,10 +279,10 @@ struct HomeScreen: View {
                 field("To", state.destination?.displayName ?? "Select destination", .flightArrival, .destinationClicked)
             }
             Divider().overlay(NexusSemanticColors.borderDefault)
-            HStack(spacing: NexusSpacing.space12) {
+            adaptiveFieldLayout {
                 field("Departure", state.departureDate?.displayText ?? "Select date", .calendar, .departureDateClicked)
                 if state.tripType == .roundTrip {
-                    verticalDivider
+                    Divider().overlay(NexusSemanticColors.borderDefault)
                     field("Return", state.returnDate?.displayText ?? "Select date", .calendar, .returnDateClicked)
                 }
             }
@@ -267,18 +290,12 @@ struct HomeScreen: View {
         }
     }
 
-    private var verticalDivider: some View {
-        Rectangle()
-            .fill(NexusSemanticColors.borderDefault)
-            .frame(width: NexusBorder.hairline, height: NexusLayout.touchRecommended)
-    }
-
     private var multiCityFields: some View {
         VStack(spacing: NexusSpacing.space16) {
             ForEach(Array(state.multiCityLegs.enumerated()), id: \.offset) { index, leg in
                 VStack(alignment: .leading, spacing: NexusSpacing.space8) {
                     HStack { Text("Flight \(index + 1)").nexusTextStyle(NexusText.styles.label); Spacer(); if state.multiCityLegs.count > 2 { Button("Remove") { onEvent(.removeMultiCityLeg(index: index)) }.foregroundStyle(NexusSemanticColors.errorText) } }
-                    HStack { field("From", leg.origin?.displayName ?? "Select origin", .flightDeparture, .multiCityOriginClicked(index: index)); field("To", leg.destination?.displayName ?? "Select destination", .flightArrival, .multiCityDestinationClicked(index: index)) }
+                    adaptiveFieldLayout { field("From", leg.origin?.displayName ?? "Select origin", .flightDeparture, .multiCityOriginClicked(index: index)); field("To", leg.destination?.displayName ?? "Select destination", .flightArrival, .multiCityDestinationClicked(index: index)) }
                     field("Departure", leg.departureDate?.displayText ?? "Select date", .calendar, .multiCityDateClicked(index: index))
                 }
             }
@@ -300,25 +317,42 @@ struct HomeScreen: View {
     ) -> some View {
         Button { onEvent(event) } label: {
             VStack(alignment: .leading, spacing: NexusSpacing.space2) {
-                HStack(spacing: NexusSpacing.space12) {
-                    NexusIcon(name: icon)
+                HStack(spacing: 0) {
+                    NexusIcon(name: icon, size: NexusIconSize.formField)
+                        .foregroundStyle(NexusSemanticColors.brandPrimary)
                     Text(label).nexusTextStyle(NexusText.styles.label)
                         .foregroundStyle(NexusSemanticColors.textSecondary)
+                        .padding(.leading, NexusSpacing.space12)
                     if showsChevron {
                         Spacer(minLength: 0)
-                        NexusIcon(name: .chevronDown)
+                        NexusIcon(name: .chevronDown, size: NexusIconSize.formField)
+                            .foregroundStyle(NexusColors.slate700)
                     }
                 }
                 Text(value)
                     .nexusTextStyle(NexusText.styles.formInput)
-                    .lineLimit(1)
+                    .lineLimit(usesAccessibilityLayout ? nil : 1)
                     .truncationMode(.tail)
                     .multilineTextAlignment(.leading)
             }.frame(maxWidth: .infinity, minHeight: NexusLayout.inputHeight, alignment: .leading)
         }
+        .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         .accessibilityLabel("\(label), \(value)")
         .accessibilityHint(fieldError(for: label)?.message ?? "")
+    }
+
+    private var usesAccessibilityLayout: Bool {
+        dynamicTypeSize.isAccessibilitySize
+    }
+
+    private func adaptiveFieldLayout<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        let layout = usesAccessibilityLayout
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: NexusSpacing.space12))
+            : AnyLayout(HStackLayout(spacing: NexusSpacing.space12))
+        return layout { content() }
     }
 
     @ViewBuilder private var stateSection: some View {

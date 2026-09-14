@@ -197,6 +197,8 @@ enum NexusLayout {
     static let iconSmall: CGFloat = 20
     static let iconLarge: CGFloat = 32
     static let contentMaxWidth: CGFloat = 480
+    static let homeContentMaxWidthWide: CGFloat = 720
+    static let homeWideLayoutMinimumWidth: CGFloat = 700
     static let formMaxWidth: CGFloat = 360
 }
 
@@ -222,6 +224,7 @@ enum NexusBorder {
 enum NexusIconSize {
     static let xs: CGFloat = 16
     static let sm: CGFloat = 20
+    static let formField: CGFloat = 22
     static let md: CGFloat = 24
     static let lg: CGFloat = 32
     static let xl: CGFloat = 40

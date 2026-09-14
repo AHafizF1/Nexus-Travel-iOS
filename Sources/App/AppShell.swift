@@ -30,6 +30,7 @@ struct AppShell: View {
                 HomeRoute(viewModel: homeViewModel, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .hidingNativeTabBar()
             .tabItem { Label(MainTab.home.label, systemImage: MainTab.home.icon.systemName) }
             .tag(MainTab.home)
 
@@ -37,6 +38,7 @@ struct AppShell: View {
                 ExploreScreenRoute(viewModel: ExploreViewModel(repository: exploreRepository), filter: .all, router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .hidingNativeTabBar()
             .tabItem { Label(MainTab.explore.label, systemImage: MainTab.explore.icon.systemName) }
             .tag(MainTab.explore)
 
@@ -44,6 +46,7 @@ struct AppShell: View {
                 TripsScreenRoute(viewModel: TripsViewModel(repository: tripsRepository, authRepository: authRepository), router: router)
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .hidingNativeTabBar()
             .tabItem { Label(MainTab.trips.label, systemImage: MainTab.trips.icon.systemName) }
             .tag(MainTab.trips)
 
@@ -55,6 +58,7 @@ struct AppShell: View {
                 )
                     .appDestinations(router: router, searchResultsRepository: searchResultsRepository, flightDetailsRepository: flightDetailsRepository, passengerDetailsRepository: passengerDetailsRepository, flightSeatsRepository: flightSeatsRepository, bookingRequestRepository: bookingRequestRepository, paymentProofRepository: paymentProofRepository, tripsRepository: tripsRepository, exploreRepository: exploreRepository, profileRepository: profileRepository, securityRepository: securityRepository, airportRepository: airportRepository, profileViewModel: profileViewModel, preferencesViewModel: preferencesViewModel, authRepository: authRepository, homeViewModel: homeViewModel, bookingFlowState: bookingFlowState)
             }
+            .hidingNativeTabBar()
             .tabItem { Label(MainTab.profile.label, systemImage: MainTab.profile.icon.systemName) }
             .tag(MainTab.profile)
         }
@@ -84,6 +88,17 @@ struct AppShell: View {
             }
             .presentationDragIndicator(.visible)
             .presentationDetents([.large])
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func hidingNativeTabBar() -> some View {
+        if #available(iOS 18.0, *) {
+            toolbarVisibility(.hidden, for: .tabBar)
+        } else {
+            self
         }
     }
 }
@@ -118,6 +133,7 @@ private struct MainBottomBar: View {
         )
         .padding(.horizontal, NexusSpacing.space16)
         .padding(.vertical, NexusSpacing.space12)
+        .background(NexusSemanticColors.backgroundPage.ignoresSafeArea(edges: .bottom))
     }
 
     private func item(_ tab: MainTab) -> some View {
@@ -132,6 +148,7 @@ private struct MainBottomBar: View {
                     .nexusTextStyle(
                         NexusText.styles.statusBadge.withFontWeight(isSelected ? .semibold : .medium)
                     )
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             }
             .foregroundStyle(isSelected ? NexusSemanticColors.brandPrimary : NexusColors.slate500)
             .frame(maxWidth: .infinity, minHeight: NexusLayout.touchRecommended)

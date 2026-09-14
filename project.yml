@@ -20,6 +20,7 @@ targets:
       - Sources
     resources:
       - path: Sources/Core/DesignSystem/Resources/Icons
+      - path: Sources/Core/DesignSystem/Resources/Images
     dependencies:
       - package: TablerIcons
     info:
@@ -55,3 +56,18 @@ targets:
       - TestsUI
     dependencies:
       - target: NexusTravel
+schemes:
+  NexusTravel:
+    build:
+      targets:
+        NexusTravel: all
+    test:
+      targets:
+        - NexusTravelTests
+  NexusTravelUI:
+    build:
+      targets:
+        NexusTravel: all
+    test:
+      targets:
+        - NexusTravelUITests

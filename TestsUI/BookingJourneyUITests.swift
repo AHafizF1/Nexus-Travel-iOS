@@ -2,6 +2,37 @@ import XCTest
 
 final class BookingJourneyUITests: XCTestCase {
     @MainActor
+    func testCustomBottomNavigationIsAvailable() {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.buttons["main-tab-home"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.buttons["main-tab-explore"].exists)
+        XCTAssertTrue(app.buttons["main-tab-trips"].exists)
+        XCTAssertTrue(app.buttons["main-tab-profile"].exists)
+    }
+
+    @MainActor
+    func testHomeSearchFieldsStayInsideScreenBounds() {
+        let app = XCUIApplication()
+        app.launch()
+        let searchFlights = app.buttons["Search Flights"]
+        let cabinClass = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH %@", "Cabin Class")
+        ).firstMatch
+
+        XCTAssertTrue(searchFlights.waitForExistence(timeout: 30))
+        XCTAssertTrue(cabinClass.waitForExistence(timeout: 5))
+        let leadingMargin = searchFlights.frame.minX - app.frame.minX
+        let trailingMargin = app.frame.maxX - searchFlights.frame.maxX
+
+        XCTAssertGreaterThanOrEqual(leadingMargin, 0)
+        XCTAssertGreaterThanOrEqual(trailingMargin, 0)
+        XCTAssertEqual(leadingMargin, trailingMargin, accuracy: 1)
+        XCTAssertLessThanOrEqual(cabinClass.frame.maxX, app.frame.maxX)
+    }
+
+    @MainActor
     func testSignupThenProfileSignIn() throws {
         let email = try requiredEnvironmentValue("NEXUS_TEST_EMAIL")
         let password = try requiredEnvironmentValue("NEXUS_TEST_PASSWORD")
@@ -51,7 +82,7 @@ final class BookingJourneyUITests: XCTestCase {
         app.launchArguments.append("--reset-auth-session")
         app.launch()
 
-        XCTAssertTrue(app.buttons["Flight"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.buttons["Search Flights"].waitForExistence(timeout: 30))
         let tripsTab = app.buttons["main-tab-trips"]
         XCTAssertTrue(tripsTab.waitForExistence(timeout: 15))
         tripsTab.tap()
@@ -112,10 +143,6 @@ final class BookingJourneyUITests: XCTestCase {
     func testSearchOpensFlightDetailsAndStartsBooking() {
         let app = XCUIApplication()
         app.launch()
-
-        let flight = app.buttons["Flight"]
-        XCTAssertTrue(flight.waitForExistence(timeout: 30))
-        flight.tap()
 
         let search = app.buttons["Search Flights"]
         let scrollView = app.scrollViews.firstMatch

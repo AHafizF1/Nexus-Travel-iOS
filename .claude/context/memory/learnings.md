@@ -15,3 +15,9 @@
 
 - XcodeGen: adding a standalone `.xcassets` catalog makes Xcode require configured `AppIcon`. For one custom SVG, declare its folder under target `resources` and load through `Bundle` with a native fallback.
 - Bitrise RDE Windows directory upload preserves backslashes as literal remote filenames. Zip with POSIX archive paths, upload zip, then unzip remotely.
+
+## 2026-09-14
+
+- iPadOS 26 ignores tab visibility applied only to the outer `TabView`; `toolbarVisibility(.hidden, for: .tabBar)` on each tab's `NavigationStack` hides the elevated top bar.
+- Keep iOS 17's legacy `.toolbar(.hidden, for: .tabBar)` at the `TabView` root; the child visibility modifier changes the older Home layout proposal.
+- Home uses one Dynamic Type accessibility breakpoint with `AnyLayout`; wide displays use a centered 720-point outer content limit.

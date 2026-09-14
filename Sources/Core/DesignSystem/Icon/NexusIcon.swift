@@ -244,18 +244,11 @@ struct NexusIcon: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: size, height: size)
         case let .custom(assetName):
-            if let url = Bundle.main.url(forResource: assetName, withExtension: "svg"),
-               let image = UIImage(contentsOfFile: url.path) {
-                Image(uiImage: image.withRenderingMode(.alwaysTemplate))
-                    .renderingMode(.template)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: size, height: size)
-            } else {
-                Image(systemName: name.systemName)
-                    .font(.system(size: size))
-                    .frame(width: size, height: size)
-            }
+            Image(assetName)
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
         }
     }
 }
