@@ -3,23 +3,26 @@ import SwiftUI
 
 struct TripsScreenRoute: View {
     @State private var viewModel: TripsViewModel
+    @Binding var rootScrollTarget: String?
     let router: Router
 
-    init(viewModel: TripsViewModel, router: Router) {
+    init(viewModel: TripsViewModel, router: Router, rootScrollTarget: Binding<String?>) {
         _viewModel = State(initialValue: viewModel)
+        _rootScrollTarget = rootScrollTarget
         self.router = router
     }
 
     var body: some View {
         TripsScreen(
             state: viewModel.state,
+            rootScrollTarget: $rootScrollTarget,
             onSelect: { group in Task { try? await viewModel.select(group) } },
             onOpen: { router.push(.tripDetail(.init(tripId: $0))) },
             onUpload: { router.push(.paymentProof(.init(bookingId: $0))) },
             onSignIn: { router.presentAuthentication(for: .trips) },
             onRetry: { Task { try? await viewModel.load(forceRefresh: true) } }
         )
-        .task { try? await viewModel.load() }
+        .task { try? await viewModel.loadIfNeeded() }
         .refreshable { try? await viewModel.load(forceRefresh: true) }
         .onChange(of: router.authPresentation) { previous, current in
             guard previous == .trips, current == nil else { return }
@@ -30,6 +33,7 @@ struct TripsScreenRoute: View {
 
 private struct TripsScreen: View {
     let state: TripsUiState
+    @Binding var rootScrollTarget: String?
     let onSelect: (TripGroup) -> Void
     let onOpen: (String) -> Void
     let onUpload: (String) -> Void
@@ -37,7 +41,7 @@ private struct TripsScreen: View {
     let onRetry: () -> Void
     var body: some View {
         ScrollView { LazyVStack(alignment: .leading, spacing: NexusSpacing.space20) {
-            Text("Trips").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader)
+            Text("Trips").nexusTextStyle(NexusText.styles.screenTitle).accessibilityAddTraits(.isHeader).id("trips.header")
             switch state.access {
             case .guest: ContentUnavailableView("Keep every trip in one place", systemImage: NexusIconName.trips.systemName, description: Text("Sign in to view bookings, payment progress, seats, and issued tickets.")); NexusPrimaryButton("Sign in", fillsWidth: true, action: onSignIn)
             case .loading: ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips")
@@ -45,14 +49,28 @@ private struct TripsScreen: View {
                 ContentUnavailableView("Trips are unavailable", systemImage: NexusIconName.warning.systemName, description: Text(state.error ?? "We could not access your saved session."))
                 NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
             case .authenticated:
-                Picker("Trip section", selection: Binding(get: { state.selectedGroup }, set: onSelect)) { ForEach(TripGroup.allCases, id: \.self) { Text($0.label).tag($0) } }.pickerStyle(.segmented)
+                Picker(
+                    "Trip section",
+                    selection: Binding(
+                        get: { state.selectedGroup },
+                        set: { group in onSelect(group) }
+                    )
+                ) {
+                    ForEach(TripGroup.allCases, id: \.self) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .id("trips.group")
                 if state.offline { NexusBanner(text: "Offline Mode: Showing saved tickets.", status: .offline) }
                 if let error = state.error { NexusBanner(text: error, status: .error) }
                 if state.loading { ProgressView().frame(maxWidth: .infinity).accessibilityLabel("Loading trips") }
                 else if state.visibleTrips.isEmpty { ContentUnavailableView("No trips in this section.", systemImage: NexusIconName.flight.systemName) }
-                else { ForEach(state.visibleTrips, id: \.id) { trip in TripCard(trip: trip, onOpen: { onOpen(trip.id) }, onPrimary: { if trip.nextAction == "UPLOAD_PAYMENT_PROOF" { onUpload(trip.id) } else { onOpen(trip.id) } }) } }
+                else { ForEach(state.visibleTrips, id: \.id) { trip in TripCard(trip: trip, onOpen: { onOpen(trip.id) }, onPrimary: { if trip.nextAction == "UPLOAD_PAYMENT_PROOF" { onUpload(trip.id) } else { onOpen(trip.id) } }).id("trips.trip.\(trip.id)") } }
             }
-        }.padding(NexusSpacing.space24) }.background(NexusSemanticColors.backgroundPage).navigationBarHidden(true)
+        }.padding(NexusSpacing.space24).scrollTargetLayout() }
+            .scrollPosition(id: $rootScrollTarget, anchor: .top)
+            .accessibilityIdentifier("root-trips")
+            .background(NexusSemanticColors.backgroundPage)
+            .navigationBarHidden(true)
     }
 }
 private struct TripCard: View {

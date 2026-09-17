@@ -46,16 +46,25 @@ struct HomeLayoutMetrics: Equatable {
     }
 }
 
+private enum HomeScrollTarget {
+    static let hero = "home.hero"
+    static let searchPanel = "home.search-panel"
+    static let services = "home.services"
+    static let recentSearches = "home.recent-searches"
+}
+
 struct HomeRoute: View {
     @State private var viewModel: HomeViewModel
+    @Binding var rootScrollTarget: String?
     @State private var airportQueryTask: Task<Void, Never>?
     @State private var searchTask: Task<Void, Never>?
     @State private var reloadTask: Task<Void, Never>?
     @State private var eventTask: Task<Void, Never>?
     let router: Router
 
-    init(viewModel: HomeViewModel, router: Router) {
+    init(viewModel: HomeViewModel, router: Router, rootScrollTarget: Binding<String?>) {
         _viewModel = State(initialValue: viewModel)
+        _rootScrollTarget = rootScrollTarget
         self.router = router
     }
 
@@ -63,11 +72,12 @@ struct HomeRoute: View {
         HomeScreen(
             state: viewModel.uiState,
             today: viewModel.currentDate,
+            rootScrollTarget: $rootScrollTarget,
             onEvent: send,
             onExplore: { router.select(.explore) },
             onRetry: retry
         )
-            .task { await viewModel.retry() }
+            .task { try? await viewModel.loadIfNeeded() }
             .onDisappear {
                 airportQueryTask?.cancel()
                 viewModel.cancelAirportSearch()
@@ -110,8 +120,7 @@ struct HomeRoute: View {
             switch navigation {
             case let .toSearchResults(searchId): router.push(.searchResults(SearchResultsRoute(searchId: searchId)))
             case .toPackages:
-                router.select(.explore)
-                router.push(.explore(ExploreRoute(filter: .packages)))
+                router.showExplore(filter: .packages)
             }
         }
     }
@@ -120,6 +129,7 @@ struct HomeRoute: View {
 struct HomeScreen: View {
     let state: HomeUiState
     let today: LocalDate
+    @Binding var rootScrollTarget: String?
     let onEvent: (HomeUiEvent) -> Void
     let onExplore: () -> Void
     let onRetry: () -> Void
@@ -131,23 +141,36 @@ struct HomeScreen: View {
             let spacing = NexusAdaptiveSpacing(screenWidth: geometry.size.width, screenHeight: geometry.size.height)
             let metrics = HomeHeroMetrics(spacing: spacing)
             let layoutMetrics = HomeLayoutMetrics(screenWidth: geometry.size.width)
+            let contentWidth = min(geometry.size.width, layoutMetrics.contentMaxWidth)
             let screenMargin = spacing?.screenMargin ?? NexusLayout.screenMargin
             ZStack(alignment: .top) {
                 NexusSemanticColors.backgroundPage.ignoresSafeArea()
-                heroBackground(metrics).ignoresSafeArea(edges: .top)
+                heroBackground(metrics)
+                    .frame(width: geometry.size.width)
+                    .clipped()
+                    .ignoresSafeArea(edges: .top)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        header.padding(.top, metrics.headerTopPadding)
+                        header
+                            .padding(.top, metrics.headerTopPadding)
+                            .id(HomeScrollTarget.hero)
                         searchPanel(cardPadding: metrics.cardPadding)
                             .padding(.top, metrics.greetingToLauncherGap)
-                        stateSection.padding(.top, metrics.launcherToSearchGap)
+                            .id(HomeScrollTarget.searchPanel)
+                        stateSection
+                            .padding(.top, metrics.launcherToSearchGap)
+                            .id(HomeScrollTarget.services)
+                            .accessibilityIdentifier("home-section-services")
                         if !state.recentSearches.isEmpty { recentSearches.padding(.top, NexusSpacing.space24) }
                     }
                     .padding(.horizontal, screenMargin)
                     .padding(.bottom, NexusSpacing.space32)
-                    .frame(maxWidth: layoutMetrics.contentMaxWidth)
+                    .frame(width: contentWidth)
                     .frame(maxWidth: .infinity)
+                    .scrollTargetLayout()
                 }
+                .scrollPosition(id: $rootScrollTarget, anchor: .top)
+                .accessibilityIdentifier("root-home")
             }
         }
         .animation(
@@ -375,7 +398,13 @@ struct HomeScreen: View {
 
     private var featuredDestinations: some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-            HStack { Text("Featured destinations").nexusTextStyle(NexusText.styles.screenTitle); Spacer(); Button("View all", action: onExplore) }
+            HStack {
+                Text("Featured destinations")
+                    .nexusTextStyle(NexusText.styles.screenTitle)
+                    .accessibilityIdentifier("home-section-services")
+                Spacer()
+                Button("View all", action: onExplore)
+            }
             ScrollView(.horizontal) {
                 HStack(spacing: NexusSpacing.space16) {
                     Button { onEvent(.packageClicked) } label: {
@@ -409,6 +438,8 @@ struct HomeScreen: View {
             Text("Recent Searches").nexusTextStyle(NexusText.styles.screenTitle)
             ScrollView(.horizontal) { HStack { ForEach(state.recentSearches, id: \.id) { search in Button("\(search.originCode) → \(search.destinationCode)\n\(search.dateRange)") { onEvent(.recentSearchClicked(search)) }.buttonStyle(.bordered) } } }.scrollIndicators(.hidden)
         }
+        .id(HomeScrollTarget.recentSearches)
+        .accessibilityIdentifier("home-section-recent-searches")
     }
 
     private func message(_ text: String, error: Bool) -> some View {

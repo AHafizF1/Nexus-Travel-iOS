@@ -3,8 +3,50 @@ import Observation
 struct ExploreUiState: Equatable, Sendable { var content: ExploreContent?; var loading = true; var refreshing = false; var error: String? }
 @MainActor @Observable final class ExploreViewModel {
     private(set) var state = ExploreUiState(); private let repository: any ExploreRepository; private var generation = 0
+    private var hasLoaded = false
     init(repository: any ExploreRepository) { self.repository = repository }
-    func load(forceRefresh: Bool = false) async throws { generation += 1; let request = generation; let prior = state; state.loading = state.content == nil; state.refreshing = state.content != nil; state.error = nil; do { let result = try await repository.content(forceRefresh: forceRefresh); guard request == generation else { return }; switch result { case let .success(value): state = .init(content: value, loading: false); case .empty: state = .init(content: .init(banners: [], destinations: [], packages: []), loading: false); default: state.loading = false; state.refreshing = false; state.error = "Could not update Explore." } } catch is CancellationError { if request == generation { state = prior }; throw CancellationError() } }
+    func loadIfNeeded() async throws {
+        guard !hasLoaded else { return }
+        try await load()
+        hasLoaded = true
+    }
+
+    func load(forceRefresh: Bool = false) async throws {
+        generation += 1
+        let request = generation
+        let prior = state
+        state.loading = state.content == nil
+        state.refreshing = state.content != nil
+        state.error = nil
+        do {
+            let result = try await repository.content(forceRefresh: forceRefresh)
+            guard request == generation else { return }
+            guard !Task.isCancelled else {
+                state = prior
+                throw CancellationError()
+            }
+            switch result {
+            case let .success(value): state = .init(content: value, loading: false)
+            case .empty: state = .init(content: .init(banners: [], destinations: [], packages: []), loading: false)
+            default:
+                state.loading = false
+                state.refreshing = false
+                state.error = "Could not update Explore."
+            }
+        } catch is CancellationError {
+            if request == generation { state = prior }
+            throw CancellationError()
+        } catch {
+            guard request == generation else { return }
+            if Task.isCancelled {
+                state = prior
+                throw CancellationError()
+            }
+            state.loading = false
+            state.refreshing = false
+            state.error = "Could not update Explore."
+        }
+    }
 }
 enum ExploreDetailState: Equatable, Sendable { case loading; case destination(ExploreDestination, [ExplorePackage]); case package(ExplorePackage, ExploreDestination); case unavailable; case error }
 @MainActor @Observable final class ExploreDetailViewModel {

@@ -23,6 +23,8 @@ struct AppDependencies {
     let preferencesViewModel: PreferencesViewModel
     let authRepository: RemoteAuthRepository
     let homeViewModel: HomeViewModel
+    let exploreViewModel: ExploreViewModel
+    let tripsViewModel: TripsViewModel
 
     init(sessionStore: any AuthSessionStore = KeychainAuthSessionStore()) {
         let sharedTransport = HTTPTransport()
@@ -43,6 +45,11 @@ struct AppDependencies {
         let sharedProfileRepository = RemoteProfileRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider)
         let sharedPreferencesRepository = RemotePreferencesRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider, store: sharedPreferencesStore)
         let sharedSecurityRepository = RemoteAccountSecurityRepository(transport: sharedTransport, tokenProvider: sharedTokenProvider)
+        let sharedTripsRepository = RemoteTripsRepository(
+            transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore),
+            cache: TripCache(), ticketStore: TicketPdfStore()
+        )
+        let sharedExploreRepository = RemoteExploreRepository(transport: sharedTransport, cache: ExploreCache())
         transport = sharedTransport
         self.sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
@@ -66,11 +73,8 @@ struct AppDependencies {
         paymentProofRepository = RemotePaymentProofRepository(
             transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore)
         )
-        tripsRepository = RemoteTripsRepository(
-            transport: sharedTransport, tokenProvider: AuthTokenProvider(sessionStore: sharedSessionStore),
-            cache: TripCache(), ticketStore: TicketPdfStore()
-        )
-        exploreRepository = RemoteExploreRepository(transport: sharedTransport, cache: ExploreCache())
+        tripsRepository = sharedTripsRepository
+        exploreRepository = sharedExploreRepository
         profileRepository = sharedProfileRepository
         preferencesRepository = sharedPreferencesRepository
         securityRepository = sharedSecurityRepository
@@ -88,6 +92,8 @@ struct AppDependencies {
             authRepository: sharedAuthRepository,
             today: Self.currentLocalDate
         )
+        exploreViewModel = ExploreViewModel(repository: sharedExploreRepository)
+        tripsViewModel = TripsViewModel(repository: sharedTripsRepository, authRepository: sharedAuthRepository)
     }
 
     private static func currentLocalDate() -> LocalDate {

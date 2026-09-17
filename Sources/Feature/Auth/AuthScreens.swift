@@ -48,7 +48,6 @@ struct AuthRoute: View {
             reduceMotion ? .easeOut(duration: NexusMotion.durationFastSeconds) : NexusMotion.authModeTransition,
             value: viewModel.mode
         )
-        .toolbar(.hidden, for: .tabBar)
         .navigationBarBackButtonHidden(true)
     }
 

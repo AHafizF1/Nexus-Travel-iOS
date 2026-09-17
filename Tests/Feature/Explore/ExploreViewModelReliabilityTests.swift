@@ -3,6 +3,18 @@ import Testing
 
 @MainActor
 struct ExploreViewModelReliabilityTests {
+    @Test func loadIfNeededKeepsContentWithoutDuplicateRequest() async throws {
+        let repository = ImmediateExploreRepository()
+        let viewModel = ExploreViewModel(repository: repository)
+
+        try await viewModel.loadIfNeeded()
+        try await viewModel.loadIfNeeded()
+
+        let callCount = await repository.callCount
+        #expect(viewModel.state.content != nil)
+        #expect(callCount == 1)
+    }
+
     @Test func cancelledOlderLoadDoesNotOverwriteNewerContent() async throws {
         let repository = ControlledExploreRepository()
         let viewModel = ExploreViewModel(repository: repository)
@@ -20,6 +32,18 @@ struct ExploreViewModelReliabilityTests {
         #expect(viewModel.state.content == content)
         #expect(!viewModel.state.loading)
     }
+}
+
+private actor ImmediateExploreRepository: ExploreRepository {
+    private(set) var callCount = 0
+
+    func content(forceRefresh: Bool) async throws -> ExploreResult<ExploreContent> {
+        callCount += 1
+        return .success(ExploreContent(banners: [], destinations: [], packages: []))
+    }
+
+    func destination(id: String) async throws -> ExploreResult<ExploreDestinationDetail> { .failed }
+    func travelPackage(id: String) async throws -> ExploreResult<ExplorePackageDetail> { .failed }
 }
 
 private actor ControlledExploreRepository: ExploreRepository {

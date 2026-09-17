@@ -1,6 +1,5 @@
 import Foundation
 import SwiftUI
-import UIKit
 
 @main
 @MainActor
@@ -11,22 +10,6 @@ struct NexusApp: App {
     @State private var bookingFlowState: BookingFlowState
 
     init() {
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithTransparentBackground()
-        for itemAppearance in [
-            tabBarAppearance.stackedLayoutAppearance,
-            tabBarAppearance.inlineLayoutAppearance,
-            tabBarAppearance.compactInlineLayoutAppearance
-        ] {
-            itemAppearance.normal.iconColor = .clear
-            itemAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
-            itemAppearance.selected.iconColor = .clear
-            itemAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.clear]
-        }
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        UITabBar.appearance().isUserInteractionEnabled = false
-
         let arguments = ProcessInfo.processInfo.arguments
         launchDestination = AppLaunchDestination(arguments: arguments)
         dependencies = launchDestination.gallerySection == nil
@@ -44,6 +27,8 @@ struct NexusApp: App {
                 DesignSystemGalleryScreen(initialSection: gallerySection)
             } else if let dependencies {
                 AppShell(router: router, homeViewModel: dependencies.homeViewModel,
+                         exploreViewModel: dependencies.exploreViewModel,
+                         tripsViewModel: dependencies.tripsViewModel,
                          searchResultsRepository: dependencies.searchResultsRepository,
                          flightDetailsRepository: dependencies.flightDetailsRepository,
                          passengerDetailsRepository: dependencies.passengerDetailsRepository,

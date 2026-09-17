@@ -15,6 +15,7 @@ final class HomeViewModel {
     private var airportSearchGeneration = 0
     private var airportSearchTask: Task<[Airport], Error>?
     private var loadGeneration = 0
+    private var hasLoaded = false
 
     var currentDate: LocalDate { today() }
 
@@ -47,6 +48,10 @@ final class HomeViewModel {
             if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
+            if Task.isCancelled {
+                if generation == loadGeneration { uiState = previousState }
+                throw CancellationError()
+            }
             name = "Traveler"
         }
         uiState = HomeUiState(isLoading: true, userName: name, activeSheet: sheet, selectedService: service)
@@ -57,6 +62,10 @@ final class HomeViewModel {
             if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
+            if Task.isCancelled {
+                if generation == loadGeneration { uiState = previousState }
+                throw CancellationError()
+            }
             airports = []
         }
         let result: HomeResult<HomeContent>
@@ -66,6 +75,10 @@ final class HomeViewModel {
             if generation == loadGeneration { uiState = previousState }
             throw CancellationError()
         } catch {
+            if Task.isCancelled {
+                if generation == loadGeneration { uiState = previousState }
+                throw CancellationError()
+            }
             result = .unknownError
         }
         let departure = today().addingDays(7)
@@ -85,6 +98,12 @@ final class HomeViewModel {
             uiState = fallbackState(airports: airports, name: name,
                 message: "We could not load your home page. Please try again.", service: service, sheet: sheet)
         }
+        hasLoaded = true
+    }
+
+    func loadIfNeeded() async throws {
+        guard !hasLoaded else { return }
+        try await load()
     }
 
     func retry() async {

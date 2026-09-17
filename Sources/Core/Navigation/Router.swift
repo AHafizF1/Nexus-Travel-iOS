@@ -38,6 +38,7 @@ enum MainTab: CaseIterable, Hashable, Sendable {
 @Observable
 final class Router {
     private(set) var selectedTab: MainTab = .home
+    var exploreFilter: ExploreFilter = .all
     var homePath: [AppRoute] = []
     var explorePath: [AppRoute] = []
     var tripsPath: [AppRoute] = []
@@ -55,6 +56,11 @@ final class Router {
         } else {
             selectedTab = tab
         }
+    }
+
+    func showExplore(filter: ExploreFilter) {
+        exploreFilter = filter
+        selectedTab = .explore
     }
 
     func push(_ route: AppRoute) {

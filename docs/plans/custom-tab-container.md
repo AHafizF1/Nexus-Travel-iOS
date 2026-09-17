@@ -1,35 +1,15 @@
-# Custom tab container fallback plan
+# Custom tab container implementation record
 
-Use this plan only if the native `TabView` solution cannot pass every gate below.
+Accepted architecture: [ADR-0007](../adr/0007-custom-tab-container.md).
 
-## Goal
+The former fallback proposal is superseded. Main navigation now renders only the selected tab's native `NavigationStack`; `Router` owns tab selection and independent paths, root ViewModels are created once in `AppDependencies`, and the floating bar uses one root-only `.safeAreaInset`.
 
-Keep Nexus floating bottom navigation on iPhone and iPad without rendering or reserving space for Apple tab chrome. Preserve current `Router` selection behavior and one independent `NavigationStack` path per tab.
+State carried across tab switches: each tab path, root ViewModel state, Explore filter, Trips group, and stable root scroll target. Explore package navigation uses synchronous `Router.showExplore(filter:)`. No process-death restoration is added.
 
-## Current evidence
+## Verification record
 
-- Applying `toolbarVisibility(.hidden, for: .tabBar)` inside each tab removes the elevated iPadOS 26 tab bar.
-- Custom navigation and Home alignment UI checks pass on iPadOS 26.
-- Custom navigation passes on iPhone 11/iOS 17, but the strict Home horizontal-alignment check still fails on that 414-point device. Diagnose that failure separately before attributing it to `TabView`.
-
-## Minimal implementation
-
-1. Add a private `MainTabContainer` beside `AppShell`; do not add a new routing or DI layer.
-2. Reuse `Router.selectedTab`, `Router.select(_:)`, and all four existing path bindings.
-3. Keep all four `NavigationStack` roots structurally stable so switching tabs does not reset local state or navigation history.
-4. Show only the selected stack. Inactive stacks must disable hit testing and accessibility exposure.
-5. Put `MainBottomBar` in one outer `safeAreaInset`; remove all `TabView`, `.tabItem`, `UITabBarAppearance`, and native-tab hiding code together.
-6. Prevent inactive roots from starting duplicate `.task` work or presenting sheets. If existing roots cannot be made inactive without broad changes, stop and retain native `TabView`.
-
-## Test-first gates
-
-- Router unit tests continue proving selection, reselection-to-root, and independent path history.
-- Add one UI test: push Home detail, switch tab, return Home, verify detail remains.
-- Add one UI test: inactive tab controls are neither hittable nor exposed to accessibility queries.
-- Existing custom-bottom-navigation and Home bounds tests pass.
-- Manual screenshots: iPhone 11/iOS 17; current iPhone/iOS 26; iPad portrait and landscape/iPadOS 26; default and accessibility-XXXL Dynamic Type.
-- Verify hero remains visible, card remains centered, content clears floating bar, keyboard dismissal works, and VoiceOver announces one selected tab.
-
-## Decision gate
-
-Adopt custom container only when all gates pass without device-specific offsets or duplicated navigation state. Otherwise retain `TabView` and fix the isolated Home width bug.
+- RED, iPhone 16e / iOS 18.6: custom root/selection UI test failed before implementation because stable root identifiers were absent. The hidden native `TabView` passed `app.tabBars.count == 0`; this check does not detect an accessibility-hidden UIKit tab bar.
+- GREEN focused Router, Explore, Home, Trips, and UI tests: passed on Bitrise RDE (iPhone 16e, iOS 18.6); 296 unit tests passed, 8 UI tests passed, 5 credential/service-dependent UI tests skipped.
+- iPad landscape acceptance passed on Bitrise RDE (iPad Pro 13-inch M5, iPadOS 26.5), including centered Home search card, four visible custom tabs, one selected tab, and no native tab bar.
+- Full Bitrise CI at final commit: pending.
+- Interactive screenshots captured for iPhone SE 3, iPhone 11, iPhone 16e, iPhone 17 Pro Max, and iPad portrait/landscape under `artifacts/screenshots/custom-tab-evidence/`; final recapture pending after last source sync.

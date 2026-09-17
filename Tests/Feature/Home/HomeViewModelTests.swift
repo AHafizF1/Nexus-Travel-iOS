@@ -49,6 +49,16 @@ struct HomeViewModelTests {
         #expect(model.uiState.activeSheet == .originAirport)
     }
 
+    @Test func loadIfNeededKeepsEditedFormStateAfterInitialLoad() async throws {
+        let model = makeModel()
+
+        try await model.loadIfNeeded()
+        await model.onEvent(.tripTypeChanged(.roundTrip))
+        try await model.loadIfNeeded()
+
+        #expect(model.uiState.tripType == .roundTrip)
+    }
+
     @Test func retryReplacesLoadErrorWithContent() async throws {
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
                                   travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
