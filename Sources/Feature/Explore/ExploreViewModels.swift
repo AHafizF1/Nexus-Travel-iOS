@@ -50,8 +50,56 @@ struct ExploreUiState: Equatable, Sendable { var content: ExploreContent?; var l
 }
 enum ExploreDetailState: Equatable, Sendable { case loading; case destination(ExploreDestination, [ExplorePackage]); case package(ExplorePackage, ExploreDestination); case unavailable; case error }
 @MainActor @Observable final class ExploreDetailViewModel {
-    private(set) var state: ExploreDetailState = .loading; private let repository: any ExploreRepository
-    init(repository: any ExploreRepository) { self.repository = repository }
+    private(set) var state: ExploreDetailState = .loading
+    private(set) var isSearching = false
+    private(set) var searchError: String?
+    private let repository: any ExploreRepository
+    private let flightSearchRepository: any FlightSearchRepository
+    private let today: @MainActor () -> LocalDate
+
+    init(
+        repository: any ExploreRepository,
+        flightSearchRepository: any FlightSearchRepository,
+        today: @escaping @MainActor () -> LocalDate
+    ) {
+        self.repository = repository
+        self.flightSearchRepository = flightSearchRepository
+        self.today = today
+    }
+
     func loadDestination(id: String) async throws { let prior = state; do { switch try await repository.destination(id: id) { case let .success(value): state = .destination(value.destination, value.packages); case .unavailable: state = .unavailable; default: state = .error } } catch is CancellationError { state = prior; throw CancellationError() } }
     func loadPackage(id: String) async throws { let prior = state; do { switch try await repository.travelPackage(id: id) { case let .success(value): state = .package(value.package, value.destination); case .unavailable: state = .unavailable; default: state = .error } } catch is CancellationError { state = prior; throw CancellationError() } }
+
+    func searchFlights(to airportCode: String) async -> String? {
+        guard !isSearching else { return nil }
+        guard let departureDate = today().addingDays(7),
+              let returnDate = departureDate.addingDays(7),
+              let request = FlightSearchRequest.make(
+            tripType: .roundTrip,
+            originCode: "ADD",
+            destinationCode: airportCode,
+            departureDate: departureDate,
+            returnDate: returnDate,
+            travelers: TravelerCounts(adults: 1),
+            cabinClass: .economy,
+            cheapestFirst: true
+        ) else { return nil }
+        isSearching = true
+        searchError = nil
+        defer { isSearching = false }
+        do {
+            switch try await flightSearchRepository.createSearch(request: request) {
+            case let .success(searchId): return searchId
+            case .networkUnavailable:
+                searchError = "You're offline. Connect to search flights."
+            case .unknownError:
+                searchError = "Could not search flights. Try again."
+            }
+        } catch is CancellationError {
+            return nil
+        } catch {
+            searchError = "Could not search flights. Try again."
+        }
+        return nil
+    }
 }

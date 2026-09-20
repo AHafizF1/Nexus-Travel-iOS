@@ -3,6 +3,30 @@ import Testing
 
 @MainActor
 struct ExploreViewModelReliabilityTests {
+    @Test func destinationSearchCreatesDisplayedRoundTripAndReturnsSearchID() async throws {
+        let flights = RecordingFlightSearchRepository(result: .success(searchId: "search-42"))
+        let today = try #require(LocalDate(iso8601: "2026-09-20"))
+        let viewModel = ExploreDetailViewModel(
+            repository: ImmediateExploreRepository(),
+            flightSearchRepository: flights,
+            today: { today }
+        )
+
+        let searchID = await viewModel.searchFlights(to: "DXB")
+        let request = await flights.lastRequest
+
+        #expect(searchID == "search-42")
+        #expect(request?.tripType == .roundTrip)
+        #expect(request?.originCode == "ADD")
+        #expect(request?.destinationCode == "DXB")
+        #expect(request?.departureDate == today.addingDays(7))
+        #expect(request?.returnDate == today.addingDays(14))
+        #expect(request?.travelers == TravelerCounts(adults: 1))
+        #expect(request?.cabinClass == .economy)
+        #expect(viewModel.searchError == nil)
+        #expect(!viewModel.isSearching)
+    }
+
     @Test func loadIfNeededKeepsContentWithoutDuplicateRequest() async throws {
         let repository = ImmediateExploreRepository()
         let viewModel = ExploreViewModel(repository: repository)
@@ -31,6 +55,18 @@ struct ExploreViewModelReliabilityTests {
 
         #expect(viewModel.state.content == content)
         #expect(!viewModel.state.loading)
+    }
+}
+
+private actor RecordingFlightSearchRepository: FlightSearchRepository {
+    let result: FlightSearchResult
+    private(set) var lastRequest: FlightSearchRequest?
+
+    init(result: FlightSearchResult) { self.result = result }
+
+    func createSearch(request: FlightSearchRequest) async throws -> FlightSearchResult {
+        lastRequest = request
+        return result
     }
 }
 

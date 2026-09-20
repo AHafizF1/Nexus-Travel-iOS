@@ -6,6 +6,7 @@ struct AppDependencies {
     let sessionStore: any AuthSessionStore
     let airportCache: AirportCache
     let searchResultsCache: SearchResultsCache
+    let flightSearchRepository: RemoteFlightSearchRepository
     let searchResultsRepository: RemoteSearchResultsRepository
     let flightDetailsRepository: RemoteFlightDetailsRepository
     let passengerDetailsRepository: RemotePassengerDetailsRepository
@@ -50,11 +51,16 @@ struct AppDependencies {
             cache: TripCache(), ticketStore: TicketPdfStore()
         )
         let sharedExploreRepository = RemoteExploreRepository(transport: sharedTransport, cache: ExploreCache())
+        let sharedFlightSearchRepository = RemoteFlightSearchRepository(
+            transport: sharedTransport,
+            cache: sharedSearchResultsCache
+        )
         transport = sharedTransport
         self.sessionStore = sharedSessionStore
         airportCache = sharedAirportCache
         airportRepository = sharedAirportRepository
         searchResultsCache = sharedSearchResultsCache
+        flightSearchRepository = sharedFlightSearchRepository
         searchResultsRepository = RemoteSearchResultsRepository(cache: sharedSearchResultsCache)
         flightDetailsRepository = RemoteFlightDetailsRepository(transport: sharedTransport)
         passengerDetailsRepository = RemotePassengerDetailsRepository(
@@ -88,7 +94,7 @@ struct AppDependencies {
                 airportRepository: sharedAirportRepository
             ),
             airportRepository: sharedAirportRepository,
-            flightSearchRepository: RemoteFlightSearchRepository(transport: sharedTransport, cache: sharedSearchResultsCache),
+            flightSearchRepository: sharedFlightSearchRepository,
             authRepository: sharedAuthRepository,
             today: Self.currentLocalDate
         )

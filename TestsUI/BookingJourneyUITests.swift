@@ -98,6 +98,95 @@ final class BookingJourneyUITests: XCTestCase {
     }
 
     @MainActor
+    func testHomeOmitsRecentSearchesAndShowsFeaturedCards() {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Search Flights"].waitForExistence(timeout: 30))
+        app.scrollViews["root-home"].swipeUp()
+
+        let destination = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "home-featured-destination-")
+        ).firstMatch
+        XCTAssertTrue(destination.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["home-featured-packages"].exists)
+        XCTAssertFalse(app.buttons["View all"].exists)
+        XCTAssertEqual(
+            app.descendants(matching: .any).matching(identifier: "home-section-recent-searches").count,
+            0
+        )
+    }
+
+    @MainActor
+    func testFeaturedDestinationOpensDestinationDetail() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Search Flights"].waitForExistence(timeout: 30))
+        app.scrollViews["root-home"].swipeUp()
+        let destination = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "home-featured-destination-")
+        ).firstMatch
+        guard destination.waitForExistence(timeout: 10) else {
+            throw XCTSkip("Live destination data unavailable.")
+        }
+
+        destination.tap()
+
+        let detail = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "destination-detail-")
+        ).firstMatch
+        XCTAssertTrue(detail.waitForExistence(timeout: 15))
+        XCTAssertFalse(app.buttons["main-tab-home"].exists)
+    }
+
+    @MainActor
+    func testDestinationDetailShowsAndroidFlightPlanWithoutShareOrSave() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["Search Flights"].waitForExistence(timeout: 30))
+        app.scrollViews["root-home"].swipeUp()
+        let destination = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "home-featured-destination-")
+        ).firstMatch
+        guard destination.waitForExistence(timeout: 10) else {
+            throw XCTSkip("Live destination data unavailable.")
+        }
+        destination.tap()
+
+        XCTAssertTrue(app.staticTexts["From Addis Ababa • Flight deal"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["This week"].exists)
+        XCTAssertTrue(app.staticTexts["1 passenger"].exists)
+        XCTAssertTrue(app.staticTexts["Round trip"].exists)
+        XCTAssertTrue(app.staticTexts["Select dates"].exists)
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Share")).firstMatch.exists)
+        XCTAssertFalse(app.buttons["Save"].exists)
+        XCTAssertTrue(app.buttons["Search flights"].exists)
+    }
+
+    @MainActor
+    func testHomeDestinationSearchOpensRealSearchResults() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["Search Flights"].waitForExistence(timeout: 30))
+        app.scrollViews["root-home"].swipeUp()
+        let destination = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "home-featured-destination-")
+        ).firstMatch
+        guard destination.waitForExistence(timeout: 10) else {
+            throw XCTSkip("Live destination data unavailable.")
+        }
+        destination.tap()
+
+        let search = app.buttons["Search flights"]
+        XCTAssertTrue(search.waitForExistence(timeout: 15))
+        search.tap()
+
+        XCTAssertTrue(app.staticTexts["Search Results"].waitForExistence(timeout: 30))
+        XCTAssertFalse(app.buttons["main-tab-home"].exists)
+    }
+
+    @MainActor
     func testHomeSearchFieldsStayInsideScreenBounds() {
         let app = XCUIApplication()
         app.launch()

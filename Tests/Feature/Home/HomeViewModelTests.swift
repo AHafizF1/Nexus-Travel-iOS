@@ -15,7 +15,7 @@ struct HomeViewModelTests {
 
     @Test func loadSuccessUsesGreetingDatesAndContent() async throws {
         let content = HomeContent(origin: add, destination: dxb, departureDate: "ignored", returnDate: "ignored",
-                                  travelersLabel: "ignored", cabinClass: "ignored", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "ignored", cabinClass: "ignored", trendingEscapes: [])
         let model = makeModel(homeResult: .success(content), displayName: "  Afiz Mohamed  ")
 
         try await model.load()
@@ -61,7 +61,7 @@ struct HomeViewModelTests {
 
     @Test func retryReplacesLoadErrorWithContent() async throws {
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
-                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [])
         let repository = RetryHomeRepository(results: [.unknownError, .success(content)])
         let model = HomeViewModel(
             homeRepository: repository,
@@ -123,7 +123,7 @@ struct HomeViewModelTests {
     @Test func staleAirportResponseCannotOverwriteLatestQuery() async throws {
         let repository = ControllableAirportRepository(popular: [add, dxb])
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
-                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [])
         let model = HomeViewModel(
             homeRepository: StubHomeRepository(result: .success(content)),
             airportRepository: repository,
@@ -143,15 +143,30 @@ struct HomeViewModelTests {
         #expect(model.uiState.airports == [dxb])
     }
 
-    @Test func packagesAndSuccessfulSearchEmitTypedNavigationOnce() async throws {
+    @Test func successfulSearchEmitsTypedNavigationOnce() async throws {
         let model = makeModel(searchResult: .success(searchId: "search-42"))
         try await model.load()
-        await model.onEvent(.packageClicked)
-        #expect(model.consumeNavigationEvent() == .toPackages)
-        #expect(model.consumeNavigationEvent() == nil)
         await model.onEvent(.searchClicked)
         #expect(model.consumeNavigationEvent() == .toSearchResults(searchId: "search-42"))
+        #expect(model.consumeNavigationEvent() == nil)
         #expect(!model.uiState.isSearching)
+    }
+
+    @Test func featuredDestinationOpensItsDetailWithoutStartingFlightSearch() async throws {
+        let searchRepository = RequestSpySearchRepository()
+        let model = makeModel(searchRepository: searchRepository)
+        let escape = TrendingEscape(
+            id: "destination-dubai",
+            airport: dxb,
+            tags: ["City highlights"],
+            startingPrice: Money(amount: 0, currency: "", formatted: ""),
+            imageName: "https://example.com/dubai.jpg"
+        )
+
+        await model.onEvent(.trendingEscapeClicked(escape))
+
+        #expect(model.consumeNavigationEvent() == .toDestinationDetail(destinationId: "destination-dubai"))
+        #expect(await searchRepository.lastRequest == nil)
     }
 
     @Test func oneWaySearchBuildsExactRequestShape() async throws {
@@ -242,7 +257,7 @@ struct HomeViewModelTests {
     @Test func cancellingAirportSearchCancelsRepositoryWorkAndPreventsMutation() async throws {
         let repository = CancellationAwareAirportRepository(popular: [add, dxb])
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
-                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [])
         let model = HomeViewModel(
             homeRepository: StubHomeRepository(result: .success(content)),
             airportRepository: repository,
@@ -267,7 +282,7 @@ struct HomeViewModelTests {
         displayName: String? = nil
     ) -> HomeViewModel {
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
-                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [])
         return HomeViewModel(
             homeRepository: StubHomeRepository(result: homeResult ?? .success(content)),
             airportRepository: StubAirportRepository(airports: [add, dxb]),
@@ -279,7 +294,7 @@ struct HomeViewModelTests {
 
     private func makeModel(searchRepository: any FlightSearchRepository) -> HomeViewModel {
         let content = HomeContent(origin: add, destination: dxb, departureDate: "", returnDate: "",
-                                  travelersLabel: "", cabinClass: "", trendingEscapes: [], recentSearches: [])
+                                  travelersLabel: "", cabinClass: "", trendingEscapes: [])
         return HomeViewModel(
             homeRepository: StubHomeRepository(result: .success(content)),
             airportRepository: StubAirportRepository(airports: [add, dxb]),

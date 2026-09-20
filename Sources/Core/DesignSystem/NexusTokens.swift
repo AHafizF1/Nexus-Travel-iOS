@@ -200,6 +200,11 @@ enum NexusLayout {
     static let homeContentMaxWidthWide: CGFloat = 720
     static let homeWideLayoutMinimumWidth: CGFloat = 700
     static let formMaxWidth: CGFloat = 360
+    static let exploreCardMinWidth: CGFloat = 144
+    static let exploreCardMaxWidth: CGFloat = 188
+    static let exploreDetailHeroCompactHeight: CGFloat = 240
+    static let exploreDetailHeroRegularHeight: CGFloat = 280
+    static let exploreDetailHeroSpaciousHeight: CGFloat = 320
 }
 
 /// iOS shadow values approximating Android surface elevation.

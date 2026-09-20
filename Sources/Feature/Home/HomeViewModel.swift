@@ -88,7 +88,7 @@ final class HomeViewModel {
             uiState = HomeUiState(
                 isLoading: false, userName: name, origin: content.origin, destination: content.destination,
                 departureDate: departure, returnDate: departure?.addingDays(7), trendingEscapes: content.trendingEscapes,
-                recentSearches: content.recentSearches, airports: airports, activeSheet: sheet, selectedService: service,
+                airports: airports, activeSheet: sheet, selectedService: service,
                 loadPhase: content.trendingEscapes.isEmpty ? .empty : .content
             )
         case .networkUnavailable:
@@ -122,7 +122,6 @@ final class HomeViewModel {
             uiState.selectedService = .flight
             uiState.activeSheet = nil
         case .hotelClicked: open(.hotelComingSoon)
-        case .packageClicked: pendingNavigationEvents.append(.toPackages)
         case let .tripTypeChanged(type): uiState = uiState.settingTripType(type)
         case .originClicked: await openAirportSheet(.originAirport)
         case .destinationClicked: await openAirportSheet(.destinationAirport)
@@ -161,15 +160,7 @@ final class HomeViewModel {
             uiState.cabinClass = cabin
             uiState.activeSheet = nil
         case let .trendingEscapeClicked(escape):
-            uiState.destination = escape.airport
-            clearFeedback()
-            await searchFlights()
-        case let .recentSearchClicked(search):
-            let lookup = Dictionary(uniqueKeysWithValues: uiState.airports.map { ($0.code, $0) })
-            uiState.origin = lookup[search.originCode] ?? uiState.origin
-            uiState.destination = lookup[search.destinationCode] ?? uiState.destination
-            clearFeedback()
-            await searchFlights()
+            pendingNavigationEvents.append(.toDestinationDetail(destinationId: escape.id))
         case .searchClicked: await searchFlights()
         case .dismissSheet:
             uiState.activeSheet = nil

@@ -9,6 +9,7 @@ struct AppShell: View {
     let homeViewModel: HomeViewModel
     let exploreViewModel: ExploreViewModel
     let tripsViewModel: TripsViewModel
+    let flightSearchRepository: any FlightSearchRepository
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
     let passengerDetailsRepository: any PassengerDetailsRepository
@@ -106,6 +107,7 @@ struct AppShell: View {
         NavigationStack(path: path) {
             root().appDestinations(
                 router: router,
+                flightSearchRepository: flightSearchRepository,
                 searchResultsRepository: searchResultsRepository,
                 flightDetailsRepository: flightDetailsRepository,
                 passengerDetailsRepository: passengerDetailsRepository,
@@ -120,7 +122,6 @@ struct AppShell: View {
                 profileViewModel: profileViewModel,
                 preferencesViewModel: preferencesViewModel,
                 authRepository: authRepository,
-                homeViewModel: homeViewModel,
                 bookingFlowState: bookingFlowState
             )
         }
@@ -218,6 +219,7 @@ private struct AppTabRoot: View {
 
 private struct AppDestinations: ViewModifier {
     let router: Router
+    let flightSearchRepository: any FlightSearchRepository
     let searchResultsRepository: any SearchResultsRepository
     let flightDetailsRepository: any FlightDetailsRepository
     let passengerDetailsRepository: any PassengerDetailsRepository
@@ -232,7 +234,6 @@ private struct AppDestinations: ViewModifier {
     let profileViewModel: ProfileViewModel
     let preferencesViewModel: PreferencesViewModel
     let authRepository: any AuthRepository
-    let homeViewModel: HomeViewModel
     let bookingFlowState: BookingFlowState
 
     func body(content: Content) -> some View {
@@ -306,9 +307,25 @@ private struct AppDestinations: ViewModifier {
                     onUploadPaymentProof: { router.push(.paymentProof(.init(bookingId: $0))) }
                 )
             case let .destinationDetail(route):
-                ExploreDetailScreenRoute(viewModel: ExploreDetailViewModel(repository: exploreRepository), mode: .destination(route.destinationId), onSearchFlights: showOnHome)
+                ExploreDetailScreenRoute(
+                    viewModel: ExploreDetailViewModel(
+                        repository: exploreRepository,
+                        flightSearchRepository: flightSearchRepository,
+                        today: Self.currentLocalDate
+                    ),
+                    mode: .destination(route.destinationId),
+                    onSearchResults: { router.push(.searchResults(.init(searchId: $0))) }
+                )
             case let .packageDetail(route):
-                ExploreDetailScreenRoute(viewModel: ExploreDetailViewModel(repository: exploreRepository), mode: .package(route.packageId), onSearchFlights: showOnHome)
+                ExploreDetailScreenRoute(
+                    viewModel: ExploreDetailViewModel(
+                        repository: exploreRepository,
+                        flightSearchRepository: flightSearchRepository,
+                        today: Self.currentLocalDate
+                    ),
+                    mode: .package(route.packageId),
+                    onSearchResults: { router.push(.searchResults(.init(searchId: $0))) }
+                )
             case .editProfile:
                 EditProfileScreen(viewModel: EditProfileViewModel(repository: profileRepository))
             case .savedTravelers:
@@ -335,11 +352,6 @@ private struct AppDestinations: ViewModifier {
                 AppDestination(route: route)
             }
         }
-    }
-
-    private func showOnHome(_ airportCode: String) {
-        router.select(.home)
-        Task { try? await homeViewModel.prefillDestination(airportCode: airportCode) }
     }
 
     private static func currentLocalDate() -> LocalDate {
@@ -397,6 +409,7 @@ private struct AppDestination: View {
 private extension View {
     func appDestinations(
         router: Router,
+        flightSearchRepository: any FlightSearchRepository,
         searchResultsRepository: any SearchResultsRepository,
         flightDetailsRepository: any FlightDetailsRepository,
         passengerDetailsRepository: any PassengerDetailsRepository,
@@ -411,11 +424,11 @@ private extension View {
         profileViewModel: ProfileViewModel,
         preferencesViewModel: PreferencesViewModel,
         authRepository: any AuthRepository,
-        homeViewModel: HomeViewModel,
         bookingFlowState: BookingFlowState
     ) -> some View {
         modifier(AppDestinations(
             router: router,
+            flightSearchRepository: flightSearchRepository,
             searchResultsRepository: searchResultsRepository,
             flightDetailsRepository: flightDetailsRepository,
             passengerDetailsRepository: passengerDetailsRepository,
@@ -430,7 +443,6 @@ private extension View {
             profileViewModel: profileViewModel,
             preferencesViewModel: preferencesViewModel,
             authRepository: authRepository,
-            homeViewModel: homeViewModel,
             bookingFlowState: bookingFlowState
         ))
     }

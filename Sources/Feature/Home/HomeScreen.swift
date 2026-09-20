@@ -50,7 +50,6 @@ private enum HomeScrollTarget {
     static let hero = "home.hero"
     static let searchPanel = "home.search-panel"
     static let services = "home.services"
-    static let recentSearches = "home.recent-searches"
 }
 
 struct HomeRoute: View {
@@ -74,7 +73,6 @@ struct HomeRoute: View {
             today: viewModel.currentDate,
             rootScrollTarget: $rootScrollTarget,
             onEvent: send,
-            onExplore: { router.select(.explore) },
             onRetry: retry
         )
             .task { try? await viewModel.loadIfNeeded() }
@@ -99,7 +97,7 @@ struct HomeRoute: View {
         if event.usesAirportTask {
             airportQueryTask?.cancel()
             airportQueryTask = Task { await perform(event) }
-        } else if event == .searchClicked || event.isSearchPrefill {
+        } else if event == .searchClicked {
             guard searchTask == nil else { return }
             searchTask = Task {
                 await perform(event)
@@ -119,8 +117,8 @@ struct HomeRoute: View {
         while let navigation = viewModel.consumeNavigationEvent() {
             switch navigation {
             case let .toSearchResults(searchId): router.push(.searchResults(SearchResultsRoute(searchId: searchId)))
-            case .toPackages:
-                router.showExplore(filter: .packages)
+            case let .toDestinationDetail(destinationId):
+                router.push(.destinationDetail(.init(destinationId: destinationId)))
             }
         }
     }
@@ -131,7 +129,6 @@ struct HomeScreen: View {
     let today: LocalDate
     @Binding var rootScrollTarget: String?
     let onEvent: (HomeUiEvent) -> Void
-    let onExplore: () -> Void
     let onRetry: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -161,10 +158,9 @@ struct HomeScreen: View {
                             .padding(.top, metrics.launcherToSearchGap)
                             .id(HomeScrollTarget.services)
                             .accessibilityIdentifier("home-section-services")
-                        if !state.recentSearches.isEmpty { recentSearches.padding(.top, NexusSpacing.space24) }
                     }
                     .padding(.horizontal, screenMargin)
-                    .padding(.bottom, NexusSpacing.space32)
+                    .padding(.bottom, featuredCardHeight)
                     .frame(width: contentWidth)
                     .frame(maxWidth: .infinity)
                     .scrollTargetLayout()
@@ -398,48 +394,67 @@ struct HomeScreen: View {
 
     private var featuredDestinations: some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-            HStack {
-                Text("Featured destinations")
-                    .nexusTextStyle(NexusText.styles.screenTitle)
-                    .accessibilityIdentifier("home-section-services")
-                Spacer()
-                Button("View all", action: onExplore)
-            }
+            Text("Featured destinations")
+                .nexusTextStyle(NexusText.styles.screenTitle)
+                .accessibilityIdentifier("home-section-services")
             ScrollView(.horizontal) {
                 HStack(spacing: NexusSpacing.space16) {
-                    Button { onEvent(.packageClicked) } label: {
-                        VStack(alignment: .leading, spacing: NexusSpacing.space8) {
-                            NexusIcon(name: .baggage, size: NexusIconSize.lg)
-                                .frame(maxWidth: .infinity, minHeight: NexusLayout.buttonHeight * 2)
-                                .background(NexusSemanticColors.brandSoft)
-                            Text("Travel packages").nexusTextStyle(NexusText.styles.listTitle)
-                            Text("Flights, stays & experiences").nexusTextStyle(NexusText.styles.caption)
-                                .foregroundStyle(NexusSemanticColors.textSecondary)
-                        }.frame(width: NexusLayout.contentMaxWidth / 3)
-                    }.buttonStyle(.plain)
                     ForEach(state.trendingEscapes, id: \.id) { escape in
                         Button { onEvent(.trendingEscapeClicked(escape)) } label: {
-                            VStack(alignment: .leading, spacing: NexusSpacing.space8) {
-                                AsyncImage(url: URL(string: escape.imageName)) { image in image.resizable().scaledToFill() } placeholder: { NexusSemanticColors.surfaceMuted }
-                                    .frame(width: NexusLayout.contentMaxWidth / 3, height: NexusLayout.buttonHeight * 2).clipped()
-                                    .accessibilityLabel(escape.airport.displayName)
-                                Text(escape.airport.displayName).nexusTextStyle(NexusText.styles.listTitle)
-                                Text(escape.tags.joined(separator: " · ")).nexusTextStyle(NexusText.styles.caption).foregroundStyle(NexusSemanticColors.textSecondary)
-                            }.frame(width: NexusLayout.contentMaxWidth / 3)
-                        }.buttonStyle(.plain)
+                            Color.clear
+                            .frame(width: featuredCardWidth, height: featuredCardHeight)
+                            .background {
+                                AsyncImage(url: URL(string: escape.imageName)) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    NexusSemanticColors.surfaceMuted
+                                }
+                                .frame(width: featuredCardWidth, height: featuredCardHeight)
+                                .clipped()
+                            }
+                            .overlay(alignment: .bottomLeading) {
+                                featuredCardCaption(
+                                    title: escape.airport.city,
+                                    subtitle: escape.airport.country
+                                )
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl))
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: featuredCardWidth, height: featuredCardHeight)
+                        .contentShape(RoundedRectangle(cornerRadius: NexusRadius.xl))
+                        .accessibilityIdentifier("home-featured-destination-\(escape.id)")
+                        .accessibilityLabel("\(escape.airport.city), \(escape.airport.country)")
                     }
                 }
             }.scrollIndicators(.hidden)
         }
     }
 
-    private var recentSearches: some View {
-        VStack(alignment: .leading, spacing: NexusSpacing.space8) {
-            Text("Recent Searches").nexusTextStyle(NexusText.styles.screenTitle)
-            ScrollView(.horizontal) { HStack { ForEach(state.recentSearches, id: \.id) { search in Button("\(search.originCode) → \(search.destinationCode)\n\(search.dateRange)") { onEvent(.recentSearchClicked(search)) }.buttonStyle(.bordered) } } }.scrollIndicators(.hidden)
+    private var featuredCardWidth: CGFloat { NexusLayout.contentMaxWidth / 3 }
+
+    private var featuredCardHeight: CGFloat { NexusLayout.buttonHeight * 3 }
+
+    private func featuredCardCaption(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: NexusSpacing.space2) {
+            Text(title)
+                .nexusTextStyle(NexusText.styles.listTitle)
+                .lineLimit(1)
+            Text(subtitle)
+                .nexusTextStyle(NexusText.styles.caption)
+                .lineLimit(1)
         }
-        .id(HomeScrollTarget.recentSearches)
-        .accessibilityIdentifier("home-section-recent-searches")
+        .foregroundStyle(NexusColors.white)
+        .padding(.top, NexusSpacing.space32)
+        .padding(NexusSpacing.space12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [.clear, NexusSemanticColors.overlayScrim],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
     }
 
     private func message(_ text: String, error: Bool) -> some View {
@@ -647,13 +662,6 @@ private extension HomeValidationError {
 }
 
 private extension HomeUiEvent {
-    var isSearchPrefill: Bool {
-        switch self {
-        case .trendingEscapeClicked, .recentSearchClicked: true
-        default: false
-        }
-    }
-
     var usesAirportTask: Bool {
         switch self {
         case .airportQueryChanged, .originClicked, .destinationClicked,
