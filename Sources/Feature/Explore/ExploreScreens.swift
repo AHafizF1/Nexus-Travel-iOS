@@ -323,8 +323,18 @@ private struct ExploreRemoteImage: View {
 
 struct ExploreDetailScreenRoute: View {
     enum Mode { case destination(String), package(String) }
+    private enum DetailSheet: String, Identifiable {
+        case dates, travelers
+        var id: String { rawValue }
+    }
     @State private var viewModel: ExploreDetailViewModel
     @State private var searchTask: Task<Void, Never>?
+    @State private var departureDate: LocalDate?
+    @State private var returnDate: LocalDate?
+    @State private var adults = 1
+    @State private var draftAdults = 1
+    @State private var activeSheet: DetailSheet?
+    @State private var editingReturnDate = false
     let mode: Mode
     let onSearchResults: (String) -> Void
 
@@ -345,6 +355,12 @@ struct ExploreDetailScreenRoute: View {
                     relatedPackages: packages,
                     isSearching: viewModel.isSearching,
                     searchError: viewModel.searchError,
+                    departureDate: departureDate,
+                    returnDate: returnDate,
+                    adults: $adults,
+                    onChooseTravelers: { draftAdults = adults; activeSheet = .travelers },
+                    onChooseDeparture: { editingReturnDate = false; activeSheet = .dates },
+                    onChooseReturn: { editingReturnDate = departureDate != nil; activeSheet = .dates },
                     onSearchFlights: searchFlights
                 )
             case let .package(package, destination):
@@ -354,6 +370,12 @@ struct ExploreDetailScreenRoute: View {
                     relatedPackages: [package],
                     isSearching: viewModel.isSearching,
                     searchError: viewModel.searchError,
+                    departureDate: departureDate,
+                    returnDate: returnDate,
+                    adults: $adults,
+                    onChooseTravelers: { draftAdults = adults; activeSheet = .travelers },
+                    onChooseDeparture: { editingReturnDate = false; activeSheet = .dates },
+                    onChooseReturn: { editingReturnDate = departureDate != nil; activeSheet = .dates },
                     onSearchFlights: searchFlights
                 )
             case .unavailable: ContentUnavailableView("Destination unavailable", systemImage: NexusIconName.map.systemName)
@@ -367,12 +389,49 @@ struct ExploreDetailScreenRoute: View {
             }
         }
         .onDisappear { searchTask?.cancel() }
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .dates:
+                DateSelectorSheet(
+                    title: editingReturnDate ? "Select return" : "Select departure",
+                    selected: editingReturnDate ? returnDate : departureDate,
+                    minimum: editingReturnDate ? departureDate?.addingDays(1) : LocalDate(date: Date())
+                ) { selected in
+                    if !editingReturnDate {
+                        departureDate = selected
+                        if let returnDate, returnDate <= selected { self.returnDate = nil }
+                        editingReturnDate = true
+                    } else {
+                        returnDate = selected
+                        activeSheet = nil
+                    }
+                }
+                .id(editingReturnDate)
+                .presentationDetents([.medium, .large])
+            case .travelers:
+                VStack(alignment: .leading, spacing: NexusSpacing.space24) {
+                    Text("Travelers").nexusTextStyle(NexusText.styles.sectionTitle)
+                    Stepper("Adults: \(draftAdults)", value: $draftAdults, in: 1...TravelerCounts.maxTravelers)
+                        .nexusTextStyle(NexusText.styles.listTitle)
+                        .accessibilityIdentifier("destination-adults")
+                    NexusPrimaryButton("Apply", fillsWidth: true) {
+                        adults = draftAdults
+                        activeSheet = nil
+                    }
+                }
+                .padding(NexusSpacing.space24)
+                .presentationDetents([.medium])
+            }
+        }
     }
 
     private func searchFlights(_ airportCode: String) {
-        guard searchTask == nil else { return }
+        guard searchTask == nil, let departureDate, let returnDate else { return }
         searchTask = Task {
-            if let searchID = await viewModel.searchFlights(to: airportCode) {
+            if let searchID = await viewModel.searchFlights(
+                to: airportCode, departureDate: departureDate, returnDate: returnDate,
+                travelers: TravelerCounts(adults: adults)
+            ) {
                 onSearchResults(searchID)
             }
             searchTask = nil
@@ -386,7 +445,14 @@ private struct ExploreDetailScreen: View {
     let relatedPackages: [ExplorePackage]
     let isSearching: Bool
     let searchError: String?
+    let departureDate: LocalDate?
+    let returnDate: LocalDate?
+    @Binding var adults: Int
+    let onChooseTravelers: () -> Void
+    let onChooseDeparture: () -> Void
+    let onChooseReturn: () -> Void
     let onSearchFlights: (String) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         GeometryReader { geometry in
@@ -436,7 +502,6 @@ private struct ExploreDetailScreen: View {
     private var detailPanel: some View {
         VStack(alignment: .leading, spacing: NexusSpacing.space20) {
             detailHeader
-            detailChips
             flightCard
             VStack(alignment: .leading, spacing: NexusSpacing.space8) {
                 Text("About \(destination.title)").nexusTextStyle(NexusText.styles.sectionTitle).accessibilityAddTraits(.isHeader)
@@ -481,61 +546,44 @@ private struct ExploreDetailScreen: View {
                 .nexusTextStyle(NexusText.styles.bodyLarge)
                 .foregroundStyle(NexusSemanticColors.textSecondary)
                 .lineLimit(1)
-            Text("From Addis Ababa • Flight deal")
+            Text("From Addis Ababa • Round trip • Economy")
                 .nexusTextStyle(NexusText.styles.label)
                 .foregroundStyle(NexusSemanticColors.brandPrimary)
-                .lineLimit(1)
         }
-    }
-
-    @ViewBuilder private var detailChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: NexusSpacing.space8) {
-                detailChip("This week", icon: .calendar)
-                detailChip("1 passenger", icon: .profile)
-                detailChip(destination.airportCode == nil ? "Flight deal" : "Direct / 1 stop", icon: .arrowsExchange)
-            }
-        }
-        .scrollIndicators(.hidden)
-    }
-
-    private func detailChip(_ title: String, icon: NexusIconName) -> some View {
-        Label(title, systemImage: icon.systemName)
-            .nexusTextStyle(NexusText.styles.caption)
-            .foregroundStyle(NexusSemanticColors.textPrimary)
-            .padding(.horizontal, NexusSpacing.space12)
-            .frame(minHeight: NexusLayout.touchMin)
-            .background(NexusSemanticColors.surfaceBase, in: Capsule())
-            .overlay { Capsule().stroke(NexusSemanticColors.borderSubtle, lineWidth: NexusBorder.hairline) }
     }
 
     private var flightCard: some View {
-        VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-            flightRow(.flightDeparture, "Addis Ababa → \(destination.title)")
-            flightRow(.arrowsExchange, "Round trip")
-            flightRow(.calendar, "Select dates")
-            flightRow(.profile, "1 passenger • Economy")
+        VStack(alignment: .leading, spacing: NexusSpacing.space16) {
+            let dateLayout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: NexusSpacing.space12))
+                : AnyLayout(HStackLayout(spacing: NexusSpacing.space12))
+            dateLayout {
+                NexusSearchField(label: "Departure", value: dateValue(departureDate), icon: .calendar, action: onChooseDeparture)
+                    .accessibilityIdentifier("destination-depart-date")
+                Divider().overlay(NexusSemanticColors.borderDefault)
+                NexusSearchField(label: "Return", value: dateValue(returnDate), icon: .calendar, action: onChooseReturn)
+                    .accessibilityIdentifier("destination-return-date")
+            }
+            Divider().overlay(NexusSemanticColors.borderDefault)
+            NexusSearchField(label: "Travelers", value: "\(adults) \(adults == 1 ? "Adult" : "Adults")", icon: .profile, showsChevron: true) {
+                onChooseTravelers()
+            }
+            .accessibilityIdentifier("destination-travelers")
         }
         .padding(NexusSpacing.space16)
-        .background(NexusSemanticColors.surfaceBase)
-        .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xl))
-        .overlay { RoundedRectangle(cornerRadius: NexusRadius.xl).stroke(NexusSemanticColors.borderSubtle, lineWidth: NexusBorder.hairline) }
-        .shadow(color: NexusSemanticColors.textPrimary.opacity(0.1), radius: NexusSpacing.space8, y: NexusSpacing.space4)
+        .background(NexusSemanticColors.surfaceElevated)
+        .clipShape(RoundedRectangle(cornerRadius: NexusRadius.xxxl))
+        .shadow(color: NexusSemanticColors.textPrimary.opacity(0.14), radius: NexusSpacing.space8, y: NexusSpacing.space4)
     }
 
-    private func flightRow(_ icon: NexusIconName, _ title: String) -> some View {
-        HStack(spacing: NexusSpacing.space12) {
-            NexusIcon(name: icon)
-                .foregroundStyle(NexusSemanticColors.brandPrimary)
-                .frame(width: NexusIconSize.md, height: NexusIconSize.md)
-            Text(title)
-                .nexusTextStyle(NexusText.styles.listTitle)
-                .foregroundStyle(NexusSemanticColors.textHeading)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-            Spacer(minLength: 0)
-        }
-        .frame(minHeight: NexusLayout.touchMin)
+    private func dateValue(_ date: LocalDate?) -> String {
+        date?.foundationDate.formatted(.dateTime.month(.abbreviated).day().year()) ?? "Select date"
+    }
+
+    private var dateSummary: String {
+        guard let departureDate, let returnDate else { return "Select travel dates" }
+        let format = Date.FormatStyle().month(.abbreviated).day()
+        return "\(departureDate.foundationDate.formatted(format)) – \(returnDate.foundationDate.formatted(format))"
     }
 
     private var stickyAction: some View {
@@ -547,14 +595,25 @@ private struct ExploreDetailScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityIdentifier("destination-search-error")
             }
-            NexusPrimaryButton(
-                "Search flights",
-                isEnabled: destination.airportCode != nil,
-                isLoading: isSearching,
-                loadingTitle: "Searching...",
-                fillsWidth: true,
-                action: searchFlights
-            )
+            HStack(spacing: NexusSpacing.space12) {
+                VStack(alignment: .leading, spacing: NexusSpacing.space2) {
+                    Text(departureDate == nil || returnDate == nil ? "Flights to \(destination.title)" : dateSummary)
+                        .nexusTextStyle(NexusText.styles.label)
+                    Text(departureDate == nil || returnDate == nil ? "Select travel dates" : "\(adults) \(adults == 1 ? "adult" : "adults") · Economy")
+                        .nexusTextStyle(NexusText.styles.caption)
+                        .foregroundStyle(NexusSemanticColors.textSecondary)
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                Spacer(minLength: 0)
+                NexusPrimaryButton(
+                    departureDate == nil || returnDate == nil ? "Choose dates" : "Search flights",
+                    isEnabled: destination.airportCode != nil,
+                    isLoading: isSearching,
+                    loadingTitle: "Searching...",
+                    action: departureDate == nil || returnDate == nil ? onChooseDeparture : searchFlights
+                )
+            }
         }
         .padding(.horizontal, NexusLayout.screenMargin)
         .padding(.vertical, NexusSpacing.space12)

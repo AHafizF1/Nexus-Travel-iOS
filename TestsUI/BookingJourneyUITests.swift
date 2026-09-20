@@ -154,14 +154,17 @@ final class BookingJourneyUITests: XCTestCase {
         }
         destination.tap()
 
-        XCTAssertTrue(app.staticTexts["From Addis Ababa • Flight deal"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["This week"].exists)
-        XCTAssertTrue(app.staticTexts["1 passenger"].exists)
-        XCTAssertTrue(app.staticTexts["Round trip"].exists)
-        XCTAssertTrue(app.staticTexts["Select dates"].exists)
+        XCTAssertTrue(app.staticTexts["From Addis Ababa • Round trip • Economy"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Select travel dates"].exists)
+        XCTAssertTrue(app.buttons["destination-depart-date"].exists)
+        XCTAssertTrue(app.buttons["destination-return-date"].exists)
+        XCTAssertTrue(app.buttons["destination-travelers"].exists)
         XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Share")).firstMatch.exists)
         XCTAssertFalse(app.buttons["Save"].exists)
-        XCTAssertTrue(app.buttons["Search flights"].exists)
+        XCTAssertTrue(app.buttons["Choose dates"].exists)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     @MainActor
@@ -178,11 +181,27 @@ final class BookingJourneyUITests: XCTestCase {
         }
         destination.tap()
 
+        app.buttons["destination-travelers"].tap()
+        let adults = app.steppers["destination-adults"]
+        XCTAssertTrue(adults.waitForExistence(timeout: 15))
+        adults.buttons["destination-adults-Increment"].tap()
+        adults.buttons["destination-adults-Increment"].tap()
+        app.buttons["Apply"].tap()
+        XCTAssertEqual(app.buttons["destination-travelers"].label, "Travelers, 3 Adults")
+        app.buttons["Choose dates"].tap()
+        XCTAssertTrue(app.staticTexts["Select departure"].waitForExistence(timeout: 5))
+        app.buttons["Select date"].tap()
+        XCTAssertTrue(app.staticTexts["Select return"].waitForExistence(timeout: 5))
+        app.buttons["Select date"].tap()
         let search = app.buttons["Search flights"]
         XCTAssertTrue(search.waitForExistence(timeout: 15))
+        let selectedDates = XCTAttachment(screenshot: app.screenshot())
+        selectedDates.lifetime = .keepAlways
+        add(selectedDates)
         search.tap()
 
         XCTAssertTrue(app.staticTexts["Search Results"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "3 Adults")).firstMatch.waitForExistence(timeout: 15))
         XCTAssertFalse(app.buttons["main-tab-home"].exists)
     }
 

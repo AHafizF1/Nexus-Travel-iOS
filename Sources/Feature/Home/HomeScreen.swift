@@ -334,30 +334,9 @@ struct HomeScreen: View {
         _ event: HomeUiEvent,
         showsChevron: Bool = false
     ) -> some View {
-        Button { onEvent(event) } label: {
-            VStack(alignment: .leading, spacing: NexusSpacing.space2) {
-                HStack(spacing: 0) {
-                    NexusIcon(name: icon, size: NexusIconSize.formField)
-                        .foregroundStyle(NexusSemanticColors.brandPrimary)
-                    Text(label).nexusTextStyle(NexusText.styles.label)
-                        .foregroundStyle(NexusSemanticColors.textSecondary)
-                        .padding(.leading, NexusSpacing.space12)
-                    if showsChevron {
-                        Spacer(minLength: 0)
-                        NexusIcon(name: .chevronDown, size: NexusIconSize.formField)
-                            .foregroundStyle(NexusColors.slate700)
-                    }
-                }
-                Text(value)
-                    .nexusTextStyle(NexusText.styles.formInput)
-                    .lineLimit(usesAccessibilityLayout ? nil : 1)
-                    .truncationMode(.tail)
-                    .multilineTextAlignment(.leading)
-            }.frame(maxWidth: .infinity, minHeight: NexusLayout.inputHeight, alignment: .leading)
+        NexusSearchField(label: label, value: value, icon: icon, showsChevron: showsChevron) {
+            onEvent(event)
         }
-        .frame(maxWidth: .infinity)
-        .buttonStyle(.plain)
-        .accessibilityLabel("\(label), \(value)")
         .accessibilityHint(fieldError(for: label)?.message ?? "")
     }
 
@@ -546,7 +525,7 @@ private struct AirportSelectorSheet: View {
     }
 }
 
-private struct DateSelectorSheet: View {
+struct DateSelectorSheet: View {
     let title: String
     let selected: LocalDate?
     let minimum: LocalDate?
@@ -684,8 +663,6 @@ private extension Array where Element == MultiCityLegUiState {
 private extension TripType { static var allCases: [TripType] { [.oneWay, .roundTrip, .multiCity] } }
 private extension CabinClass { static var allCases: [CabinClass] { [.economy, .premiumEconomy, .business, .first] } }
 private extension LocalDate {
-    var foundationDate: Date { Calendar(identifier: .gregorian).date(from: DateComponents(year: year, month: month, day: day)) ?? .distantPast }
-    init?(date: Date) { let parts = Calendar(identifier: .gregorian).dateComponents([.year, .month, .day], from: date); guard let year = parts.year, let month = parts.month, let day = parts.day else { return nil }; self.init(year: year, month: month, day: day) }
     var displayText: String { foundationDate.formatted(.dateTime.month(.abbreviated).day().year()) }
 }
 private extension Array { subscript(safe index: Int) -> Element? { indices.contains(index) ? self[index] : nil } }

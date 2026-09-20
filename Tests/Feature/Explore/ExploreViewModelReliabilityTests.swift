@@ -12,19 +12,34 @@ struct ExploreViewModelReliabilityTests {
             today: { today }
         )
 
-        let searchID = await viewModel.searchFlights(to: "DXB")
+        let departure = try #require(LocalDate(iso8601: "2026-09-24"))
+        let returning = try #require(LocalDate(iso8601: "2026-09-30"))
+        let searchID = await viewModel.searchFlights(to: "DXB", departureDate: departure, returnDate: returning, travelers: TravelerCounts(adults: 3))
         let request = await flights.lastRequest
 
         #expect(searchID == "search-42")
         #expect(request?.tripType == .roundTrip)
         #expect(request?.originCode == "ADD")
         #expect(request?.destinationCode == "DXB")
-        #expect(request?.departureDate == today.addingDays(7))
-        #expect(request?.returnDate == today.addingDays(14))
-        #expect(request?.travelers == TravelerCounts(adults: 1))
+        #expect(request?.departureDate == departure)
+        #expect(request?.returnDate == returning)
+        #expect(request?.travelers == TravelerCounts(adults: 3))
         #expect(request?.cabinClass == .economy)
         #expect(viewModel.searchError == nil)
         #expect(!viewModel.isSearching)
+    }
+
+    @Test(arguments: ["DXB", "IST", "NBO"])
+    func destinationSearchUsesSelectedAirportCode(_ code: String) async throws {
+        let flights = RecordingFlightSearchRepository(result: .success(searchId: "search-42"))
+        let today = try #require(LocalDate(iso8601: "2026-09-20"))
+        let departure = try #require(LocalDate(iso8601: "2026-09-24"))
+        let returning = try #require(LocalDate(iso8601: "2026-09-30"))
+        let viewModel = ExploreDetailViewModel(repository: ImmediateExploreRepository(), flightSearchRepository: flights, today: { today })
+
+        _ = await viewModel.searchFlights(to: code, departureDate: departure, returnDate: returning, travelers: TravelerCounts(adults: 3))
+
+        #expect(await flights.lastRequest?.destinationCode == code)
     }
 
     @Test func loadIfNeededKeepsContentWithoutDuplicateRequest() async throws {

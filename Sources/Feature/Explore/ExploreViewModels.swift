@@ -70,17 +70,16 @@ enum ExploreDetailState: Equatable, Sendable { case loading; case destination(Ex
     func loadDestination(id: String) async throws { let prior = state; do { switch try await repository.destination(id: id) { case let .success(value): state = .destination(value.destination, value.packages); case .unavailable: state = .unavailable; default: state = .error } } catch is CancellationError { state = prior; throw CancellationError() } }
     func loadPackage(id: String) async throws { let prior = state; do { switch try await repository.travelPackage(id: id) { case let .success(value): state = .package(value.package, value.destination); case .unavailable: state = .unavailable; default: state = .error } } catch is CancellationError { state = prior; throw CancellationError() } }
 
-    func searchFlights(to airportCode: String) async -> String? {
+    func searchFlights(to airportCode: String, departureDate: LocalDate, returnDate: LocalDate, travelers: TravelerCounts) async -> String? {
         guard !isSearching else { return nil }
-        guard let departureDate = today().addingDays(7),
-              let returnDate = departureDate.addingDays(7),
+        guard departureDate >= today(), returnDate > departureDate,
               let request = FlightSearchRequest.make(
             tripType: .roundTrip,
             originCode: "ADD",
             destinationCode: airportCode,
             departureDate: departureDate,
             returnDate: returnDate,
-            travelers: TravelerCounts(adults: 1),
+            travelers: travelers.normalized(),
             cabinClass: .economy,
             cheapestFirst: true
         ) else { return nil }
