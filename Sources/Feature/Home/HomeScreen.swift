@@ -231,7 +231,7 @@ struct HomeScreen: View {
                 Divider().overlay(NexusSemanticColors.borderDefault)
                 field("Cabin Class", state.cabinClass.label, .seat, .cabinClassClicked, showsChevron: true)
             }
-            NexusPrimaryButton("Search Flights", isLoading: state.isSearching, fillsWidth: true) { onEvent(.searchClicked) }
+            NexusPrimaryButton("Search Flights", isLoading: state.isSearching, loadingTitle: "Searching…", fillsWidth: true) { onEvent(.searchClicked) }
         }
         .padding(cardPadding)
         .frame(maxWidth: .infinity)
@@ -360,10 +360,7 @@ struct HomeScreen: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Loading travel ideas")
         case .error:
-            VStack(alignment: .leading, spacing: NexusSpacing.space12) {
-                message(state.message ?? "We could not load your home page. Please try again.", error: false)
-                NexusSecondaryButton("Retry", fillsWidth: true, action: onRetry)
-            }
+            message(state.message ?? "We could not load your home page. Please try again.", error: true, retry: onRetry)
         case .empty:
             featuredDestinations
         case .content:
@@ -436,10 +433,19 @@ struct HomeScreen: View {
         )
     }
 
-    private func message(_ text: String, error: Bool) -> some View {
-        Label(text, systemImage: NexusIconName.info.systemName)
-            .nexusTextStyle(error ? NexusText.styles.errorText : NexusText.styles.bodySmall)
-            .foregroundStyle(error ? NexusSemanticColors.errorText : NexusSemanticColors.textPrimary)
+    private func message(_ text: String, error: Bool, retry: (() -> Void)? = nil) -> some View {
+        HStack(spacing: NexusSpacing.space8) {
+            Label(text, systemImage: error ? NexusIconName.warning.systemName : NexusIconName.info.systemName)
+                .nexusTextStyle(error ? NexusText.styles.errorText : NexusText.styles.bodySmall)
+                .foregroundStyle(error ? NexusSemanticColors.errorText : NexusSemanticColors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if let retry {
+                Button("Try again", action: retry)
+                    .nexusTextStyle(NexusText.styles.link)
+                    .foregroundStyle(NexusSemanticColors.link)
+                    .frame(minHeight: NexusLayout.touchMin)
+            }
+        }
             .padding(NexusSpacing.space12).frame(maxWidth: .infinity, alignment: .leading)
             .background(error ? NexusSemanticColors.errorBg : NexusSemanticColors.brandSoft)
             .clipShape(RoundedRectangle(cornerRadius: NexusRadius.md))
@@ -457,24 +463,36 @@ struct HomeScreen: View {
 }
 
 private struct HomeSheetView: View {
+    @State private var contentHeight = NexusLayout.homeChoiceSheetInitialHeight
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let sheet: HomeSheet
     let state: HomeUiState
     let today: LocalDate
     let onEvent: (HomeUiEvent) -> Void
 
-    @ViewBuilder var body: some View {
+    var body: some View {
+        content.presentationDetents(
+            (sheet == .travelers || sheet == .cabinClass) && !dynamicTypeSize.isAccessibilitySize
+                ? [.height(contentHeight), .large] : [.large]
+        )
+    }
+
+    @ViewBuilder private var content: some View {
         switch sheet {
         case .originAirport, .destinationAirport, .multiCityOrigin, .multiCityDestination:
             AirportSelectorSheet(state: state, onEvent: onEvent)
         case .departureDate: DateSelectorSheet(title: "Select departure", selected: state.departureDate, minimum: today) { onEvent(.departureDateSelected($0)) }
         case .returnDate: DateSelectorSheet(title: "Select return", selected: state.returnDate, minimum: state.departureDate?.addingDays(1)) { onEvent(.returnDateSelected($0)) }
         case let .multiCityDate(index): DateSelectorSheet(title: "Select date for Flight \(index + 1)", selected: state.multiCityLegs[safe: index]?.departureDate, minimum: state.multiCityLegs[safe: index - 1]?.departureDate ?? today) { onEvent(.multiCityDateSelected(index: index, date: $0)) }
-        case .travelers: TravelerSelectorSheet(state: state, onEvent: onEvent)
+        case .travelers: TravelerSelectorSheet(state: state, onEvent: onEvent, onContentHeightChange: updateContentHeight)
         case .cabinClass:
-            CabinClassSheet(selected: state.cabinClass, onEvent: onEvent)
+            CabinClassSheet(selected: state.cabinClass, onEvent: onEvent, onContentHeightChange: updateContentHeight)
         case .hotelComingSoon:
             VStack(alignment: .leading, spacing: NexusSpacing.space16) { Text("Hotels are coming soon").nexusTextStyle(NexusText.styles.sectionTitle); Text("We’re working on hotel booking. For now, you can search flights and explore travel packages."); NexusPrimaryButton("Got it", fillsWidth: true) { onEvent(.dismissSheet) } }.padding(NexusSpacing.space24)
         }
+    }
+    private func updateContentHeight(_ height: CGFloat) {
+        if height > 0 { contentHeight = height }
     }
 }
 
@@ -551,13 +569,15 @@ struct DateSelectorSheet: View {
 
 private struct TravelerSelectorSheet: View {
     let onEvent: (HomeUiEvent) -> Void
+    let onContentHeightChange: (CGFloat) -> Void
     @State private var adults: Int
     @State private var children: Int
     @State private var infants: Int
     @State private var childAges: [Int]
     @State private var infantAges: [Int]
-    init(state: HomeUiState, onEvent: @escaping (HomeUiEvent) -> Void) {
+    init(state: HomeUiState, onEvent: @escaping (HomeUiEvent) -> Void, onContentHeightChange: @escaping (CGFloat) -> Void) {
         self.onEvent = onEvent
+        self.onContentHeightChange = onContentHeightChange
         _adults = State(initialValue: state.travelers.adults)
         _children = State(initialValue: state.travelers.children)
         _infants = State(initialValue: state.travelers.infants)
@@ -565,28 +585,31 @@ private struct TravelerSelectorSheet: View {
         _infantAges = State(initialValue: (0..<state.travelers.infants).map { state.infantAges[safe: $0] ?? 0 })
     }
     var body: some View {
-        VStack(alignment: .leading, spacing: NexusSpacing.space24) {
-            Text("Travelers").nexusTextStyle(NexusText.styles.sectionTitle)
-            travelerRow("Adults", detail: "Age 12+", value: $adults, range: 1...TravelerCounts.maxTravelers)
-            travelerRow("Children", detail: "Age 2–11", value: $children, range: 0...TravelerCounts.maxTravelers)
-                .onChange(of: children) { _, count in childAges = (0..<count).map { childAges[safe: $0] ?? 2 } }
-            travelerRow("Infants", detail: "Under 2", value: $infants, range: 0...TravelerCounts.maxTravelers)
-                .onChange(of: infants) { _, count in infantAges = (0..<count).map { infantAges[safe: $0] ?? 0 } }
-            ForEach(childAges.indices, id: \.self) { index in
-                Stepper("Child \(index + 1) age: \(childAges[index])", value: $childAges[index], in: 2...11)
+        ScrollView {
+            VStack(alignment: .leading, spacing: NexusSpacing.space24) {
+                Text("Travelers").nexusTextStyle(NexusText.styles.sectionTitle)
+                travelerRow("Adults", detail: "Age 12+", value: $adults, range: 1...TravelerCounts.maxTravelers)
+                travelerRow("Children", detail: "Age 2–11", value: $children, range: 0...TravelerCounts.maxTravelers)
+                    .onChange(of: children) { _, count in childAges = (0..<count).map { childAges[safe: $0] ?? 2 } }
+                travelerRow("Infants", detail: "Under 2", value: $infants, range: 0...TravelerCounts.maxTravelers)
+                    .onChange(of: infants) { _, count in infantAges = (0..<count).map { infantAges[safe: $0] ?? 0 } }
+                ForEach(childAges.indices, id: \.self) { index in
+                    Stepper("Child \(index + 1) age: \(childAges[index])", value: $childAges[index], in: 2...11)
+                }
+                ForEach(infantAges.indices, id: \.self) { index in
+                    Stepper("Infant \(index + 1) age: \(infantAges[index])", value: $infantAges[index], in: 0...1)
+                }
+                NexusPrimaryButton("Apply", fillsWidth: true) {
+                    onEvent(.travelersChanged(
+                        TravelerCounts(adults: adults, children: children, infants: infants),
+                        childAges: childAges,
+                        infantAges: infantAges
+                    ))
+                }
             }
-            ForEach(infantAges.indices, id: \.self) { index in
-                Stepper("Infant \(index + 1) age: \(infantAges[index])", value: $infantAges[index], in: 0...1)
-            }
-            NexusPrimaryButton("Apply", fillsWidth: true) {
-                onEvent(.travelersChanged(
-                    TravelerCounts(adults: adults, children: children, infants: infants),
-                    childAges: childAges,
-                    infantAges: infantAges
-                ))
-            }
+            .padding(NexusSpacing.space24)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { onContentHeightChange($0) }
         }
-        .padding(NexusSpacing.space24)
     }
 
     private func travelerRow(
@@ -613,8 +636,10 @@ private struct TravelerSelectorSheet: View {
 private struct CabinClassSheet: View {
     let selected: CabinClass
     let onEvent: (HomeUiEvent) -> Void
+    let onContentHeightChange: (CGFloat) -> Void
 
     var body: some View {
+        ScrollView {
         VStack(alignment: .leading, spacing: NexusSpacing.space12) {
             Text("Cabin class").nexusTextStyle(NexusText.styles.sectionTitle)
             ForEach(CabinClass.allCases, id: \.self) { cabin in
@@ -630,9 +655,12 @@ private struct CabinClassSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: NexusRadius.lg))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(cabin.label)
             }
         }
         .padding(NexusSpacing.space24)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { onContentHeightChange($0) }
+        }
     }
 }
 

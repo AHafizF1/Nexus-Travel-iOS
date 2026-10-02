@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import NexusTravel
 
@@ -177,5 +178,18 @@ struct RouterTests {
 
         #expect(router.authPresentation == nil)
         #expect(router.homePath == [.passengerDetails(PassengerDetailsRoute())])
+    }
+
+    @Test
+    func authLinkPresentationReplacesCredentialSheetAndIgnoresDuplicateTap() throws {
+        let router = Router()
+        let url = try #require(URL(string: "https://api.travelwithnexus.com/auth/password/reset?token=opaque-token"))
+        router.presentAuthentication(for: .profile)
+
+        router.handleAuthLink(url)
+        router.handleAuthLink(url)
+
+        #expect(router.authPresentation == nil)
+        #expect(router.authLinkPresentation == .resetPassword(token: "opaque-token"))
     }
 }

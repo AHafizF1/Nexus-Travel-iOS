@@ -57,6 +57,7 @@ struct ProfileUiState: Equatable, Sendable { var access: ProfileAccessState = .l
     }
 
     func requestLogout() { state.showLogoutConfirmation = true }; func dismissLogout() { state.showLogoutConfirmation = false }
+    func clearForPasswordReset() { state = ProfileUiState(access: .guest); hasLoaded = false }
     func signOut() async throws {
         guard !state.signingOut else { return }
         loadGeneration += 1

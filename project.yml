@@ -16,6 +16,9 @@ targets:
   NexusTravel:
     type: application
     platform: iOS
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: Sources/App/NexusTravel.entitlements
     sources:
       - Sources
     resources:

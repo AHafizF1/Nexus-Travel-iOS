@@ -105,6 +105,11 @@ final class Router {
 
 ## 4. Gap inventory
 
+Compact choice sheets use content-measured native height detents, not a fixed `.medium`
+detent; accessibility text uses scrollable `.large`. Measure intrinsic content before
+any expanding frame. Simulator Keychain gates require native ad-hoc signing; unsigned
+UI previews do not verify persistent-session behavior.
+
 | ID | Gap | Decision |
 |---|---|---|
 | G1 | System back gesture | Free in NavigationStack; drop all BackHandler equivalents |

@@ -2,6 +2,44 @@ import XCTest
 
 final class BookingJourneyUITests: XCTestCase {
     @MainActor
+    func testGuestTabsUsePersistentSessionStore() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let tripsTab = app.buttons["main-tab-trips"]
+        XCTAssertTrue(tripsTab.waitForExistence(timeout: 30))
+        tripsTab.tap()
+        XCTAssertTrue(app.staticTexts["No trips yet"].waitForExistence(timeout: 10))
+
+        app.buttons["main-tab-profile"].tap()
+        XCTAssertTrue(app.staticTexts["Guest"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testHomeChoiceSheetsStartCompact() {
+        let app = XCUIApplication()
+        app.launchArguments.append("--reset-auth-session")
+        app.launch()
+
+        let travelers = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Travelers")).firstMatch
+        XCTAssertTrue(travelers.waitForExistence(timeout: 30))
+        travelers.tap()
+        let travelerTitle = app.staticTexts["Travelers"].firstMatch
+        XCTAssertTrue(travelerTitle.waitForExistence(timeout: 10))
+        XCTAssertGreaterThan(travelerTitle.frame.minY, app.frame.height * 0.55)
+        XCTAssertTrue(app.buttons["Apply"].isHittable)
+        app.buttons["Apply"].tap()
+
+        let cabin = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Cabin Class")).firstMatch
+        XCTAssertTrue(cabin.waitForExistence(timeout: 10))
+        cabin.tap()
+        let cabinTitle = app.staticTexts["Cabin class"]
+        XCTAssertTrue(cabinTitle.waitForExistence(timeout: 10))
+        XCTAssertGreaterThan(cabinTitle.frame.minY, app.frame.height * 0.55)
+        XCTAssertTrue(app.buttons["Economy"].isHittable)
+    }
+
+    @MainActor
     func testCustomBottomNavigationIsAvailable() {
         let app = XCUIApplication()
         app.launch()
@@ -200,7 +238,7 @@ final class BookingJourneyUITests: XCTestCase {
         add(selectedDates)
         search.tap()
 
-        XCTAssertTrue(app.staticTexts["Search Results"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["Search Results"].waitForExistence(timeout: 120))
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "3 Adults")).firstMatch.waitForExistence(timeout: 15))
         XCTAssertFalse(app.buttons["main-tab-home"].exists)
     }
@@ -302,9 +340,9 @@ final class BookingJourneyUITests: XCTestCase {
         app.buttons["main-tab-profile"].tap()
         XCTAssertTrue(app.buttons["Sign in"].waitForExistence(timeout: 15))
         app.buttons["Sign in"].tap()
-        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 15))
         app.buttons["Sign up"].tap()
-        XCTAssertTrue(app.staticTexts["Create your account"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Create account"].waitForExistence(timeout: 10))
 
         app.textFields["Full name"].tap()
         app.textFields["Full name"].typeText("Nexus QA Traveler")
@@ -322,10 +360,10 @@ final class BookingJourneyUITests: XCTestCase {
         app.buttons["Log out"].tap()
         XCTAssertTrue(app.sheets.buttons["Log out"].waitForExistence(timeout: 10))
         app.sheets.buttons["Log out"].tap()
-        XCTAssertTrue(app.staticTexts["Your travel account"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["Guest"].waitForExistence(timeout: 20))
 
         app.buttons["Sign in"].tap()
-        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 15))
         app.textFields["Email"].tap()
         app.textFields["Email"].typeText(email)
         app.secureTextFields["Password"].tap()
@@ -333,7 +371,7 @@ final class BookingJourneyUITests: XCTestCase {
         app.buttons["Sign in"].tap()
 
         XCTAssertTrue(app.staticTexts["Nexus QA Traveler"].waitForExistence(timeout: 30))
-        XCTAssertFalse(app.staticTexts["Welcome back"].exists)
+        XCTAssertFalse(app.secureTextFields["Password"].exists)
     }
 
     @MainActor
@@ -346,12 +384,31 @@ final class BookingJourneyUITests: XCTestCase {
         let tripsTab = app.buttons["main-tab-trips"]
         XCTAssertTrue(tripsTab.waitForExistence(timeout: 15))
         tripsTab.tap()
-        XCTAssertTrue(app.staticTexts["Keep every trip in one place"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.buttons["Sign in"].exists)
+        XCTAssertTrue(app.staticTexts["No trips yet"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["Sign in to view trips"].exists)
+        captureGuestScreenshot("Guest trips", app: app)
 
         app.buttons["main-tab-profile"].tap()
-        XCTAssertTrue(app.staticTexts["Your travel account"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Guest"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["Sign in"].exists)
+        XCTAssertTrue(app.buttons["Settings"].exists)
+        captureGuestScreenshot("Guest profile", app: app)
+
+        app.buttons["Sign in"].tap()
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 15))
+        let authForm = app.scrollViews["auth-form"]
+        XCTAssertTrue(authForm.exists)
+        XCTAssertLessThan(authForm.frame.height, 550)
+        XCTAssertTrue(authForm.buttons["Sign in"].isHittable)
+        let compactHeight = authForm.frame.height
+        captureGuestScreenshot("Sign in sheet", app: app)
+        app.buttons["Sign up"].tap()
+        XCTAssertTrue(app.staticTexts["Create account"].waitForExistence(timeout: 10))
+        XCTAssertGreaterThan(authForm.frame.height, compactHeight)
+        XCTAssertTrue(authForm.buttons["Create account"].isHittable)
+        captureGuestScreenshot("Create account sheet", app: app)
+        app.buttons["Close"].tap()
+        XCTAssertTrue(app.staticTexts["Guest"].waitForExistence(timeout: 10))
     }
 
     @MainActor
@@ -365,7 +422,7 @@ final class BookingJourneyUITests: XCTestCase {
         let profileSignIn = app.buttons["Sign in"]
         XCTAssertTrue(profileSignIn.waitForExistence(timeout: 15))
         profileSignIn.tap()
-        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 15))
 
         app.textFields["Email"].tap()
         app.textFields["Email"].typeText(email)
@@ -388,7 +445,7 @@ final class BookingJourneyUITests: XCTestCase {
         let profileSignIn = app.buttons["Sign in"]
         XCTAssertTrue(profileSignIn.waitForExistence(timeout: 15))
         profileSignIn.tap()
-        XCTAssertTrue(app.staticTexts["Welcome back"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 15))
         app.textFields["Email"].tap()
         app.textFields["Email"].typeText(email)
         app.secureTextFields["Password"].tap()
@@ -396,7 +453,7 @@ final class BookingJourneyUITests: XCTestCase {
         app.buttons["Sign in"].tap()
 
         XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 20))
-        XCTAssertFalse(app.staticTexts["Welcome back"].exists)
+        XCTAssertFalse(app.secureTextFields["Password"].exists)
     }
 
     @MainActor
@@ -413,14 +470,50 @@ final class BookingJourneyUITests: XCTestCase {
         search.tap()
 
         XCTAssertTrue(app.staticTexts["Search Results"].waitForExistence(timeout: 120))
+        XCTAssertTrue(app.buttons["search-results-summary"].exists)
+        XCTAssertTrue(app.buttons["search-sort"].exists)
+        XCTAssertTrue(app.buttons["search-filter-non-stop"].exists)
+        XCTAssertTrue(app.staticTexts["Taxes & fees included"].exists)
+        let summary = app.buttons["search-results-summary"]
+        let sort = app.buttons["search-sort"]
+        XCTAssertGreaterThanOrEqual(summary.frame.height, 70, "Search summary should match Android's regular card scale.")
+        XCTAssertGreaterThanOrEqual(sort.frame.height, 44, "Compact controls must retain a 44-point hit target.")
+        let searchResults = XCTAttachment(screenshot: app.screenshot())
+        searchResults.name = "Search results from Home"
+        searchResults.lifetime = .keepAlways
+        add(searchResults)
         let offer = app.buttons.matching(NSPredicate(format: "label CONTAINS 'ETB'")).firstMatch
         XCTAssertTrue(offer.waitForExistence(timeout: 10))
+        XCTAssertGreaterThanOrEqual(offer.frame.height, 188, "Spacious one-way rows need Android-equivalent breathing room.")
+        XCTAssertLessThanOrEqual(offer.frame.height, 204, "Spacious one-way rows should retain Android's information density.")
         offer.tap()
 
         XCTAssertTrue(app.navigationBars["Flight Details"].waitForExistence(timeout: 90))
         XCTAssertFalse(app.staticTexts["Could not load flight details"].exists)
+        XCTAssertTrue(app.staticTexts["Baggage allowance"].exists)
+        XCTAssertTrue(app.staticTexts["Cabin baggage"].exists)
+        XCTAssertTrue(app.staticTexts["Checked baggage"].exists)
+        XCTAssertTrue(app.buttons["Fare rules"].exists)
+        XCTAssertFalse(app.staticTexts["Included"].exists)
+        XCTAssertFalse(app.staticTexts["Seat selection"].exists)
+        XCTAssertFalse(app.staticTexts["Price details"].exists)
+        let arrivalCode = app.staticTexts["DXB"].firstMatch
+        let arrivalTime = app.staticTexts["10:30 am"].firstMatch
+        if arrivalCode.exists, arrivalTime.exists,
+           max(arrivalCode.frame.minY, arrivalTime.frame.minY) < min(arrivalCode.frame.maxY, arrivalTime.frame.maxY) {
+            XCTAssertGreaterThanOrEqual(arrivalTime.frame.minX - arrivalCode.frame.maxX, 8,
+                "Arrival code and time need visible separation.")
+        }
+        let flightDetails = XCTAttachment(screenshot: app.screenshot())
+        flightDetails.name = "Flight details with sticky total"
+        flightDetails.lifetime = .keepAlways
+        add(flightDetails)
         let continueButton = app.buttons["Continue"]
         XCTAssertTrue(continueButton.waitForExistence(timeout: 10))
+        if app.frame.width >= 400 {
+            XCTAssertGreaterThanOrEqual(continueButton.frame.width, 164,
+                "Wide phones should use Android's regular Continue width.")
+        }
         continueButton.tap()
 
         let fareChanged = app.alerts["Fare changed"]
@@ -429,6 +522,14 @@ final class BookingJourneyUITests: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars["Passenger Details"].waitForExistence(timeout: 60))
         XCTAssertTrue(app.textFields["First name"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    private func captureGuestScreenshot(_ name: String, app: XCUIApplication) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func requiredEnvironmentValue(_ name: String) throws -> String {

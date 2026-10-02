@@ -64,12 +64,13 @@ private struct ProfileScreen: View {
     let onRetry: () -> Void
     var body: some View {
         List {
-            Section {
-                Text("Profile")
-                    .nexusTextStyle(NexusText.styles.screenTitle)
-                    .accessibilityAddTraits(.isHeader)
-            }
-            .id("profile.heading")
+            Text("Profile")
+                .nexusTextStyle(NexusText.styles.screenTitle)
+                .accessibilityAddTraits(.isHeader)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: NexusSpacing.space4, bottom: 0, trailing: NexusSpacing.space4))
+                .id("profile.heading")
             content
         }
         .listStyle(.insetGrouped)
@@ -82,14 +83,20 @@ private struct ProfileScreen: View {
         switch state.access {
         case .loading: ProgressView().accessibilityLabel("Loading profile").id("profile.loading")
         case .guest:
-            ContentUnavailableView("Your travel account", systemImage: NexusPlatformIconName.guestProfile.rawValue, description: Text("Sign in to manage trips, tickets, verified travelers, and preferences."))
+            guestProfile
                 .id("profile.account")
-            Button("Sign in", action: onSignIn)
+            Section("Preferences") {
+                row("Settings", icon: { NexusPlatformIcon(.settings) }) {
+                    router.push(.settings(.init()))
+                }
+            }
+            .id("profile.preferences")
         case let .recoverableError(profile):
             if let profile { header(profile) }
-            ContentUnavailableView(state.errorMessage ?? "Profile could not refresh.", systemImage: NexusPlatformIconName.unavailableNetwork.rawValue)
-                .id("profile.error")
-            Button("Retry", action: onRetry)
+            NexusBanner(text: state.errorMessage ?? "Profile could not refresh.", status: .error, trailingAction: {
+                NexusTextButton("Try again", action: onRetry)
+            })
+            .id("profile.error")
             Button(role: .destructive, action: onLogout) {
                 if state.signingOut { HStack { ProgressView(); Text("Signing out…") } }
                 else { Text("Log out") }
@@ -129,6 +136,25 @@ private struct ProfileScreen: View {
         }
         .id("profile.account-summary")
     }
+    private var guestProfile: some View {
+        HStack(spacing: NexusSpacing.space16) {
+            NexusIcon(name: .profile, size: NexusIconSize.lg)
+                .foregroundStyle(NexusSemanticColors.textHeading)
+                .frame(width: NexusSpacing.space64, height: NexusSpacing.space64)
+                .background(NexusSemanticColors.surfaceSubtle, in: Circle())
+            VStack(alignment: .leading, spacing: NexusSpacing.space4) {
+                Text("Guest")
+                    .nexusTextStyle(NexusText.styles.sectionTitleSmall)
+                    .foregroundStyle(NexusSemanticColors.textHeading)
+                Text("Sign in to access bookings")
+                    .nexusTextStyle(NexusText.styles.bodySmall)
+                    .foregroundStyle(NexusSemanticColors.textSecondary)
+            }
+            Spacer(minLength: NexusSpacing.space4)
+            NexusTextButton("Sign in", action: onSignIn)
+        }
+        .padding(.vertical, NexusSpacing.space8)
+    }
     private func avatar(_ profile: CustomerProfile) -> some View { Text(initials(profile.name)).font(.title.bold()).frame(width: 72, height: 72).foregroundStyle(.white).background(NexusSemanticColors.brandPrimary, in: Circle()).accessibilityHidden(true) }
     private func profileDetails(_ profile: CustomerProfile) -> some View { VStack(alignment: .leading) { Text(profile.name).nexusTextStyle(NexusText.styles.sectionTitle).accessibilityAddTraits(.isHeader); Text(profile.email).nexusTextStyle(NexusText.styles.bodySmall); Text("\(profile.verifiedTravelerCount) verified travelers").nexusTextStyle(NexusText.styles.caption); Button("Edit profile") { router.push(.editProfile(.init())) } } }
     private func row<Icon: View>(_ title: String, @ViewBuilder icon: () -> Icon, action: @escaping () -> Void) -> some View { Button(action: action) { Label { Text(title) } icon: { icon() } } }
@@ -155,7 +181,50 @@ struct NotificationSettingsScreen: View {
     }
     private func update(_ kind: NotificationKind, enabled: Bool) { Task { if enabled && kind == .push { let allowed = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])) == true; guard allowed else { return } }; var next = viewModel.state.value; next.notifications = kind.updated(next.notifications, enabled: enabled); try? await viewModel.save(next) } }
 }
-struct SecurityScreen: View { @State private var viewModel: AccountSecurityViewModel; let router: Router; init(viewModel: AccountSecurityViewModel, router: Router) { _viewModel = State(initialValue: viewModel); self.router = router }; var body: some View { Form { Section("Current session") { LabeledContent("Signed-in device", value: viewModel.state.value?.device ?? "Loading"); LabeledContent("Email verification", value: viewModel.state.value?.emailVerified == true ? "Verified" : "Not verified") }; Section("Password") { Text("Password reset is currently unavailable. Contact Nexus support if you cannot access your account.") }; Section("Account") { Button("Delete account", role: .destructive) { router.push(.deleteAccount(.init())) } }; if let error = viewModel.state.error { Text(error).foregroundStyle(NexusSemanticColors.errorText) } }.navigationTitle("Security").task { try? await viewModel.load() } } }
+struct SecurityScreen: View {
+    @State private var viewModel: AccountSecurityViewModel
+    @State private var authViewModel: AuthViewModel
+    @State private var showingPasswordReset = false
+    private let authRepository: any AuthRepository
+    let router: Router
+
+    init(viewModel: AccountSecurityViewModel, router: Router, authRepository: any AuthRepository) {
+        _viewModel = State(initialValue: viewModel)
+        _authViewModel = State(initialValue: AuthViewModel(repository: authRepository))
+        self.authRepository = authRepository
+        self.router = router
+    }
+
+    var body: some View {
+        Form {
+            Section("Current session") {
+                LabeledContent("Signed-in device", value: viewModel.state.value?.device ?? "Loading")
+                LabeledContent("Email verification", value: viewModel.state.value?.emailVerified == true ? "Verified" : "Not verified")
+            }
+            Section("Password") {
+                Button("Reset password") {
+                    authViewModel.startPasswordCodeFlow()
+                    showingPasswordReset = true
+                }
+            }
+            Section("Account") {
+                Button("Delete account", role: .destructive) { router.push(.deleteAccount(.init())) }
+            }
+            if let error = viewModel.state.error { Text(error).foregroundStyle(NexusSemanticColors.errorText) }
+        }
+        .navigationTitle("Security")
+        .task { try? await viewModel.load() }
+        .sheet(isPresented: $showingPasswordReset) {
+            PasswordResetRequestScreen(viewModel: authViewModel) {
+                Task {
+                    _ = try? await authRepository.signOut()
+                    router.popToRoot()
+                    router.presentAuthentication(for: .sessionExpired)
+                }
+            }
+        }
+    }
+}
 struct DeleteAccountScreen: View {
     @State private var viewModel: DeleteAccountViewModel
     @State private var password = ""

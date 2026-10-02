@@ -152,6 +152,83 @@ struct HomeViewModelTests {
         #expect(!model.uiState.isSearching)
     }
 
+    @Test func searchAgainUsesSavedCriteriaAndReturnsNewSearchId() async throws {
+        let repository = RequestSpySearchRepository()
+        let model = makeModel(searchRepository: repository)
+        try await model.load()
+        await model.onEvent(.tripTypeChanged(.roundTrip))
+        await model.onEvent(.travelersChanged(TravelerCounts(adults: 2, children: 1, infants: 1),
+                                               childAges: [8], infantAges: [1]))
+        await model.onEvent(.cabinClassChanged(.business))
+
+        let searchId = await model.searchAgain()
+        let capturedRequest = await repository.lastRequest
+        let request = try #require(capturedRequest)
+
+        #expect(searchId == "search-spy")
+        #expect(request.tripType == .roundTrip)
+        #expect(request.originCode == "ADD")
+        #expect(request.destinationCode == "DXB")
+        #expect(request.returnDate == today.addingDays(14))
+        #expect(request.travelers == TravelerCounts(adults: 2, children: 1, infants: 1))
+        #expect(request.childAges == [8])
+        #expect(request.infantAges == [1])
+        #expect(request.cabinClass == .business)
+        #expect(model.consumeNavigationEvent() == nil)
+        #expect(!model.uiState.isSearching)
+    }
+
+    @Test func searchAgainShowsLoadingAndOnlyReturnsIdAfterSuccess() async throws {
+        let repository = BlockingSearchRepository()
+        let model = makeModel(searchRepository: repository)
+        try await model.load()
+
+        let task = Task { await model.searchAgain() }
+        await repository.waitUntilStarted()
+
+        #expect(model.uiState.isSearching)
+        #expect(model.consumeNavigationEvent() == nil)
+        await repository.finish()
+        #expect(await task.value == "search-blocked")
+        #expect(!model.uiState.isSearching)
+    }
+
+    @Test func searchAgainPreservesOrderedMultiCityCriteria() async throws {
+        let repository = RequestSpySearchRepository()
+        let model = makeModel(searchRepository: repository)
+        try await model.load()
+        await model.onEvent(.tripTypeChanged(.multiCity))
+        await model.onEvent(.multiCityDestinationClicked(index: 1))
+        await model.onEvent(.airportSelected(add))
+        await model.onEvent(.travelersChanged(TravelerCounts(adults: 2, children: 1, infants: 0),
+                                               childAges: [8], infantAges: []))
+        await model.onEvent(.cabinClassChanged(.business))
+
+        let searchId = await model.searchAgain()
+        let capturedRequest = await repository.lastRequest
+        let request = try #require(capturedRequest)
+
+        #expect(searchId == "search-spy")
+        #expect(request.tripType == .multiCity)
+        #expect(request.legs.map(\.originCode) == ["ADD", "DXB"])
+        #expect(request.legs.map(\.destinationCode) == ["DXB", "ADD"])
+        #expect(request.travelers == TravelerCounts(adults: 2, children: 1, infants: 0))
+        #expect(request.childAges == [8])
+        #expect(request.cabinClass == .business)
+        #expect(model.consumeNavigationEvent() == nil)
+    }
+
+    @Test func failedSearchAgainDoesNotReturnOrNavigateToOldResults() async throws {
+        let model = makeModel(searchResult: .networkUnavailable)
+        try await model.load()
+
+        let searchId = await model.searchAgain()
+
+        #expect(searchId == nil)
+        #expect(model.uiState.message == "We lost the connection. Try again.")
+        #expect(model.consumeNavigationEvent() == nil)
+    }
+
     @Test func featuredDestinationOpensItsDetailWithoutStartingFlightSearch() async throws {
         let searchRepository = RequestSpySearchRepository()
         let model = makeModel(searchRepository: searchRepository)
@@ -232,7 +309,7 @@ struct HomeViewModelTests {
 
     @Test(arguments: [
         (FlightSearchResult.networkUnavailable, "We lost the connection. Try again."),
-        (.unknownError, "No fares found for this route. Contact Nexus for help.")
+        (.unknownError, "Could not check flights right now. Try again.")
     ])
     func searchFailureShowsExactMessage(_ result: FlightSearchResult, _ message: String) async throws {
         let model = makeModel(searchResult: result)
@@ -438,7 +515,7 @@ private struct StubAuthRepository: AuthRepository {
                            email: "a@example.com", avatarUrl: nil), tokens: nil, expiresAt: .distantFuture)
     }
     func signInEmail(request: SignInRequest) async throws -> AuthResult<AuthSession> { .failure(.unknown) }
-    func signUpEmail(request: SignUpRequest) async throws -> AuthResult<AuthSession> { .failure(.unknown) }
+    func signUpEmail(request: SignUpRequest) async throws -> AuthResult<AuthSignUpResult> { .failure(.unknown) }
     func getSession() async throws -> AuthResult<AuthSession> { .failure(.unauthenticated) }
     func requestPasswordReset(email: String) async throws -> AuthResult<Void> { .failure(.unknown) }
     func signOut() async throws -> AuthResult<Void> { .success(()) }

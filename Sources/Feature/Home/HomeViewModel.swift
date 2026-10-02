@@ -266,11 +266,20 @@ final class HomeViewModel {
             tripType: uiState.tripType, departureDate: date, returnDate: uiState.returnDate, today: today())
     }
 
+    func searchAgain() async -> String? {
+        await createSearch()
+    }
+
     private func searchFlights() async {
-        guard !uiState.isSearching else { return }
+        guard let searchId = await createSearch() else { return }
+        pendingNavigationEvents.append(.toSearchResults(searchId: searchId))
+    }
+
+    private func createSearch() async -> String? {
+        guard !uiState.isSearching else { return nil }
         if let error = searchValidator.validateSearch(state: uiState, today: today()) {
             uiState.validationError = error
-            return
+            return nil
         }
         let state = uiState
         let legs = state.tripType == .multiCity ? state.multiCityLegs.compactMap { leg -> FlightSearchLeg? in
@@ -285,23 +294,29 @@ final class HomeViewModel {
                 departureDate: departure, returnDate: state.tripType == .roundTrip ? state.returnDate : nil,
                 travelers: state.travelers, cabinClass: state.cabinClass, legs: legs,
                 childAges: state.childAges, infantAges: state.infantAges)
-        else { return }
+        else { return nil }
         uiState.isSearching = true
         uiState.validationError = nil
         uiState.message = nil
         do {
-            switch try await flightSearchRepository.createSearch(request: request) {
-            case let .success(searchId): pendingNavigationEvents.append(.toSearchResults(searchId: searchId))
+            let result = try await flightSearchRepository.createSearch(request: request)
+            guard !Task.isCancelled else { uiState.isSearching = false; return nil }
+            switch result {
+            case let .success(searchId):
+                uiState.isSearching = false
+                return searchId
             case .networkUnavailable: uiState.message = "We lost the connection. Try again."
-            case .unknownError: uiState.message = "No fares found for this route. Contact Nexus for help."
+            case .unknownError: uiState.message = "Could not check flights right now. Try again."
             }
         } catch is CancellationError {
             uiState.isSearching = false
-            return
+            return nil
         } catch {
-            uiState.message = "No fares found for this route. Contact Nexus for help."
+            guard !Task.isCancelled else { uiState.isSearching = false; return nil }
+            uiState.message = "Could not check flights right now. Try again."
         }
         uiState.isSearching = false
+        return nil
     }
 
     private func airport(matching code: String) async throws -> Airport? {

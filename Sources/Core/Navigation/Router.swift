@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 enum AuthPresentation: String, Identifiable, Equatable, Sendable {
@@ -45,6 +46,8 @@ final class Router {
     var profilePath: [AppRoute] = []
     private(set) var pendingTab: MainTab?
     private(set) var authPresentation: AuthPresentation?
+    private(set) var authLinkPresentation: AuthLinkRoute?
+    private(set) var unavailableOffer: FlightOfferReference?
 
     var showsMainBottomBar: Bool {
         selectedPath.isEmpty
@@ -70,6 +73,10 @@ final class Router {
     func pop() {
         guard !selectedPath.isEmpty else { return }
         selectedPath.removeLast()
+    }
+
+    func markOfferUnavailable(_ reference: FlightOfferReference) {
+        unavailableOffer = reference
     }
 
     func popToRoot() {
@@ -101,6 +108,18 @@ final class Router {
 
     func dismissAuthentication() {
         authPresentation = nil
+    }
+
+    func handleAuthLink(_ url: URL) {
+        guard let route = AuthLinkRoute(url: url) else { return }
+        guard authLinkPresentation != route else { return }
+        authPresentation = nil
+        authLinkPresentation = route
+    }
+
+    func dismissAuthLink(_ route: AuthLinkRoute) {
+        guard authLinkPresentation == route else { return }
+        authLinkPresentation = nil
     }
 
     private var selectedPath: [AppRoute] {

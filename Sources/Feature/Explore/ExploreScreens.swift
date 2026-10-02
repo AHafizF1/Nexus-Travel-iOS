@@ -54,12 +54,11 @@ private struct ExploreScreen: View {
                             ExploreFilterBar(selection: $filter).id("explore.filter")
                             contentView(content, contentWidth: contentWidth)
                         } else {
-                            ContentUnavailableView(
-                                "Explore is unavailable",
-                                systemImage: NexusPlatformIconName.unavailableNetwork.rawValue,
-                                description: Text(state.error ?? "Try again.")
+                            NexusFeedbackPanel(
+                                title: "Explore is unavailable",
+                                message: state.error ?? "Check your connection and try again.",
+                                primaryActionLabel: "Try again", onPrimaryAction: onRetry
                             )
-                            NexusSecondaryButton("Try again", fillsWidth: true, action: onRetry)
                         }
                     }
                     .frame(width: contentWidth, alignment: .leading)
@@ -83,9 +82,9 @@ private struct ExploreScreen: View {
                 .accessibilityAddTraits(.updatesFrequently)
         }
         if state.error != nil {
-            Label("Could not update. Showing saved deals.", systemImage: NexusPlatformIconName.unavailableNetwork.rawValue)
-                .nexusTextStyle(NexusText.styles.bodySmall)
-                .foregroundStyle(NexusSemanticColors.textSecondary)
+            NexusBanner(text: "Could not update. Showing saved deals.", status: .error, trailingAction: {
+                NexusTextButton("Try again", action: onRetry)
+            })
         }
     }
 

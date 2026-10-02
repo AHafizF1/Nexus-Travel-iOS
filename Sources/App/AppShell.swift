@@ -6,6 +6,7 @@ struct AppShell: View {
     @State private var exploreRootScrollTarget: String?
     @State private var tripsRootScrollTarget: String?
     @State private var profileRootScrollTarget: String?
+    @State private var freshSearchTask: Task<Void, Never>?
     let homeViewModel: HomeViewModel
     let exploreViewModel: ExploreViewModel
     let tripsViewModel: TripsViewModel
@@ -41,19 +42,41 @@ struct AppShell: View {
                 set: { if $0 == nil { router.dismissAuthentication() } }
             )
         ) { purpose in
-            NavigationStack {
-                AuthRoute(
-                    viewModel: AuthViewModel(repository: authRepository),
-                    purpose: purpose,
-                    onAuthenticated: {
-                        _ = bookingFlowState.completeAuthentication()
-                        router.dismissAuthentication()
-                    }
-                )
-            }
+            AuthRoute(
+                viewModel: AuthViewModel(repository: authRepository),
+                purpose: purpose,
+                onAuthenticated: {
+                    _ = bookingFlowState.completeAuthentication()
+                    router.dismissAuthentication()
+                }
+            )
             .presentationDragIndicator(.visible)
-            .presentationDetents([.large])
+            .presentationCornerRadius(NexusRadius.xxxl)
         }
+        .sheet(
+            item: Binding(
+                get: { router.authLinkPresentation },
+                set: { if $0 == nil, let route = router.authLinkPresentation { router.dismissAuthLink(route) } }
+            )
+        ) { route in
+            AuthLinkScreen(
+                viewModel: AuthViewModel(repository: authRepository),
+                route: route,
+                onPasswordResetComplete: {
+                    bookingFlowState.completeLogout()
+                    profileViewModel.clearForPasswordReset()
+                    tripsViewModel.clearForLogout()
+                    router.tripsPath.removeAll()
+                },
+                onDone: {
+                    router.dismissAuthLink(route)
+                    router.push(.mainAuth(MainAuthRoute()))
+                }
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
+        .onOpenURL(perform: router.handleAuthLink)
     }
 
     @ViewBuilder
@@ -122,8 +145,23 @@ struct AppShell: View {
                 profileViewModel: profileViewModel,
                 preferencesViewModel: preferencesViewModel,
                 authRepository: authRepository,
-                bookingFlowState: bookingFlowState
+                bookingFlowState: bookingFlowState,
+                onSearchAgain: startFreshSearch
             )
+        }
+    }
+
+    private func startFreshSearch() {
+        guard freshSearchTask == nil else { return }
+        bookingFlowState.clear()
+        router.popToRoot()
+        freshSearchTask = Task { @MainActor in
+            let searchId = await homeViewModel.searchAgain()
+            guard !Task.isCancelled else { freshSearchTask = nil; return }
+            if let searchId {
+                router.push(.searchResults(.init(searchId: searchId)))
+            }
+            freshSearchTask = nil
         }
     }
 }
@@ -235,6 +273,7 @@ private struct AppDestinations: ViewModifier {
     let preferencesViewModel: PreferencesViewModel
     let authRepository: any AuthRepository
     let bookingFlowState: BookingFlowState
+    let onSearchAgain: () -> Void
 
     func body(content: Content) -> some View {
         content.navigationDestination(for: AppRoute.self) { route in
@@ -293,11 +332,13 @@ private struct AppDestinations: ViewModifier {
                 BookingReviewScreenRoute(
                     viewModel: BookingReviewViewModel(reviewId: route.reviewId, repository: bookingRequestRepository),
                     flightDetails: bookingFlowState.passengerDetails,
-                    router: router
+                    router: router,
+                    onSearchAgain: onSearchAgain
                 )
             case let .paymentProof(route):
                 PaymentProofScreenRoute(
-                    viewModel: PaymentProofViewModel(bookingId: route.bookingId, repository: paymentProofRepository),
+                    viewModel: PaymentProofViewModel(bookingId: route.bookingId, repository: paymentProofRepository,
+                                                     statusCheck: { try await bookingRequestRepository.getStatus(reviewId: $0) }),
                     router: router, bookingId: route.bookingId
                 )
             case let .tripDetail(route):
@@ -339,7 +380,7 @@ private struct AppDestinations: ViewModifier {
             case .notificationSettings:
                 NotificationSettingsScreen(viewModel: preferencesViewModel)
             case .security:
-                SecurityScreen(viewModel: AccountSecurityViewModel(repository: securityRepository), router: router)
+                SecurityScreen(viewModel: AccountSecurityViewModel(repository: securityRepository), router: router, authRepository: authRepository)
             case .deleteAccount:
                 DeleteAccountScreen(
                     viewModel: DeleteAccountViewModel(repository: securityRepository, clearSession: { _ = try await authRepository.signOut() }),
@@ -424,7 +465,8 @@ private extension View {
         profileViewModel: ProfileViewModel,
         preferencesViewModel: PreferencesViewModel,
         authRepository: any AuthRepository,
-        bookingFlowState: BookingFlowState
+        bookingFlowState: BookingFlowState,
+        onSearchAgain: @escaping () -> Void
     ) -> some View {
         modifier(AppDestinations(
             router: router,
@@ -443,7 +485,8 @@ private extension View {
             profileViewModel: profileViewModel,
             preferencesViewModel: preferencesViewModel,
             authRepository: authRepository,
-            bookingFlowState: bookingFlowState
+            bookingFlowState: bookingFlowState,
+            onSearchAgain: onSearchAgain
         ))
     }
 }
