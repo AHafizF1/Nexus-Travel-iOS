@@ -36,7 +36,7 @@ jobs:
           -scheme NexusTravel
           -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
           -resultBundlePath TestResults.xcresult
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=-
         env:
           NEXUS_TEST_EMAIL: ${{ secrets.NEXUS_TEST_EMAIL }}
           NEXUS_TEST_PASSWORD: ${{ secrets.NEXUS_TEST_PASSWORD }}
@@ -48,35 +48,64 @@ jobs:
           plutil -lint "$manifest"
           /usr/libexec/PlistBuddy -c 'Print :NSPrivacyTracking' "$manifest" | grep -Fx false
           /usr/libexec/PlistBuddy -c 'Print :NSPrivacyAccessedAPITypes:0:NSPrivacyAccessedAPITypeReasons:0' "$manifest" | grep -Fx CA92.1
+      - name: Run complete UI suite
+        run: >-
+          xcodebuild test
+          -project NexusTravel.xcodeproj
+          -scheme NexusTravelUI
+          -destination 'platform=iOS Simulator,name=iPhone 16e,OS=26.2'
+          -resultBundlePath TestResultsUI.xcresult
+          CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=-
+        env:
+          NEXUS_TEST_EMAIL: ${{ secrets.NEXUS_TEST_EMAIL }}
+          NEXUS_TEST_PASSWORD: ${{ secrets.NEXUS_TEST_PASSWORD }}
+          NEXUS_TEST_INVALID_PASSWORD: ${{ secrets.NEXUS_TEST_INVALID_PASSWORD }}
+      # Run the iPad-only acceptance case separately; iPhone suite reports its skip.
+      - name: Run iPad landscape acceptance
+        run: |
+          ipad_id="$(xcrun simctl list devices available -j | ruby -rjson -e '
+            device = JSON.parse(STDIN.read).fetch("devices").values.flatten.find { |d| d.fetch("name").start_with?("iPad") }
+            abort "No available iPad simulator" unless device
+            puts device.fetch("udid")
+          ')"
+          xcodebuild test-without-building -project NexusTravel.xcodeproj \
+            -scheme NexusTravelUI -destination "platform=iOS Simulator,id=$ipad_id" \
+            -only-testing:NexusTravelUITests/BookingJourneyUITests/testHomeAndCustomTabsFitIPadLandscape \
+            -resultBundlePath TestResultsIPad.xcresult
       - name: Capture design-system gallery
         run: |
           evidence_dir="$RUNNER_TEMP/design-system-gallery"
           mkdir -p "$evidence_dir"
-          xcrun simctl boot "iPhone 16e"
-          xcrun simctl bootstatus "iPhone 16e" -b
-          xcrun simctl ui booted appearance light
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=top
+          phone_id="$(xcrun simctl list devices available -j | ruby -rjson -e '
+            device = JSON.parse(STDIN.read).fetch("devices").values.flatten.find { |d| d.fetch("name") == "iPhone 16e" }
+            abort "No available iPhone 16e simulator" unless device
+            puts device.fetch("udid")
+          ')"
+          xcrun simctl bootstatus "$phone_id" -b
+          xcrun simctl ui "$phone_id" appearance light
+          xcrun simctl launch --terminate-running-process "$phone_id" com.nexustravel.NexusTravel --gallery-section=top
           sleep 1
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-top-light.png"
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=buttons
+          xcrun simctl io "$phone_id" screenshot "$evidence_dir/gallery-top-light.png"
+          xcrun simctl launch --terminate-running-process "$phone_id" com.nexustravel.NexusTravel --gallery-section=buttons
           sleep 1
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-buttons-light.png"
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          xcrun simctl io "$phone_id" screenshot "$evidence_dir/gallery-buttons-light.png"
+          xcrun simctl launch --terminate-running-process "$phone_id" com.nexustravel.NexusTravel --gallery-section=feedback
           sleep 1
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-light.png"
-          xcrun simctl ui booted appearance dark
-          xcrun simctl launch --terminate-running-process booted com.nexustravel.NexusTravel --gallery-section=feedback
+          xcrun simctl io "$phone_id" screenshot "$evidence_dir/gallery-feedback-light.png"
+          xcrun simctl ui "$phone_id" appearance dark
+          xcrun simctl launch --terminate-running-process "$phone_id" com.nexustravel.NexusTravel --gallery-section=feedback
           sleep 1
-          xcrun simctl io booted screenshot "$evidence_dir/gallery-feedback-dark.png"
+          xcrun simctl io "$phone_id" screenshot "$evidence_dir/gallery-feedback-dark.png"
       - name: Upload design-system gallery evidence
         uses: actions/upload-artifact@v4
         with:
           name: DesignSystemGalleryEvidence
           path: ${{ runner.temp }}/design-system-gallery/*.png
           if-no-files-found: error
-      - name: Upload test result on failure
-        if: failure()
+      - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: TestResults
-          path: TestResults.xcresult
+          path: TestResults*.xcresult
+          if-no-files-found: warn
